@@ -1,0 +1,15 @@
+# ไฟล์ข้อมูลส่วนตัว / ไม่ต้องขึ้น GitHub
+*.xlsx
+*.csv
+*.json
+patch_dashboard.py
+
+# API server — มี repo แยกอยู่แล้ว
+api-server/
+
+# macOS
+.DS_Store
+__MACOSX/
+
+# ไฟล์ backup เก่า
+Project_Dashboard_2026.html
