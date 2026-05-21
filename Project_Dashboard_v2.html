@@ -384,6 +384,7 @@ details ul { padding-left: 18px; }
 .perm-item { display:flex; align-items:center; gap:8px; font-size:13px; padding:7px 10px; border:1px solid var(--border); border-radius:6px; cursor:pointer; user-select:none; }
 .perm-item:hover { background:var(--accent-bg); border-color:var(--accent); }
 .perm-item input[type=checkbox] { width:14px; height:14px; accent-color:var(--accent); flex-shrink:0; }
+@keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -1072,24 +1073,34 @@ details ul { padding-left: 18px; }
 </div>
 
 <!-- LOGIN OVERLAY -->
-<div class="auth-overlay hidden" id="auth-overlay">
+<div class="auth-overlay" id="auth-overlay">
   <div class="auth-box">
-    <div class="auth-logo">
-      <div style="font-size:40px;line-height:1;">🏢</div>
-      <h2>Platform Group</h2>
-      <p>Project Management Dashboard</p>
+    <!-- Loading state -->
+    <div id="auth-loading" style="text-align:center;padding:16px 0;">
+      <div style="font-size:36px;margin-bottom:12px;">🏢</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Platform Group</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">กำลังโหลดข้อมูล...</div>
+      <div style="display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
     </div>
-    <div class="auth-error-box" id="auth-error" style="display:none;"></div>
-    <div class="auth-field">
-      <label>Username</label>
-      <input id="auth-username" type="text" placeholder="กรอก username" autocomplete="username">
+    <!-- Login form (hidden until loaded) -->
+    <div id="auth-form" style="display:none;">
+      <div class="auth-logo">
+        <div style="font-size:40px;line-height:1;">🏢</div>
+        <h2>Platform Group</h2>
+        <p>Project Management Dashboard</p>
+      </div>
+      <div class="auth-error-box" id="auth-error" style="display:none;"></div>
+      <div class="auth-field">
+        <label>Username</label>
+        <input id="auth-username" type="text" placeholder="กรอก username" autocomplete="username">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input id="auth-password" type="password" placeholder="กรอก password" autocomplete="current-password">
+      </div>
+      <button class="auth-btn" id="auth-login-btn">เข้าสู่ระบบ</button>
+      <div id="auth-default-hint" style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-hint);display:none;">Default: admin / 1234 (เปลี่ยนหลัง login ครั้งแรก)</div>
     </div>
-    <div class="auth-field">
-      <label>Password</label>
-      <input id="auth-password" type="password" placeholder="กรอก password" autocomplete="current-password">
-    </div>
-    <button class="auth-btn" id="auth-login-btn">เข้าสู่ระบบ</button>
-    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-hint);">Default: admin / 1234 (เปลี่ยนหลัง login ครั้งแรก)</div>
   </div>
 </div>
 
@@ -5629,9 +5640,14 @@ function showApp() {
 }
 function showLogin() {
   document.getElementById('auth-overlay').classList.remove('hidden');
-  document.getElementById('auth-username').value = '';
-  document.getElementById('auth-password').value = '';
-  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-loading').style.display = 'none';
+  document.getElementById('auth-form').style.display = '';
+  const un = document.getElementById('auth-username');
+  if (un) un.value = '';
+  const pw = document.getElementById('auth-password');
+  if (pw) pw.value = '';
+  const err = document.getElementById('auth-error');
+  if (err) err.style.display = 'none';
   document.getElementById('topbar-user').style.display = 'none';
   document.getElementById('btn-change-pw').style.display = 'none';
   document.getElementById('btn-logout').style.display = 'none';
@@ -5826,7 +5842,39 @@ function deleteUser() {
 // ── Auth Init ─────────────────────────────────────────────
 (async function initAuth() {
   loadSession();
+
+  // ── 1. Pull จาก cloud ก่อน เพื่อให้ได้ user list ล่าสุด ──
+  const cfg = getMongoConfig();
+  if (cfg.apiUrl) {
+    try {
+      const pulled = await mongoLoadDB();
+      if (pulled) renderAll();
+    } catch(e) { /* ใช้ localStorage แทน */ }
+  }
+
+  // ── 2. สร้าง default admin เฉพาะเมื่อยังไม่มี user เลย ──
   await ensureDefaultAdmin();
+  // แสดง hint "Default: admin/1234" เฉพาะกรณีไม่มี cloud หรือ user เดียว
+  const onlyDefault = (DB.users||[]).length === 1 && (DB.users||[])[0]?.id === 'u_admin_default';
+  document.getElementById('auth-default-hint').style.display = onlyDefault ? '' : 'none';
+
+  // ── 3. ตรวจ session ว่า user ยังอยู่ใน DB หรือเปล่า ──
+  if (SESSION) {
+    const dbUser = (DB.users || []).find(u => u.id === SESSION.userId);
+    if (!dbUser) {
+      clearSession(); // user ถูกลบออกจาก cloud
+    } else {
+      // sync role กรณี admin เปลี่ยน role
+      SESSION.role = dbUser.role;
+      SESSION.forceReset = dbUser.forceReset;
+      saveSession(SESSION);
+    }
+  }
+
+  // ── 4. แสดง login หรือ app ──
+  document.getElementById('auth-loading').style.display = 'none';
+  document.getElementById('auth-form').style.display = '';
+
   if (SESSION) { showApp(); if (SESSION.forceReset) openChangePassword(true); }
   else showLogin();
 
