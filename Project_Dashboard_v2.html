@@ -346,6 +346,44 @@ details ul { padding-left: 18px; }
 .sync-time { font-size:10px; color:var(--text-hint); white-space:nowrap; }
 .mongo-cfg { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px; }
 .mongo-cfg h3 { margin:0 0 12px; font-size:13px; font-weight:600; }
+
+/* ── Auth Login Overlay ── */
+.auth-overlay { position:fixed; inset:0; background:#FAFAF7; display:flex; align-items:center; justify-content:center; z-index:9999; }
+.auth-overlay.hidden { display:none; }
+.auth-box { background:#fff; border:1px solid var(--border); border-radius:16px; padding:40px 36px; width:380px; max-width:92vw; box-shadow:0 8px 40px rgba(0,0,0,0.12); }
+.auth-logo { text-align:center; margin-bottom:24px; }
+.auth-logo h2 { font-size:20px; font-weight:700; margin:10px 0 4px; color:var(--text); }
+.auth-logo p { font-size:13px; color:var(--text-muted); margin:0; }
+.auth-field { margin-bottom:14px; }
+.auth-field label { display:block; font-size:12px; font-weight:500; color:var(--text-muted); margin-bottom:5px; }
+.auth-field input { width:100%; padding:11px 13px; border:1px solid var(--border-strong); border-radius:8px; font-size:14px; font-family:inherit; background:var(--bg); color:var(--text); }
+.auth-field input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(24,95,165,0.1); }
+.auth-error-box { background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:8px; padding:8px 12px; font-size:13px; margin-bottom:12px; }
+.auth-btn { width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; margin-top:6px; }
+.auth-btn:hover { background:#0C447C; }
+.auth-btn:disabled { opacity:0.6; cursor:not-allowed; }
+
+/* ── Topbar user chip ── */
+.topbar-user { display:flex; align-items:center; gap:8px; padding:4px 10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); }
+.topbar-user-avatar { width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+.topbar-user-name { font-size:12px; color:var(--text); font-weight:500; }
+.topbar-role-admin { font-size:10px; background:#FEE2E2; color:#991B1B; padding:1px 6px; border-radius:8px; font-weight:600; }
+.btn-chpw { font-size:11px; padding:3px 8px; color:var(--text-muted); border-color:var(--border); }
+.btn-logout { font-size:11px; padding:3px 8px; color:var(--danger); border-color:var(--danger); }
+.btn-logout:hover { background:var(--danger-bg); }
+
+/* ── Admin Panel ── */
+.user-table { width:100%; border-collapse:collapse; }
+.user-table th { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-hint); font-weight:600; padding:8px 12px; text-align:left; border-bottom:2px solid var(--border); }
+.user-table td { padding:10px 12px; font-size:13px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.user-table tr:last-child td { border-bottom:none; }
+.role-badge-admin { display:inline-flex; align-items:center; gap:4px; background:#FEE2E2; color:#991B1B; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; }
+.role-badge-member { display:inline-flex; align-items:center; gap:4px; background:#EFF6FF; color:#1D4ED8; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; }
+.perm-tag { display:inline-block; background:#F0EFEA; color:var(--text-muted); font-size:10px; padding:2px 6px; border-radius:4px; margin:2px 2px 0 0; }
+.perm-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin-top:8px; }
+.perm-item { display:flex; align-items:center; gap:8px; font-size:13px; padding:7px 10px; border:1px solid var(--border); border-radius:6px; cursor:pointer; user-select:none; }
+.perm-item:hover { background:var(--accent-bg); border-color:var(--accent); }
+.perm-item input[type=checkbox] { width:14px; height:14px; accent-color:var(--accent); flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -366,6 +404,13 @@ details ul { padding-left: 18px; }
       <button class="btn" id="btn-import">Import JSON</button>
       <button class="btn" id="btn-export">Export JSON</button>
       <button class="btn btn-primary" id="btn-add">+ New Project</button>
+      <div class="topbar-user" id="topbar-user" style="display:none;">
+        <div class="topbar-user-avatar" id="topbar-user-initials">?</div>
+        <span class="topbar-user-name" id="topbar-user-label">—</span>
+        <span class="topbar-role-admin" id="topbar-role-badge">Admin</span>
+      </div>
+      <button class="btn btn-chpw" id="btn-change-pw" style="display:none;" title="เปลี่ยนรหัสผ่าน">🔑</button>
+      <button class="btn btn-logout" id="btn-logout" style="display:none;">ออกจากระบบ</button>
     </div>
   </div>
 
@@ -382,6 +427,7 @@ details ul { padding-left: 18px; }
     <button class="tab" data-panel="team">Team</button>
     <button class="tab" data-panel="calendar">📅 Calendar</button>
     <button class="tab" data-panel="framework">SOP & Help</button>
+    <button class="tab" data-panel="admin" style="display:none;">🔐 Admin</button>
   </div>
 
   <!-- OVERVIEW -->
@@ -677,6 +723,36 @@ details ul { padding-left: 18px; }
       <div class="recom"><strong>Pitching cap:</strong> Owner ที่ peak ≥ 5 ในเดือนใด ห้าม assign Pitching ใหม่ในเดือนนั้น</div>
       <div class="recom"><strong>Role pre-booking:</strong> Strategy, Creative, Designer, KOL = high demand — จองล่วงหน้าใน calendar ก่อน confirm Launch</div>
     </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="panel" id="admin">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:8px;flex-wrap:wrap;">
+      <div>
+        <h2 style="margin:0;">🔐 User Management</h2>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">จัดการ account และสิทธิ์เข้าถึงของทีม</div>
+      </div>
+      <button class="btn btn-primary" id="btn-add-user">+ Add User</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="user-table">
+        <thead><tr>
+          <th>Username</th><th>ชื่อ</th><th>Role</th><th>Tabs ที่เข้าถึงได้</th><th></th>
+        </tr></thead>
+        <tbody id="user-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2 style="margin:0 0 8px;">ℹ️ คำแนะนำ</h2>
+    <ul style="font-size:13px;color:var(--text-muted);line-height:2;margin:0;padding-left:18px;">
+      <li><b>Admin</b> — เห็นและแก้ไขได้ทุก Tab รวมถึง User Management</li>
+      <li><b>Member</b> — เห็นเฉพาะ Tab ที่ Admin กำหนด</li>
+      <li>รหัสผ่านถูก hash ด้วย SHA-256 — ไม่มีใครเห็นรหัสผ่านจริง</li>
+      <li>ผู้ใช้แต่ละคนสามารถ reset รหัสผ่านตัวเองได้ผ่านปุ่ม 🔑 ด้านบน</li>
+    </ul>
   </div>
 </div>
 
@@ -991,6 +1067,96 @@ details ul { padding-left: 18px; }
     <div class="modal-actions">
       <button type="button" class="btn" id="assign-modal-cancel">Cancel</button>
       <button type="button" class="btn btn-primary" id="assign-modal-save">✅ Assign</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN OVERLAY -->
+<div class="auth-overlay hidden" id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div style="font-size:40px;line-height:1;">🏢</div>
+      <h2>Platform Group</h2>
+      <p>Project Management Dashboard</p>
+    </div>
+    <div class="auth-error-box" id="auth-error" style="display:none;"></div>
+    <div class="auth-field">
+      <label>Username</label>
+      <input id="auth-username" type="text" placeholder="กรอก username" autocomplete="username">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input id="auth-password" type="password" placeholder="กรอก password" autocomplete="current-password">
+    </div>
+    <button class="auth-btn" id="auth-login-btn">เข้าสู่ระบบ</button>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-hint);">Default: admin / 1234 (เปลี่ยนหลัง login ครั้งแรก)</div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal" id="chpw-modal">
+  <div class="modal-card" style="max-width:400px;">
+    <div class="modal-head">
+      <h2>🔑 เปลี่ยนรหัสผ่าน</h2>
+      <button class="modal-close" id="chpw-close">&times;</button>
+    </div>
+    <p id="chpw-hint" style="font-size:13px;color:var(--text-muted);margin:0 0 16px;"></p>
+    <div class="form-grid">
+      <div class="form-field full"><label>รหัสผ่านปัจจุบัน</label><input id="chpw-old" type="password" placeholder="รหัสผ่านเดิม"></div>
+      <div class="form-field full"><label>รหัสผ่านใหม่ <span style="font-weight:400;color:var(--text-hint);font-size:11px;">(อย่างน้อย 6 ตัวอักษร)</span></label><input id="chpw-new" type="password" placeholder="รหัสผ่านใหม่"></div>
+      <div class="form-field full"><label>ยืนยันรหัสผ่านใหม่</label><input id="chpw-confirm" type="password" placeholder="พิมพ์ซ้ำอีกครั้ง"></div>
+    </div>
+    <div class="auth-error-box" id="chpw-error" style="display:none;margin-top:8px;"></div>
+    <div class="modal-actions">
+      <button class="btn" id="chpw-cancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="chpw-save">บันทึกรหัสผ่านใหม่</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT USER MODAL -->
+<div class="modal" id="user-modal">
+  <div class="modal-card" style="max-width:500px;">
+    <div class="modal-head">
+      <h2 id="user-modal-title">Add User</h2>
+      <button class="modal-close" id="um-close">&times;</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Username <span style="color:#DC2626;">*</span></label>
+        <input id="um-username" placeholder="เช่น john">
+      </div>
+      <div class="form-field">
+        <label>ชื่อ / Display Name</label>
+        <input id="um-name" placeholder="ชื่อที่แสดง">
+      </div>
+      <div class="form-field">
+        <label>Password <span id="um-pw-note" style="font-weight:400;color:var(--text-hint);font-size:11px;"></span></label>
+        <input id="um-password" type="password" placeholder="อย่างน้อย 6 ตัวอักษร">
+      </div>
+      <div class="form-field">
+        <label>Role</label>
+        <select id="um-role">
+          <option value="member">👤 Member</option>
+          <option value="admin">🔴 Admin</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-size:12px;font-weight:500;color:var(--text-muted);display:block;margin-bottom:8px;">🗂 สิทธิ์ Tab <span style="font-weight:400;">(เฉพาะ Member)</span></label>
+      <div class="perm-grid" id="um-perm-grid"></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+        <input type="checkbox" id="um-force-reset" style="width:14px;height:14px;accent-color:var(--accent);">
+        บังคับให้ reset รหัสผ่านหลัง login ครั้งแรก
+      </label>
+    </div>
+    <div class="auth-error-box" id="um-error" style="display:none;margin-top:12px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="um-delete" style="display:none;margin-right:auto;">🗑 Delete User</button>
+      <button class="btn" id="um-cancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="um-save">บันทึก</button>
     </div>
   </div>
 </div>
@@ -2967,6 +3133,7 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.panel === 'team' && !_tabInited.has('team')) { _tabInited.add('team'); initTeamPage(); }
     if (t.dataset.panel === 'roles' && !_tabInited.has('roles')) { _tabInited.add('roles'); initRoleDemand(); }
     if (t.dataset.panel === 'calendar' && !_tabInited.has('calendar')) { _tabInited.add('calendar'); initCalendar(); }
+    if (t.dataset.panel === 'admin') renderUsers();
   });
 });
 
@@ -5403,6 +5570,288 @@ document.getElementById('btn-pull').addEventListener('click', () => mongoPull())
 window.addEventListener('beforeunload', e => {
   if (unsaved && !fileHandle) { e.preventDefault(); e.returnValue=''; }
 });
+
+// ========== AUTH / USER MANAGEMENT ==========
+const SESSION_KEY = 'pg_session_v1';
+let SESSION = null;
+
+const ALL_TABS = [
+  { key:'overview',  label:'Overview' },
+  { key:'kanban',    label:'Kanban' },
+  { key:'timeline',  label:'Gantt Timeline' },
+  { key:'workload',  label:'Workload' },
+  { key:'roles',     label:'Role Demand' },
+  { key:'projects',  label:'Project List' },
+  { key:'clients',   label:'Clients' },
+  { key:'team',      label:'Team' },
+  { key:'calendar',  label:'Calendar' },
+  { key:'framework', label:'SOP & Help' },
+];
+
+// ── SHA-256 hash ─────────────────────────────────────────
+async function hashPassword(pass) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Session helpers ───────────────────────────────────────
+function loadSession() {
+  try { SESSION = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { SESSION = null; }
+}
+function saveSession(s) { SESSION = s; localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+function clearSession() { SESSION = null; localStorage.removeItem(SESSION_KEY); }
+
+// ── Default admin (first run) ─────────────────────────────
+async function ensureDefaultAdmin() {
+  if (!DB.users) DB.users = [];
+  if (!DB.users.length) {
+    DB.users.push({
+      id: 'u_admin_default',
+      username: 'admin',
+      name: 'Admin',
+      passwordHash: await hashPassword('1234'),
+      role: 'admin',
+      forceReset: true,
+      tabs: ALL_TABS.map(t => t.key)
+    });
+    saveDB(true);
+  }
+}
+
+// ── Show / hide app ───────────────────────────────────────
+function showApp() {
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('topbar-user').style.display = '';
+  document.getElementById('btn-change-pw').style.display = '';
+  document.getElementById('btn-logout').style.display = '';
+  applyTabPermissions();
+  updateTopbarUser();
+}
+function showLogin() {
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  document.getElementById('auth-username').value = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('topbar-user').style.display = 'none';
+  document.getElementById('btn-change-pw').style.display = 'none';
+  document.getElementById('btn-logout').style.display = 'none';
+}
+
+// ── Login / Logout ────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.style.display = 'none';
+  if (!username || !password) { errEl.textContent = 'กรุณากรอก Username และ Password'; errEl.style.display = ''; return; }
+  const hash = await hashPassword(password);
+  const user = (DB.users || []).find(u => u.username === username && u.passwordHash === hash);
+  if (!user) { errEl.textContent = 'Username หรือ Password ไม่ถูกต้อง'; errEl.style.display = ''; return; }
+  saveSession({ userId: user.id, username: user.username, name: user.name || user.username, role: user.role, forceReset: user.forceReset });
+  showApp();
+  if (user.forceReset) openChangePassword(true);
+}
+
+function doLogout() {
+  if (!confirm('ออกจากระบบใช่ไหม?')) return;
+  clearSession();
+  showLogin();
+}
+
+// ── Tab permissions ───────────────────────────────────────
+function applyTabPermissions() {
+  if (!SESSION) return;
+  const isAdmin = SESSION.role === 'admin';
+  const user = (DB.users || []).find(u => u.id === SESSION.userId);
+  const allowed = isAdmin ? [...ALL_TABS.map(t => t.key), 'admin'] : (user?.tabs || []);
+  document.querySelectorAll('.tab').forEach(tab => {
+    const p = tab.dataset.panel;
+    if (p === 'admin') tab.style.display = isAdmin ? '' : 'none';
+    else tab.style.display = allowed.includes(p) ? '' : 'none';
+  });
+  // ถ้า active tab ถูกซ่อน → switch ไป tab แรกที่เห็น
+  const activeTab = document.querySelector('.tab.active');
+  if (activeTab && activeTab.style.display === 'none') {
+    const firstVisible = document.querySelector('.tab:not([style*="display: none"]):not([style*="display:none"])');
+    if (firstVisible) firstVisible.click();
+  }
+}
+
+// ── Topbar user chip ──────────────────────────────────────
+function updateTopbarUser() {
+  if (!SESSION) return;
+  const initials = (SESSION.name || SESSION.username).slice(0,2).toUpperCase();
+  document.getElementById('topbar-user-initials').textContent = initials;
+  document.getElementById('topbar-user-label').textContent = SESSION.name || SESSION.username;
+  const badge = document.getElementById('topbar-role-badge');
+  badge.style.display = SESSION.role === 'admin' ? '' : 'none';
+}
+
+// ── Change Password ───────────────────────────────────────
+let _chpwForced = false;
+function openChangePassword(forced) {
+  _chpwForced = !!forced;
+  ['chpw-old','chpw-new','chpw-confirm'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('chpw-error').style.display = 'none';
+  document.getElementById('chpw-hint').textContent = forced
+    ? '⚠️ กรุณาตั้งรหัสผ่านใหม่ก่อนใช้งานระบบ'
+    : 'เปลี่ยนรหัสผ่านของคุณ';
+  document.getElementById('chpw-close').style.display = forced ? 'none' : '';
+  document.getElementById('chpw-cancel').style.display = forced ? 'none' : '';
+  document.getElementById('chpw-modal').classList.add('show');
+}
+async function saveChangePassword() {
+  const old = document.getElementById('chpw-old').value;
+  const nw  = document.getElementById('chpw-new').value;
+  const cfm = document.getElementById('chpw-confirm').value;
+  const err = document.getElementById('chpw-error');
+  err.style.display = 'none';
+  if (!old || !nw || !cfm) { err.textContent = 'กรุณากรอกให้ครบทุกช่อง'; err.style.display = ''; return; }
+  if (nw.length < 6)       { err.textContent = 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'; err.style.display = ''; return; }
+  if (nw !== cfm)           { err.textContent = 'รหัสผ่านใหม่ไม่ตรงกัน'; err.style.display = ''; return; }
+  const oldHash = await hashPassword(old);
+  const user = (DB.users || []).find(u => u.id === SESSION.userId);
+  if (!user || user.passwordHash !== oldHash) { err.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง'; err.style.display = ''; return; }
+  user.passwordHash = await hashPassword(nw);
+  user.forceReset   = false;
+  SESSION.forceReset = false;
+  saveSession(SESSION);
+  saveDB(true);
+  document.getElementById('chpw-modal').classList.remove('show');
+}
+
+// ── User Management ───────────────────────────────────────
+let _editingUserId = null;
+
+function renderUsers() {
+  const tbody = document.getElementById('user-tbody');
+  if (!tbody) return;
+  const users = DB.users || [];
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">ยังไม่มี user — กด "+ Add User"</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => {
+    const isSelf = SESSION && u.id === SESSION.userId;
+    const badge = u.role === 'admin'
+      ? `<span class="role-badge-admin">🔴 Admin</span>`
+      : `<span class="role-badge-member">👤 Member</span>`;
+    const resetTag = u.forceReset ? ' <span style="font-size:10px;color:#BA7517;">⚠ ต้อง reset</span>' : '';
+    const tabsHtml = u.role === 'admin'
+      ? `<span class="perm-tag">ทุก Tab</span>`
+      : (u.tabs || []).map(k => { const t = ALL_TABS.find(x => x.key===k); return t ? `<span class="perm-tag">${t.label}</span>` : ''; }).join('');
+    return `<tr>
+      <td><b>${u.username}</b>${isSelf ? ' <span style="font-size:10px;color:var(--accent);">(คุณ)</span>' : ''}</td>
+      <td>${u.name || '—'}</td>
+      <td>${badge}${resetTag}</td>
+      <td style="max-width:280px;line-height:1.8;">${tabsHtml}</td>
+      <td><button class="btn btn-sm" onclick="openUserModal('${u.id}')">✏️ Edit</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function openUserModal(userId) {
+  _editingUserId = userId || null;
+  const user = userId ? (DB.users || []).find(u => u.id === userId) : null;
+  document.getElementById('user-modal-title').textContent = user ? 'Edit User' : 'Add User';
+  const unInput = document.getElementById('um-username');
+  unInput.value = user?.username || '';
+  unInput.disabled = !!user;
+  document.getElementById('um-name').value = user?.name || '';
+  document.getElementById('um-password').value = '';
+  document.getElementById('um-pw-note').textContent = user ? '(เว้นว่างถ้าไม่เปลี่ยน)' : '(ต้องกรอก) *';
+  document.getElementById('um-role').value = user?.role || 'member';
+  document.getElementById('um-force-reset').checked = user ? !!user.forceReset : true;
+  document.getElementById('um-delete').style.display = user ? '' : 'none';
+  document.getElementById('um-error').style.display = 'none';
+  const currentTabs = user?.tabs || ALL_TABS.map(t => t.key);
+  renderPermGrid(currentTabs, (user?.role || 'member') === 'admin');
+  document.getElementById('um-role').onchange = () => renderPermGrid(currentTabs, document.getElementById('um-role').value === 'admin');
+  document.getElementById('user-modal').classList.add('show');
+}
+
+function renderPermGrid(currentTabs, isAdmin) {
+  const grid = document.getElementById('um-perm-grid');
+  if (isAdmin) { grid.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:6px 0;grid-column:1/-1;">Admin เข้าถึงได้ทุก Tab อัตโนมัติ</div>'; return; }
+  grid.innerHTML = ALL_TABS.map(t => `
+    <label class="perm-item">
+      <input type="checkbox" name="um-tab" value="${t.key}" ${currentTabs.includes(t.key) ? 'checked' : ''}>
+      <span>${t.label}</span>
+    </label>`).join('');
+}
+
+async function saveUserModal() {
+  const username  = document.getElementById('um-username').value.trim();
+  const name      = document.getElementById('um-name').value.trim();
+  const password  = document.getElementById('um-password').value;
+  const role      = document.getElementById('um-role').value;
+  const forceReset= document.getElementById('um-force-reset').checked;
+  const err = document.getElementById('um-error');
+  err.style.display = 'none';
+  if (!username) { err.textContent = 'กรุณากรอก Username'; err.style.display = ''; return; }
+  if (!_editingUserId && !password) { err.textContent = 'กรุณากรอก Password'; err.style.display = ''; return; }
+  if (password && password.length < 6) { err.textContent = 'Password ต้องมีอย่างน้อย 6 ตัวอักษร'; err.style.display = ''; return; }
+  if (!DB.users) DB.users = [];
+  const dup = DB.users.find(u => u.username === username && u.id !== _editingUserId);
+  if (dup) { err.textContent = `Username "${username}" ถูกใช้แล้ว`; err.style.display = ''; return; }
+  const tabs = role === 'admin' ? ALL_TABS.map(t => t.key)
+    : [...document.querySelectorAll('#um-perm-grid input[type=checkbox]:checked')].map(cb => cb.value);
+  if (_editingUserId) {
+    const user = DB.users.find(u => u.id === _editingUserId);
+    if (user) {
+      user.name = name; user.role = role; user.tabs = tabs; user.forceReset = forceReset;
+      if (password) user.passwordHash = await hashPassword(password);
+      if (SESSION && user.id === SESSION.userId) { SESSION.name = name; SESSION.role = role; saveSession(SESSION); updateTopbarUser(); }
+    }
+  } else {
+    DB.users.push({ id: 'u_' + Date.now(), username, name, passwordHash: await hashPassword(password), role, tabs, forceReset });
+  }
+  saveDB(true);
+  renderUsers();
+  applyTabPermissions();
+  document.getElementById('user-modal').classList.remove('show');
+}
+
+function deleteUser() {
+  if (!_editingUserId) return;
+  const user = (DB.users || []).find(u => u.id === _editingUserId);
+  if (!user) return;
+  if (SESSION && user.id === SESSION.userId) { alert('ไม่สามารถลบตัวเองได้'); return; }
+  const adminCount = (DB.users || []).filter(u => u.role === 'admin').length;
+  if (user.role === 'admin' && adminCount <= 1) { alert('ต้องมี Admin อย่างน้อย 1 คน'); return; }
+  if (!confirm(`ลบ user "${user.username}" ใช่ไหม?`)) return;
+  DB.users = DB.users.filter(u => u.id !== _editingUserId);
+  saveDB(true);
+  renderUsers();
+  document.getElementById('user-modal').classList.remove('show');
+}
+
+// ── Auth Init ─────────────────────────────────────────────
+(async function initAuth() {
+  loadSession();
+  await ensureDefaultAdmin();
+  if (SESSION) { showApp(); if (SESSION.forceReset) openChangePassword(true); }
+  else showLogin();
+
+  // Login
+  document.getElementById('auth-login-btn').addEventListener('click', doLogin);
+  document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+  document.getElementById('auth-username').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('auth-password').focus(); });
+
+  // Logout / Change PW
+  document.getElementById('btn-logout').addEventListener('click', doLogout);
+  document.getElementById('btn-change-pw').addEventListener('click', () => openChangePassword(false));
+  document.getElementById('chpw-save').addEventListener('click', saveChangePassword);
+  document.getElementById('chpw-close').addEventListener('click', () => document.getElementById('chpw-modal').classList.remove('show'));
+  document.getElementById('chpw-cancel').addEventListener('click', () => { if (!_chpwForced) document.getElementById('chpw-modal').classList.remove('show'); });
+
+  // User modal
+  document.getElementById('btn-add-user').addEventListener('click', () => openUserModal(null));
+  document.getElementById('um-save').addEventListener('click', saveUserModal);
+  document.getElementById('um-cancel').addEventListener('click', () => document.getElementById('user-modal').classList.remove('show'));
+  document.getElementById('um-close').addEventListener('click',  () => document.getElementById('user-modal').classList.remove('show'));
+  document.getElementById('um-delete').addEventListener('click', deleteUser);
+
+  // Render users when admin tab is opened
+  document.querySelector('[data-panel="admin"]')?.addEventListener('click', renderUsers);
+})();
 </script>
 </body>
 </html>
