@@ -337,6 +337,13 @@ details ul { padding-left: 18px; }
 .sync-status.syncing { background:#FEF9C3; color:#854D0E; }
 .sync-status.error   { background:#FEE2E2; color:#991B1B; cursor:pointer; }
 .sync-status.offline { background:#F1F5F9; color:#94A3B8; }
+.sync-group { display:flex; align-items:center; gap:6px; }
+.btn-pull { background:#EFF6FF !important; color:#1D4ED8 !important; border-color:#BFDBFE !important; font-weight:600; }
+.btn-pull:hover { background:#DBEAFE !important; }
+.btn-push { background:#F0FDF4 !important; color:#166534 !important; border-color:#BBF7D0 !important; font-weight:600; }
+.btn-push:hover { background:#DCFCE7 !important; }
+.btn-push:disabled, .btn-pull:disabled { opacity:0.5; cursor:not-allowed; }
+.sync-time { font-size:10px; color:var(--text-hint); white-space:nowrap; }
 .mongo-cfg { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px; }
 .mongo-cfg h3 { margin:0 0 12px; font-size:13px; font-weight:600; }
 </style>
@@ -349,7 +356,12 @@ details ul { padding-left: 18px; }
       <div class="sub">Platform Group · <span id="prj-count"></span> projects · last update <span id="last-update">—</span></div>
     </div>
     <div class="topbar-actions">
-      <span class="sync-status idle" id="sync-status" title="คลิกเพื่อตั้งค่า MongoDB Atlas">☁️ Cloud</span>
+      <div class="sync-group">
+        <span class="sync-time" id="sync-time" title="เวลา sync ล่าสุด">—</span>
+        <button class="btn btn-pull" id="btn-pull" title="ดึงข้อมูลล่าสุดจาก cloud (↓ Pull)">↓ Pull</button>
+        <button class="btn btn-push" id="btn-push" title="ส่งข้อมูลตัวเองขึ้น cloud (↑ Push)">↑ Push</button>
+        <span class="sync-status idle" id="sync-status" title="คลิกเพื่อตั้งค่า MongoDB Atlas">☁️</span>
+      </div>
       <button class="btn" id="btn-mongo-settings" title="ตั้งค่า MongoDB Atlas Cloud Sync">⚙ MongoDB</button>
       <button class="btn" id="btn-import">Import JSON</button>
       <button class="btn" id="btn-export">Export JSON</button>
@@ -540,9 +552,13 @@ details ul { padding-left: 18px; }
   <!-- CLIENTS -->
   <div class="panel" id="clients">
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
         <h2 style="margin:0;">Company Contacts</h2>
-        <button class="btn btn-primary" id="btn-add-client">+ Add Contact</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm" id="btn-import-clients">📥 Import</button>
+          <button class="btn btn-sm" id="btn-export-clients">📤 Export</button>
+          <button class="btn btn-primary" id="btn-add-client">+ Add Contact</button>
+        </div>
       </div>
       <div class="filter-bar">
         <input id="client-search" placeholder="Search company or contact…" style="min-width:260px;">
@@ -567,9 +583,13 @@ details ul { padding-left: 18px; }
   <!-- TEAM -->
   <div class="panel" id="team">
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
         <h2 style="margin:0;">Team Directory</h2>
-        <button class="btn btn-primary" id="btn-add-member">+ Add Member</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm" id="btn-import-team">📥 Import</button>
+          <button class="btn btn-sm" id="btn-export-team">📤 Export</button>
+          <button class="btn btn-primary" id="btn-add-member">+ Add Member</button>
+        </div>
       </div>
       <div class="filter-bar">
         <input id="team-search" placeholder="Search name or role…" style="min-width:220px;">
@@ -904,13 +924,13 @@ details ul { padding-left: 18px; }
         <div class="form-field"><label>Nickname</label><input id="tf-nickname"></div>
         <div class="form-field"><label>แผนก</label>
           <select id="tf-dept">
+            <option>Management</option>
             <option>Account Management</option>
             <option>Business Development</option>
             <option>Strategy</option>
             <option>Creative</option>
             <option>Content</option>
-            <option>Design</option>
-            <option>Production</option>
+            <option>Design &amp; Production</option>
             <option>Media</option>
             <option>KOL</option>
             <option>Human Resources</option>
@@ -2721,6 +2741,142 @@ document.getElementById('btn-export').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+// ── CSV helpers ───────────────────────────────────────────
+function csvEscape(v) {
+  const s = (v == null ? '' : String(v)).replace(/\r\n/g,'\n');
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+}
+function toCSV(rows, cols) {
+  const header = cols.join(',');
+  const body = rows.map(r => cols.map(c => csvEscape(r[c])).join(','));
+  return [header, ...body].join('\r\n');
+}
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let j = 0; j < line.length; j++) {
+      const ch = line[j];
+      if (inQ) {
+        if (ch === '"' && line[j+1] === '"') { cur += '"'; j++; }
+        else if (ch === '"') inQ = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQ = true;
+        else if (ch === ',') { vals.push(cur); cur = ''; }
+        else cur += ch;
+      }
+    }
+    vals.push(cur);
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = vals[idx] ?? ''; });
+    result.push(obj);
+  }
+  return result;
+}
+function downloadCSV(csvText, filename) {
+  const bom = '﻿'; // UTF-8 BOM for Excel
+  const blob = new Blob([bom + csvText], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Clients Import / Export ────────────────────────────────
+const CLIENT_COLS = ['id','company','brand','juristicId','contactName','position','phone','email','birthday','address','active','note'];
+
+document.getElementById('btn-export-clients').addEventListener('click', () => {
+  const date = new Date().toISOString().slice(0,10);
+  const rows = (DB.clients || []).map(c => ({
+    id: c.id||'', company: c.company||'', brand: c.brand||'',
+    juristicId: c.juristicId||'', contactName: c.contactName||'',
+    position: c.position||'', phone: c.phone||'', email: c.email||'',
+    birthday: c.birthday||'', address: c.address||'',
+    active: c.active||'active', note: c.note||''
+  }));
+  downloadCSV(toCSV(rows, CLIENT_COLS), `clients_${date}.csv`);
+});
+
+document.getElementById('btn-import-clients').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.csv';
+  input.onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const text = await f.text();
+    try {
+      const rows = parseCSV(text);
+      if (!rows.length) { alert('ไม่พบข้อมูลในไฟล์'); return; }
+      const arr = rows.map(r => ({
+        id: r.id || ('c_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+        company: r.company||'', brand: r.brand||'', juristicId: r.juristicId||'',
+        contactName: r.contactName||'', position: r.position||'',
+        phone: r.phone||'', email: r.email||'', birthday: r.birthday||'',
+        address: r.address||'', active: r.active||'active', note: r.note||'',
+        projects: []
+      }));
+      const mode = confirm(`พบข้อมูล ${arr.length} รายการ\n\nกด OK = แทนที่ทั้งหมด (Replace)\nกด Cancel = เพิ่มเข้า (Merge)`);
+      if (mode) {
+        DB.clients = arr;
+      } else {
+        const existingIds = new Set((DB.clients || []).map(c => c.id));
+        arr.forEach(c => { if (!existingIds.has(c.id)) (DB.clients = DB.clients||[]).push(c); });
+      }
+      localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+      renderClients();
+    } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
+  };
+  input.click();
+});
+
+// ── Team Import / Export ───────────────────────────────────
+const TEAM_COLS = ['id','name','nickname','dept','role','email','phone','birthday','status'];
+
+document.getElementById('btn-export-team').addEventListener('click', () => {
+  const date = new Date().toISOString().slice(0,10);
+  const rows = (DB.team || []).map(m => ({
+    id: m.id||'', name: m.name||'', nickname: m.nickname||'',
+    dept: m.dept||'', role: m.role||'', email: m.email||'',
+    phone: m.phone||'', birthday: m.birthday||'',
+    status: m.status||'active'
+  }));
+  downloadCSV(toCSV(rows, TEAM_COLS), `team_${date}.csv`);
+});
+
+document.getElementById('btn-import-team').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.csv';
+  input.onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const text = await f.text();
+    try {
+      const rows = parseCSV(text);
+      if (!rows.length) { alert('ไม่พบข้อมูลในไฟล์'); return; }
+      const arr = rows.map(r => ({
+        id: r.id || ('m_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+        name: r.name||'', nickname: r.nickname||'', dept: r.dept||'',
+        role: r.role||'', email: r.email||'', phone: r.phone||'',
+        birthday: r.birthday||'', status: r.status||'active'
+      }));
+      const mode = confirm(`พบข้อมูล ${arr.length} รายการ\n\nกด OK = แทนที่ทั้งหมด (Replace)\nกด Cancel = เพิ่มเข้า (Merge)`);
+      if (mode) {
+        DB.team = arr;
+      } else {
+        const existingIds = new Set((DB.team || []).map(m => m.id));
+        arr.forEach(m => { if (!existingIds.has(m.id)) (DB.team = DB.team||[]).push(m); });
+      }
+      localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+      renderTeam();
+    } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
+  };
+  input.click();
+});
+
 // ========== HELPERS ==========
 function parseDate(s) { if (!s) return null; const d = new Date(s); return isNaN(d) ? null : d; }
 function monthSpan(p) {
@@ -4182,7 +4338,7 @@ function openClientProfile(clientId) {
 function closeClientProfile() { document.getElementById('client-profile-modal').classList.remove('show'); }
 
 // ========== TEAM ==========
-const ALL_DEPTS = ['Account Management','Business Development','Strategy','Creative','Content','Design','Production','Media','KOL','Human Resources','Accounting'];
+const ALL_DEPTS = ['Management','Account Management','Business Development','Strategy','Creative','Content','Design & Production','Media','KOL','Human Resources','Accounting'];
 function openMemberProfile(memberId) {
   const m = (DB.team||[]).find(x => x.id === memberId);
   if (!m) return;
@@ -4373,16 +4529,16 @@ function openTeamModal(id) {
 }
 function deptColor(dept) {
   const map = {
-    'Account Management':'#DBEAFE','Business Development':'#D1FAE5','Strategy':'#EDE9FE',
-    'Creative':'#FEE2E2','Content':'#FEF3C7','Design':'#FCE7F3','Production':'#E0E7FF',
+    'Management':'#F0F9FF','Account Management':'#DBEAFE','Business Development':'#D1FAE5','Strategy':'#EDE9FE',
+    'Creative':'#FEE2E2','Content':'#FEF3C7','Design & Production':'#E0E7FF',
     'Media':'#CCFBF1','KOL':'#FEF9C3','Human Resources':'#F3F4F6','Accounting':'#FDF2F8'
   };
   return map[dept]||'#F0EFEA';
 }
 function deptTextColor(dept) {
   const map = {
-    'Account Management':'#1E40AF','Business Development':'#065F46','Strategy':'#4C1D95',
-    'Creative':'#991B1B','Content':'#92400E','Design':'#9D174D','Production':'#3730A3',
+    'Management':'#0369A1','Account Management':'#1E40AF','Business Development':'#065F46','Strategy':'#4C1D95',
+    'Creative':'#991B1B','Content':'#92400E','Design & Production':'#3730A3',
     'Media':'#0F766E','KOL':'#713F12','Human Resources':'#374151','Accounting':'#831843'
   };
   return map[dept]||'#555';
@@ -5015,27 +5171,113 @@ function apiHeaders(cfg) {
   return h;
 }
 
-async function mongoSaveDB() {
+let _lastSyncAt = null; // timestamp ของ sync ล่าสุด
+
+function updateSyncTimeDisplay() {
+  const el = document.getElementById('sync-time');
+  if (!el) return;
+  if (!_lastSyncAt) { el.textContent = '—'; return; }
+  const diff = Math.round((Date.now() - _lastSyncAt) / 60000);
+  if (diff < 1) el.textContent = 'เมื่อกี้';
+  else if (diff < 60) el.textContent = `${diff} นาทีที่แล้ว`;
+  else el.textContent = new Date(_lastSyncAt).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+}
+// อัปเดตเวลาทุก 1 นาที
+setInterval(updateSyncTimeDisplay, 60000);
+
+async function mongoPush() {
   const cfg = getMongoConfig();
-  if (!cfg.apiUrl) return;
+  if (!cfg.apiUrl) { openMongoModal(); return; }
   if (mongoSyncing) return;
   mongoSyncing = true;
-  setSyncStatus('syncing', '☁️ Syncing…');
+  const btn = document.getElementById('btn-push');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  setSyncStatus('syncing', '☁️ Pushing…');
   try {
+    DB.updatedAt = new Date().toISOString();
     const res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', {
-      method: 'POST',
-      headers: apiHeaders(cfg),
-      body: JSON.stringify(DB)
+      method: 'POST', headers: apiHeaders(cfg), body: JSON.stringify(DB)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    setSyncStatus('ok', '☁️ Synced ✓');
+    localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+    _lastSyncAt = Date.now();
+    updateSyncTimeDisplay();
+    setSyncStatus('ok', '☁️ Online ✓');
+    if (btn) { btn.textContent = '✅'; setTimeout(()=>{ btn.textContent='↑ Push'; },1500); }
   } catch(err) {
-    console.error('Cloud save error:', err);
-    setSyncStatus('error', '☁️ Sync failed ✗');
+    setSyncStatus('error', '☁️ Push failed ✗');
+    if (btn) btn.textContent = '↑ Push';
   } finally {
     mongoSyncing = false;
+    if (btn) btn.disabled = false;
   }
 }
+
+async function mongoPull() {
+  const cfg = getMongoConfig();
+  if (!cfg.apiUrl) { openMongoModal(); return; }
+  const btn = document.getElementById('btn-pull');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  setSyncStatus('syncing', '☁️ Pulling…');
+  try {
+    const res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', {
+      method: 'GET', headers: apiHeaders(cfg)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data && data.projects) {
+      // ป้องกัน overwrite ถ้า local ใหม่กว่า cloud
+      const localTs = DB.updatedAt || '';
+      const cloudTs = data.updatedAt || '';
+      if (localTs && cloudTs && localTs > cloudTs) {
+        if (!confirm(`⚠️ ข้อมูลในเครื่องใหม่กว่า cloud\nLocal: ${localTs.slice(0,16)}\nCloud: ${cloudTs.slice(0,16)}\n\nดึงจาก cloud ทับข้อมูลในเครื่องไหม?`)) {
+          setSyncStatus('ok', '☁️ Online ✓');
+          if (btn) { btn.disabled = false; btn.textContent = '↓ Pull'; }
+          return false;
+        }
+      }
+      DB = data;
+      localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+      _lastSyncAt = Date.now();
+      updateSyncTimeDisplay();
+      renderAll();
+      setSyncStatus('ok', '☁️ Online ✓');
+      if (btn) { btn.textContent = '✅'; setTimeout(()=>{ btn.textContent='↓ Pull'; },1500); }
+      return true;
+    }
+    setSyncStatus('ok', '☁️ Online ✓');
+  } catch(err) {
+    setSyncStatus('error', '☁️ Pull failed ✗');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '↓ Pull'; }
+  return false;
+}
+
+// Auto-pull ทุก 5 นาที (background)
+setInterval(async () => {
+  const cfg = getMongoConfig();
+  if (!cfg.apiUrl || mongoSyncing) return;
+  try {
+    const res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', { headers: apiHeaders(cfg) });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data?.projects) return;
+    const cloudTs = data.updatedAt || '';
+    const localTs = DB.updatedAt || '';
+    // pull อัตโนมัติเฉพาะเมื่อ cloud ใหม่กว่า local
+    if (cloudTs > localTs) {
+      DB = data;
+      localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+      _lastSyncAt = Date.now();
+      updateSyncTimeDisplay();
+      renderAll();
+      setSyncStatus('ok', '☁️ Auto-updated ✓');
+    }
+  } catch(e) {}
+}, 5 * 60 * 1000);
+
+// ── เก็บ mongoSaveDB/mongoLoadDB ไว้ให้ internal code เรียกได้ ──
+async function mongoSaveDB() { return mongoPush(); }
 
 async function mongoLoadDB() {
   const cfg = getMongoConfig();
@@ -5043,14 +5285,15 @@ async function mongoLoadDB() {
   setSyncStatus('syncing', '☁️ Loading…');
   try {
     const res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', {
-      method: 'GET',
-      headers: apiHeaders(cfg)
+      method: 'GET', headers: apiHeaders(cfg)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data && data.projects) {
       DB = data;
       localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+      _lastSyncAt = Date.now();
+      updateSyncTimeDisplay();
       setSyncStatus('ok', '☁️ Online ✓');
       return true;
     }
@@ -5118,32 +5361,42 @@ document.getElementById('mg-btn-save').addEventListener('click', async () => {
     apiUrl: document.getElementById('mg-appid').value.trim(),
     secret: document.getElementById('mg-apikey').value.trim()
   };
-  if (!cfg.apiUrl) {
-    alert('กรุณากรอก API URL ของ server');
-    return;
-  }
+  if (!cfg.apiUrl) { alert('กรุณากรอก API URL ของ server'); return; }
   saveMongoConfig(cfg);
   closeMongoModal();
-  await mongoSaveDB();
-  if (document.querySelector('.sync-status.ok')) {
-    const pulled = await mongoLoadDB();
-    if (pulled) renderAll();
-  }
+  // Pull ก่อนเพื่อให้ได้ข้อมูลล่าสุด
+  await mongoPull();
 });
+
+document.getElementById('btn-push').addEventListener('click', () => mongoPush());
+document.getElementById('btn-pull').addEventListener('click', () => mongoPull());
 
 // ========== INIT ==========
 (async function init() {
-  // Try to load from MongoDB first, fallback to localStorage/seed
-  loadDB(); // load localStorage/seed first (instant)
+  loadDB();
   renderAll();
   bind();
   const cfg = getMongoConfig();
-  if (cfg.appId && cfg.apiKey) {
+  if (cfg.apiUrl) {
+    // Pull ตอนเปิดหน้า — ได้ข้อมูลล่าสุดจาก cloud เสมอ
     const pulled = await mongoLoadDB();
-    if (pulled) renderAll(); // re-render with cloud data
+    if (pulled) renderAll();
   } else {
     setSyncStatus('idle', '☁️ Cloud');
   }
+  // ซ่อน Pull/Push ถ้ายังไม่ได้ตั้งค่า cloud
+  function toggleSyncBtns() {
+    const hasCfg = !!getMongoConfig().apiUrl;
+    ['btn-pull','btn-push'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) b.style.display = hasCfg ? '' : 'none';
+    });
+    const st = document.getElementById('sync-time');
+    if (st) st.style.display = hasCfg ? '' : 'none';
+  }
+  toggleSyncBtns();
+  // อัปเดต toggle หลังบันทึก config
+  document.getElementById('mg-btn-save').addEventListener('click', () => setTimeout(toggleSyncBtns, 300), { once: false });
 })();
 
 // warn on unload if unsaved
