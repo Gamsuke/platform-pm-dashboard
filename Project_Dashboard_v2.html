@@ -448,6 +448,7 @@ details ul { padding-left: 18px; }
       </div>
       <button class="btn" id="btn-mongo-settings" title="ตั้งค่า MongoDB Atlas Cloud Sync">⚙ MongoDB</button>
       <button class="btn" id="btn-import">Import JSON</button>
+      <button class="btn" id="btn-import-qt" title="Upload QT list จาก Excel / CSV แล้ว match กับ project อัตโนมัติ">📥 Import QT</button>
       <button class="btn" id="btn-export">Export JSON</button>
       <button class="btn btn-primary" id="btn-add">+ New Project</button>
       <div class="topbar-user" id="topbar-user" style="display:none;">
@@ -866,6 +867,64 @@ details ul { padding-left: 18px; }
 </div>
 </div><!-- end .app -->
 
+<!-- QT IMPORT MODAL -->
+<div class="modal" id="qt-import-modal">
+  <div class="modal-card" style="max-width:700px;width:95%;">
+    <div class="modal-head">
+      <h2>📥 Import QT จาก Excel / CSV</h2>
+      <button class="modal-close" id="qt-import-close">&times;</button>
+    </div>
+    <div id="qt-import-body" style="padding:0;">
+      <!-- Step 1: Drop zone -->
+      <div id="qt-step1" style="padding:4px 0 12px;">
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;line-height:1.6;">
+          Upload ไฟล์ QT list (.xlsx, .xls, .csv) — ต้องมีคอลัมน์สำหรับ <b>QT Number</b> และ<br>คอลัมน์สำหรับ <b>match กับ project</b> (เช่น Project Code หรือ Brand Name)
+        </p>
+        <div id="qt-drop-zone" style="border:2px dashed var(--border-strong);border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:border-color 0.15s;">
+          <div style="font-size:36px;margin-bottom:8px;">📄</div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Drop file here หรือคลิกเพื่อเลือกไฟล์</div>
+          <div style="font-size:12px;color:var(--text-muted);">รองรับ .xlsx, .xls, .csv</div>
+          <input type="file" id="qt-file-input" accept=".xlsx,.xls,.csv" style="display:none;">
+        </div>
+      </div>
+      <!-- Step 2: Column mapping + preview -->
+      <div id="qt-step2" style="display:none;">
+        <div style="background:var(--accent-bg);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--ci-navy);">
+          <b>พบ <span id="qt-row-count">0</span> แถว</b> — เลือกคอลัมน์ที่ต้องการด้านล่าง แล้วกด Preview
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div class="form-field">
+            <label>คอลัมน์ที่เป็น QT Number <span style="color:var(--danger);">*</span></label>
+            <select id="qt-col-no"></select>
+          </div>
+          <div class="form-field">
+            <label>คอลัมน์ที่เป็น QT Link <span style="font-weight:400;font-size:10px;color:var(--text-hint);">(ถ้ามี)</span></label>
+            <select id="qt-col-link"></select>
+          </div>
+          <div class="form-field">
+            <label>คอลัมน์ที่ใช้ Match <span style="color:var(--danger);">*</span></label>
+            <select id="qt-col-match"></select>
+          </div>
+          <div class="form-field">
+            <label>Match กับ field ใน Dashboard</label>
+            <select id="qt-field-match">
+              <option value="code">Project Code (เช่น PF26-01)</option>
+              <option value="brand">Brand / Client Name</option>
+              <option value="name">Project Name</option>
+            </select>
+          </div>
+        </div>
+        <div id="qt-preview" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;font-size:12px;"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">
+      <button class="btn" id="qt-import-cancel">ยกเลิก</button>
+      <button class="btn" id="qt-preview-btn" style="display:none;">🔍 Preview matches</button>
+      <button class="btn btn-primary" id="qt-apply-btn" style="display:none;">✅ Apply — อัปเดต project</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT MODAL -->
 <div class="modal" id="modal">
   <div class="modal-card">
@@ -900,6 +959,14 @@ details ul { padding-left: 18px; }
         <div class="form-field full"><label>Project Name</label><input id="f-name"></div>
         <div class="form-field full"><label>Basecamp URL <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(link ไป project ใน Basecamp)</span></label><div style="display:flex;gap:6px;"><input id="f-basecamp" placeholder="https://3.basecamp.com/..."><a id="f-basecamp-link" href="#" target="_blank" style="display:none;padding:7px 10px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;color:var(--accent);white-space:nowrap;text-decoration:none;">🔗 Open</a></div></div>
         <div class="form-field full"><label>Google Drive URL <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(link ไป folder หรือ doc ใน Google Drive)</span></label><div style="display:flex;gap:6px;"><input id="f-drive" placeholder="https://drive.google.com/..."><a id="f-drive-link" href="#" target="_blank" style="display:none;padding:7px 10px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;color:#1a73e8;white-space:nowrap;text-decoration:none;">📁 Open</a></div></div>
+        <div class="form-field full">
+          <label>Quotation (QT) <span style="font-weight:400;color:var(--text-muted);font-size:11px;">เลข QT และ link เอกสาร</span></label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input id="f-qt-no" placeholder="QT-2026-001" style="width:150px;flex:none;" title="เลข QT">
+            <input id="f-qt-link" placeholder="https://drive.google.com/… หรือ link ไฟล์ QT" style="flex:1;" title="Link ไปยังเอกสาร QT">
+            <a id="f-qt-link-btn" href="#" target="_blank" style="display:none;padding:7px 10px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;color:var(--ci-salmon);white-space:nowrap;text-decoration:none;">📄 Open</a>
+          </div>
+        </div>
         <div class="form-field"><label>Owner</label><input id="f-owner" list="owner-list"></div>
         <div class="form-field"><label>Support</label><input id="f-support" list="owner-list"></div>
         <div class="form-field"><label>Department</label><input id="f-dept" list="dept-list"></div>
@@ -3028,6 +3095,181 @@ document.getElementById('btn-export').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+// ========== IMPORT QT ==========
+let _qtData = [], _qtHeaders = [];
+
+document.getElementById('btn-import-qt').addEventListener('click', openQTImport);
+document.getElementById('qt-import-close').addEventListener('click', () => document.getElementById('qt-import-modal').classList.remove('show'));
+document.getElementById('qt-import-cancel').addEventListener('click', () => document.getElementById('qt-import-modal').classList.remove('show'));
+
+function openQTImport() {
+  _qtData = []; _qtHeaders = [];
+  document.getElementById('qt-step1').style.display = '';
+  document.getElementById('qt-step2').style.display = 'none';
+  document.getElementById('qt-preview-btn').style.display = 'none';
+  document.getElementById('qt-apply-btn').style.display = 'none';
+  document.getElementById('qt-preview').innerHTML = '';
+  document.getElementById('qt-file-input').value = '';
+  document.getElementById('qt-drop-zone').style.borderColor = '';
+  document.getElementById('qt-import-modal').classList.add('show');
+}
+
+// Drop zone interactions
+(function() {
+  const dz = document.getElementById('qt-drop-zone');
+  dz.addEventListener('click', () => document.getElementById('qt-file-input').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--ci-blue)'; });
+  dz.addEventListener('dragleave', () => { dz.style.borderColor = ''; });
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.style.borderColor = '';
+    if (e.dataTransfer.files[0]) processQTFile(e.dataTransfer.files[0]);
+  });
+  document.getElementById('qt-file-input').addEventListener('change', e => {
+    if (e.target.files[0]) processQTFile(e.target.files[0]);
+  });
+})();
+
+async function processQTFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  try {
+    if (ext === 'csv') {
+      const text = await file.text();
+      _parseQTCSV(text);
+    } else if (ext === 'xlsx' || ext === 'xls') {
+      if (!window.XLSX) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (rows.length < 2) { alert('ไฟล์ว่างเปล่าหรือไม่มีข้อมูล'); return; }
+      _qtHeaders = rows[0].map(String);
+      _qtData = rows.slice(1).filter(r => r.some(c => c !== ''));
+      _showQTColumnPicker();
+    } else {
+      alert('รองรับเฉพาะ .xlsx, .xls, .csv');
+    }
+  } catch(err) {
+    alert('อ่านไฟล์ไม่ได้: ' + err.message);
+  }
+}
+
+function _parseQTCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) { alert('ไฟล์ว่างเปล่า'); return; }
+  const sep = lines[0].includes('\t') ? '\t' : ',';
+  const parseRow = line => {
+    const res = []; let field = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === sep && !inQ) { res.push(field.trim()); field = ''; }
+      else field += c;
+    }
+    res.push(field.trim());
+    return res;
+  };
+  _qtHeaders = parseRow(lines[0]);
+  _qtData = lines.slice(1).filter(l => l.trim()).map(parseRow);
+  _showQTColumnPicker();
+}
+
+function _showQTColumnPicker() {
+  document.getElementById('qt-row-count').textContent = _qtData.length;
+  document.getElementById('qt-step1').style.display = 'none';
+  document.getElementById('qt-step2').style.display = '';
+  const noneOpt = '<option value="">— ไม่มี —</option>';
+  const opts = _qtHeaders.map((h, i) => `<option value="${i}">${h}</option>`).join('');
+  document.getElementById('qt-col-no').innerHTML = opts;
+  document.getElementById('qt-col-link').innerHTML = noneOpt + opts;
+  document.getElementById('qt-col-match').innerHTML = opts;
+  // Auto-detect columns by header name
+  _qtHeaders.forEach((h, i) => {
+    const lh = h.toLowerCase().replace(/\s+/g,'');
+    if (/qt.*(no|num|number|เลข)|^qt$/.test(lh)) document.getElementById('qt-col-no').value = i;
+    if (/(link|url|http)/.test(lh)) document.getElementById('qt-col-link').value = i;
+    if (/(code|โค้ด|projectcode|prj.code)/.test(lh)) document.getElementById('qt-col-match').value = i;
+  });
+  document.getElementById('qt-preview-btn').style.display = '';
+  document.getElementById('qt-apply-btn').style.display = 'none';
+  document.getElementById('qt-preview').innerHTML = '';
+}
+
+document.getElementById('qt-preview-btn').addEventListener('click', () => {
+  const colNo    = +document.getElementById('qt-col-no').value;
+  const colLinkV = document.getElementById('qt-col-link').value;
+  const colLink  = colLinkV !== '' ? +colLinkV : null;
+  const colMatch = +document.getElementById('qt-col-match').value;
+  const fldMatch = document.getElementById('qt-field-match').value;
+
+  const results = _qtData.map(row => {
+    const qtNo    = String(row[colNo] || '').trim();
+    const qtLink  = colLink !== null ? String(row[colLink] || '').trim() : '';
+    const matchV  = String(row[colMatch] || '').trim().toLowerCase();
+    if (!qtNo || !matchV) return null;
+    const proj = DB.projects.find(p => {
+      const pv = String(p[fldMatch] || '').trim().toLowerCase();
+      return pv === matchV || pv.includes(matchV) || matchV.includes(pv);
+    });
+    return { qtNo, qtLink, matchV, proj };
+  }).filter(Boolean);
+
+  const matched   = results.filter(r => r.proj);
+  const unmatched = results.filter(r => !r.proj);
+
+  let html = `<div style="padding:10px 12px;background:${matched.length?'var(--success-bg)':'var(--warning-bg)'};border-bottom:1px solid var(--border);font-weight:600;font-size:12px;">`;
+  html += `✅ Match ได้ ${matched.length} จาก ${results.length} รายการ`;
+  if (unmatched.length) html += ` · ⚠️ ไม่พบ ${unmatched.length} รายการ`;
+  html += '</div>';
+  html += '<table style="width:100%;border-collapse:collapse;">';
+  html += '<tr style="background:var(--surface-2);"><th style="padding:6px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;">Match value</th><th style="padding:6px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;">Project</th><th style="padding:6px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;">QT No</th><th style="padding:6px 10px;font-size:10px;font-weight:600;text-transform:uppercase;">Status</th></tr>';
+  matched.forEach(r => {
+    html += `<tr style="border-top:1px solid var(--border);">
+      <td style="padding:6px 10px;font-size:11px;color:var(--text-muted);">${r.matchV}</td>
+      <td style="padding:6px 10px;font-size:11px;"><b>${r.proj.code}</b> ${r.proj.brand||''}</td>
+      <td style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--ci-salmon);">${r.qtNo}${r.qtLink?` <a href="${r.qtLink}" target="_blank" style="font-size:10px;">🔗</a>`:''}</td>
+      <td style="padding:6px 10px;font-size:11px;color:var(--success);">✅ จะ update</td>
+    </tr>`;
+  });
+  unmatched.forEach(r => {
+    html += `<tr style="border-top:1px solid var(--border);opacity:0.55;">
+      <td style="padding:6px 10px;font-size:11px;color:var(--text-muted);">${r.matchV}</td>
+      <td style="padding:6px 10px;font-size:11px;color:var(--text-hint);">— ไม่พบ</td>
+      <td style="padding:6px 10px;font-size:11px;">${r.qtNo}</td>
+      <td style="padding:6px 10px;font-size:11px;color:var(--warning);">⚠️ skip</td>
+    </tr>`;
+  });
+  html += '</table>';
+  document.getElementById('qt-preview').innerHTML = html;
+
+  if (matched.length > 0) {
+    document.getElementById('qt-apply-btn').style.display = '';
+    document.getElementById('qt-apply-btn').dataset.payload = JSON.stringify(
+      matched.map(r => ({ id: r.proj.id || r.proj.code, qtNo: r.qtNo, qtLink: r.qtLink }))
+    );
+  } else {
+    document.getElementById('qt-apply-btn').style.display = 'none';
+  }
+});
+
+document.getElementById('qt-apply-btn').addEventListener('click', () => {
+  const updates = JSON.parse(document.getElementById('qt-apply-btn').dataset.payload || '[]');
+  updates.forEach(u => {
+    const p = DB.projects.find(x => (x.id||x.code) === u.id);
+    if (p) { p.qtNo = u.qtNo; if (u.qtLink) p.qtLink = u.qtLink; }
+  });
+  saveDB();
+  document.getElementById('qt-import-modal').classList.remove('show');
+  renderAll();
+  alert(`✅ อัปเดต QT เรียบร้อย ${updates.length} projects`);
+});
+
 // ── CSV helpers ───────────────────────────────────────────
 function csvEscape(v) {
   const s = (v == null ? '' : String(v)).replace(/\r\n/g,'\n');
@@ -4175,6 +4417,7 @@ function renderKanban() {
           <span style="display:flex;gap:4px;flex-shrink:0;margin-left:6px;">
             ${p.basecampUrl?`<a href="${p.basecampUrl}" target="_blank" onclick="event.stopPropagation();" title="Basecamp" style="font-size:13px;text-decoration:none;">🔗</a>`:''}
             ${p.driveUrl?`<a href="${p.driveUrl}" target="_blank" onclick="event.stopPropagation();" title="Google Drive" style="font-size:13px;text-decoration:none;">📁</a>`:''}
+            ${p.qtLink?`<a href="${p.qtLink}" target="_blank" onclick="event.stopPropagation();" title="QT ${p.qtNo||''}" style="font-size:13px;text-decoration:none;">📄</a>`:''}
           </span>
         </div>
         <div class="k-card-meta">${p.code} · ${p.owner||'–'}</div>
@@ -4278,7 +4521,7 @@ function renderTable() {
     <td>${miniTimeline(p)}</td>
     <td style="text-align:right;">฿${fmtMoney(p.budget)}</td>
     <td>${(p.roles||[]).map(r=>`<span class="role-tag">${r}</span>`).join('')}</td>
-    <td style="white-space:nowrap;">${p.basecampUrl?`<a href="${p.basecampUrl}" target="_blank" class="btn btn-sm" style="color:var(--accent);text-decoration:none;" title="Basecamp">🔗</a> `:''}${p.driveUrl?`<a href="${p.driveUrl}" target="_blank" class="btn btn-sm" style="color:#1a73e8;text-decoration:none;" title="Google Drive">📁</a> `:''}<button class="btn btn-sm" data-edit="${p.id||p.code}">Edit</button></td>
+    <td style="white-space:nowrap;">${p.basecampUrl?`<a href="${p.basecampUrl}" target="_blank" class="btn btn-sm" style="color:var(--accent);text-decoration:none;" title="Basecamp">🔗</a> `:''}${p.driveUrl?`<a href="${p.driveUrl}" target="_blank" class="btn btn-sm" style="color:#1a73e8;text-decoration:none;" title="Google Drive">📁</a> `:''}${p.qtLink?`<a href="${p.qtLink}" target="_blank" class="btn btn-sm" style="color:var(--ci-salmon);text-decoration:none;" title="QT ${p.qtNo||''}">📄${p.qtNo?' '+p.qtNo:''}</a> `:''}${p.qtNo&&!p.qtLink?`<span class="badge" style="background:var(--warning-bg);color:var(--ci-salmon);">📄 ${p.qtNo}</span> `:''}<button class="btn btn-sm" data-edit="${p.id||p.code}">Edit</button></td>
   </tr>`).join('');
   document.querySelector('#prj-table tbody').innerHTML = body || `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:20px;">No projects</td></tr>`;
   document.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openModal(b.dataset.edit)));
@@ -4309,6 +4552,10 @@ function openModal(id) {
   document.getElementById('f-drive').value = p.driveUrl || '';
   const drLink = document.getElementById('f-drive-link');
   if (p.driveUrl) { drLink.href = p.driveUrl; drLink.style.display = ''; } else { drLink.style.display = 'none'; }
+  document.getElementById('f-qt-no').value = p.qtNo || '';
+  document.getElementById('f-qt-link').value = p.qtLink || '';
+  const qtLinkBtn = document.getElementById('f-qt-link-btn');
+  if (p.qtLink) { qtLinkBtn.href = p.qtLink; qtLinkBtn.style.display = ''; } else { qtLinkBtn.style.display = 'none'; }
   document.getElementById('f-owner').value = p.owner || '';
   document.getElementById('f-support').value = p.support || '';
   document.getElementById('f-dept').value = p.dept || '';
@@ -4355,6 +4602,10 @@ document.getElementById('f-basecamp').addEventListener('input', function() {
 });
 document.getElementById('f-drive').addEventListener('input', function() {
   const link = document.getElementById('f-drive-link');
+  if (this.value) { link.href = this.value; link.style.display = ''; } else { link.style.display = 'none'; }
+});
+document.getElementById('f-qt-link').addEventListener('input', function() {
+  const link = document.getElementById('f-qt-link-btn');
   if (this.value) { link.href = this.value; link.style.display = ''; } else { link.style.display = 'none'; }
 });
 document.getElementById('f-status').addEventListener('change', function() {
@@ -4461,6 +4712,8 @@ document.getElementById('prj-form').addEventListener('submit', (e) => {
   p.name = document.getElementById('f-name').value.trim();
   p.basecampUrl = document.getElementById('f-basecamp').value.trim();
   p.driveUrl = document.getElementById('f-drive').value.trim();
+  p.qtNo   = document.getElementById('f-qt-no').value.trim();
+  p.qtLink = document.getElementById('f-qt-link').value.trim();
   p.owner = document.getElementById('f-owner').value.trim();
   p.support = document.getElementById('f-support').value.trim();
   p.dept = document.getElementById('f-dept').value.trim();
@@ -4874,6 +5127,11 @@ function openProjectSummary(codeOrId) {
         <span class="psm-icon">🔗</span>
         <span class="psm-lbl">Links</span>
         <span class="psm-val">${p.basecampUrl?`<a href="${p.basecampUrl}" target="_blank" class="btn btn-sm" style="color:var(--accent);text-decoration:none;margin-right:6px;">🔗 Basecamp</a>`:''}${p.driveUrl?`<a href="${p.driveUrl}" target="_blank" class="btn btn-sm" style="color:#1a73e8;text-decoration:none;">📁 Drive</a>`:''}</span>
+      </div>` : ''}
+      ${p.qtNo||p.qtLink ? `<div class="psm-row">
+        <span class="psm-icon">📄</span>
+        <span class="psm-lbl">QT</span>
+        <span class="psm-val" style="display:flex;align-items:center;gap:8px;">${p.qtNo?`<span style="font-weight:700;color:var(--ci-salmon);font-size:13px;">${p.qtNo}</span>`:''}${p.qtLink?`<a href="${p.qtLink}" target="_blank" class="btn btn-sm" style="color:var(--ci-salmon);text-decoration:none;">📄 Open QT</a>`:''}</span>
       </div>` : ''}
     </div>
     <div class="psm-actions">
