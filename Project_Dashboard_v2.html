@@ -428,6 +428,9 @@ details ul { padding-left: 18px; }
     <button class="tab" data-panel="team">Team</button>
     <button class="tab" data-panel="calendar">📅 Calendar</button>
     <button class="tab" data-panel="framework">SOP & Help</button>
+    <button class="tab" data-panel="finance">💰 Finance</button>
+    <button class="tab" data-panel="training">🎓 Training</button>
+    <button class="tab" data-panel="capacity">⚡ Capacity</button>
     <button class="tab" data-panel="admin" style="display:none;">🔐 Admin</button>
   </div>
 
@@ -727,6 +730,67 @@ details ul { padding-left: 18px; }
   </div>
 </div>
 
+<!-- FINANCE PANEL -->
+<div class="panel" id="finance">
+  <div style="padding:20px 24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:17px;font-weight:700;">💰 Finance Overview</h2>
+    </div>
+    <div id="finance-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px;"></div>
+    <div id="finance-alert" style="margin-bottom:14px;"></div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:18px;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;">Project Budget Breakdown</div>
+      <div class="table-wrap"><table id="finance-table"></table></div>
+    </div>
+    <div class="card" id="finance-bars">
+      <div style="font-weight:600;margin-bottom:14px;font-size:14px;">Budget Utilization by Project</div>
+      <div id="finance-utilization"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRAINING PANEL -->
+<div class="panel" id="training">
+  <div style="padding:20px 24px;">
+    <div style="margin-bottom:16px;">
+      <h2 style="font-size:17px;font-weight:700;margin-bottom:4px;">🎓 Training Allocation</h2>
+      <p style="font-size:12px;color:var(--text-muted);margin:0;">
+        T1 = AI Foundation (mandatory all staff · Platform KPI) &nbsp;|&nbsp; T2 = Department-specific &nbsp;|&nbsp; T3 = Leadership
+      </p>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:18px;">
+      <div class="table-wrap"><table id="training-table"></table></div>
+    </div>
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">Capacity Impact per Department</h3>
+    <div id="training-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:18px;"></div>
+    <div class="card" style="background:rgba(77,102,214,0.07);border-color:rgba(77,102,214,0.25);">
+      <div style="font-weight:600;margin-bottom:8px;color:var(--accent);">📋 Business Rules (SPEC §6)</div>
+      <ul style="font-size:12px;color:var(--text-muted);padding-left:18px;line-height:2;margin:0;">
+        <li>T1 AI Foundation = mandatory for ALL staff — Platform KPI. Cannot be removed from calculation.</li>
+        <li>Ops overhead is non-negotiable — represents real recurring time cost per role.</li>
+        <li>Personal buffer 5% = minimum reserve. Always included.</li>
+        <li>10–15% overhead rule — ops + training should consume 10–15% of workHours/week. Red = &gt;15%.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- CAPACITY PANEL -->
+<div class="panel" id="capacity">
+  <div style="padding:20px 24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <div>
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:4px;">⚡ Capacity Planner</h2>
+        <p style="font-size:12px;color:var(--text-muted);margin:0;">Net available hours = 45h − ops overhead − training − 5% buffer</p>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:18px;">
+      <div class="table-wrap"><table id="capacity-table"></table></div>
+    </div>
+    <div id="capacity-detail" style="display:none;"></div>
+  </div>
+</div>
+
 <!-- ADMIN PANEL -->
 <div class="panel" id="admin">
   <div class="card">
@@ -795,6 +859,7 @@ details ul { padding-left: 18px; }
         <div class="form-field"><label>Support</label><input id="f-support" list="owner-list"></div>
         <div class="form-field"><label>Department</label><input id="f-dept" list="dept-list"></div>
         <div class="form-field"><label>Budget (THB)</label><input type="number" id="f-budget" min="0" step="1000"></div>
+        <div class="form-field"><label>Spent (THB) <span style="font-weight:400;color:var(--text-muted);font-size:11px;">ค่าใช้จ่ายจริง</span></label><input type="number" id="f-spent" min="0" step="1000"></div>
         <div class="form-field"><label>Brief date</label><input type="date" id="f-brief"></div>
         <div class="form-field"><label>Present date</label><input type="date" id="f-present"></div>
         <div class="form-field"><label>Working Start</label><input type="date" id="f-launch"></div>
@@ -3144,9 +3209,383 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.panel === 'team' && !_tabInited.has('team')) { _tabInited.add('team'); initTeamPage(); }
     if (t.dataset.panel === 'roles' && !_tabInited.has('roles')) { _tabInited.add('roles'); initRoleDemand(); }
     if (t.dataset.panel === 'calendar' && !_tabInited.has('calendar')) { _tabInited.add('calendar'); initCalendar(); }
+    if (t.dataset.panel === 'finance') renderFinance();
+    if (t.dataset.panel === 'training') renderTraining();
+    if (t.dataset.panel === 'capacity') renderCapacity();
     if (t.dataset.panel === 'admin') renderUsers();
   });
 });
+
+// ========== FINANCE / TRAINING / CAPACITY DATA ==========
+const WORK_HOURS_PER_WEEK = 45;
+
+const OPS_OVERHEAD_DATA = {
+  'Management':           { hoursPerWeek: 10, items: ['Board meetings & strategy sessions', 'Approvals & sign-offs', 'Team reviews & 1-on-1s'] },
+  'Account Management':  { hoursPerWeek: 9,  items: ['Meeting notes & minutes', 'Client emails & status reports', 'Brief writing & revisions'] },
+  'Business Development':{ hoursPerWeek: 8,  items: ['Pitch coordination', 'Proposal writing', 'Client meetings & follow-ups'] },
+  'Strategy':            { hoursPerWeek: 7,  items: ['Research & insight gathering', 'Deck preparation', 'Internal alignment calls'] },
+  'Creative':            { hoursPerWeek: 5,  items: ['Revision logging', 'Asset naming & filing', 'Brief comprehension time'] },
+  'Content':             { hoursPerWeek: 6,  items: ['Caption edits & approval tracking', 'Platform uploads', 'Copy alignment rounds'] },
+  'Design & Production': { hoursPerWeek: 5.5,items: ['Supplier POs', 'File management & QC checklists', 'Delivery coordination'] },
+  'Media':               { hoursPerWeek: 7,  items: ['Report pulls & dashboard updates', 'Vendor coordination', 'Billing reconciliation'] },
+  'KOL':                 { hoursPerWeek: 8,  items: ['Contract admin', 'Influencer tracking sheet', 'Follow-up & seeding logistics'] },
+  'Human Resources':     { hoursPerWeek: 6,  items: ['Recruitment tracking', 'HR documentation', 'Payroll coordination'] },
+  'Accounting':          { hoursPerWeek: 5,  items: ['Invoice processing', 'Budget reconciliation', 'Tax filing prep'] },
+};
+
+const TRAINING_DATA = {
+  'Management':           { t1:2, t2:3, t3:3, total:8,   topics:['AI Foundation — mandatory','Leadership & strategic planning','Executive communication'] },
+  'Account Management':  { t1:2, t2:3, t3:2, total:7,   topics:['AI Foundation — mandatory','Brief writing & pitching','Leadership & feedback skills'] },
+  'Business Development':{ t1:2, t2:3, t3:1, total:6,   topics:['AI Foundation — mandatory','Pitch & proposal skills','Market research methods'] },
+  'Strategy':            { t1:2, t2:2, t3:1, total:5,   topics:['AI Foundation — mandatory','Data analysis & insight tools','Storytelling & frameworks'] },
+  'Creative':            { t1:2, t2:2, t3:0, total:4,   topics:['AI Foundation — mandatory','AI tools & trend workshop'] },
+  'Content':             { t1:2, t2:2, t3:0, total:4,   topics:['AI Foundation — mandatory','Platform & algorithm updates'] },
+  'Design & Production': { t1:2, t2:1, t3:0, total:3,   topics:['AI Foundation — mandatory','Safety & process SOP'] },
+  'Media':               { t1:2, t2:2, t3:0, total:4,   topics:['AI Foundation — mandatory','Meta/Google/TikTok certification updates'] },
+  'KOL':                 { t1:2, t2:1.5,t3:0,total:3.5, topics:['AI Foundation — mandatory','Contract law & influencer vetting'] },
+  'Human Resources':     { t1:2, t2:2, t3:1, total:5,   topics:['AI Foundation — mandatory','Labour law & compliance','Coaching & feedback'] },
+  'Accounting':          { t1:2, t2:2, t3:0, total:4,   topics:['AI Foundation — mandatory','Tax law updates','Financial software'] },
+};
+
+// Semantic palette for Finance/Training/Capacity (light-mode safe)
+const FIN_COL = { ok:'#0F6E56', warn:'#BA7517', danger:'#A32D2D', ops:'#BA7517', training:'#534AB7', buffer:'#9E9E9E', accent:'#185FA5' };
+function finColor(pct) { return pct > 100 ? FIN_COL.danger : pct > 85 ? FIN_COL.warn : FIN_COL.ok; }
+function loadColor(pct) { return pct > 100 ? FIN_COL.danger : pct > 80 ? FIN_COL.warn : FIN_COL.ok; }
+
+function fmtFinance(n) {
+  return new Intl.NumberFormat('th-TH').format(Math.round(n));
+}
+function budgetPct(p) {
+  if (!p.budget) return 0;
+  return ((p.spent || 0) / p.budget) * 100;
+}
+function daysLeft(p) {
+  const e = parseDate(p.end);
+  if (!e) return null;
+  return Math.round((e - new Date()) / 86400000);
+}
+
+// ========== FINANCE ==========
+function renderFinance() {
+  const projects = DB.projects || [];
+  const totalBudget = projects.reduce((s,p) => s + (p.budget||0), 0);
+  const totalSpent  = projects.reduce((s,p) => s + (p.spent||0), 0);
+  const active      = projects.filter(p => p.status !== 'Close' && p.status !== 'Pitch Lost');
+  const overBudget  = projects.filter(p => budgetPct(p) > 100);
+  const pctUsed     = totalBudget ? Math.round(totalSpent / totalBudget * 100) : 0;
+
+  // KPI cards
+  const kpis = [
+    { label:'Total Budget',   value:`฿${fmtFinance(totalBudget)}`,            sub:`${projects.length} projects`,                  color:'var(--accent)' },
+    { label:'Total Spent',    value:`฿${fmtFinance(totalSpent)}`,             sub:`${pctUsed}% of budget`,                        color: pctUsed > 85 ? 'var(--danger)' : 'var(--success)' },
+    { label:'Remaining',      value:`฿${fmtFinance(totalBudget - totalSpent)}`,sub:'unspent budget',                             color:'var(--success)' },
+    { label:'Active Budget',  value:`฿${fmtFinance(active.reduce((s,p)=>s+(p.budget||0),0))}`, sub:`${active.length} active projects`, color:'var(--warning)' },
+  ];
+  document.getElementById('finance-kpi').innerHTML = kpis.map(k => `
+    <div class="card">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:5px;">${k.label}</div>
+      <div style="font-size:22px;font-weight:700;color:${k.color};line-height:1.2;">${k.value}</div>
+      <div style="font-size:11px;color:var(--text-hint);margin-top:3px;">${k.sub}</div>
+    </div>`).join('');
+
+  // Over-budget alert
+  document.getElementById('finance-alert').innerHTML = overBudget.length
+    ? `<div class="alert alert-danger">⚡ ${overBudget.length} project${overBudget.length>1?'s':''} over budget: ${overBudget.map(p=>p.brand||p.name).join(', ')}</div>`
+    : '';
+
+  // Table
+  const thead = `<thead><tr>
+    <th>Project</th><th>Owner</th><th>Budget</th><th>Spent</th><th>Remaining</th><th style="min-width:130px;">Utilization</th><th>Status</th><th>Days Left</th><th></th>
+  </tr></thead>`;
+
+  const rows = projects.map(p => {
+    const pct  = budgetPct(p);
+    const rem  = (p.budget||0) - (p.spent||0);
+    const dl   = daysLeft(p);
+    const barColor = finColor(pct);
+    const statusBadge = {Working:'badge-inprogress',Proposing:'badge-briefed',Pitching:'badge-briefed',Close:'badge-done','Pitch Lost':'badge-done'}[p.status]||'badge-briefed';
+    return `<tr>
+      <td><div style="font-weight:600;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.brand||p.name}</div>
+          <div style="font-size:10px;color:var(--text-hint);">${p.code||''}</div></td>
+      <td style="font-size:12px;color:var(--text-muted);">${p.owner||'—'}</td>
+      <td style="font-weight:600;">฿${fmtFinance(p.budget||0)}</td>
+      <td style="color:${pct>85?'var(--danger)':'var(--text)'};">฿${fmtFinance(p.spent||0)}</td>
+      <td style="color:${rem<0?'var(--danger)':'var(--success)'};">${rem<0?'−':''}฿${fmtFinance(Math.abs(rem))}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:4px;height:6px;overflow:hidden;min-width:70px;">
+            <div style="width:${Math.min(100,pct)}%;height:100%;background:${barColor};border-radius:4px;"></div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:${barColor};min-width:34px;text-align:right;">${Math.round(pct)}%</span>
+        </div>
+      </td>
+      <td><span class="badge ${statusBadge}" style="font-size:10px;">${p.status}</span></td>
+      <td style="color:${dl!==null&&dl<=3&&p.status!=='Close'?'var(--danger)':'var(--text-muted)'};">
+        ${p.status==='Close'||p.status==='Pitch Lost'?'✓ Done':dl===null?'—':dl<=0?'Overdue':`${dl}d`}
+      </td>
+      <td>
+        <button class="btn btn-sm" onclick="(function(){
+          const val=prompt('Update spent for \\'${(p.brand||p.name).replace(/'/g,'')}\\' (current: ฿${fmtFinance(p.spent||0)})', '${p.spent||0}');
+          if(val!==null&&!isNaN(+val)){const pr=DB.projects.find(x=>(x.id||x.code)==='${p.id||p.code}');if(pr){pr.spent=+val;saveDB();renderFinance();}}
+        })()">✏</button>
+      </td>
+    </tr>`;
+  });
+
+  const totPct = totalBudget ? Math.round(totalSpent/totalBudget*100) : 0;
+  const tfoot = `<tfoot><tr style="font-weight:700;background:rgba(255,255,255,0.03);">
+    <td colspan="2">TOTAL</td>
+    <td>฿${fmtFinance(totalBudget)}</td>
+    <td>฿${fmtFinance(totalSpent)}</td>
+    <td style="color:${totalBudget-totalSpent>=0?'var(--success)':'var(--danger)'};">฿${fmtFinance(totalBudget-totalSpent)}</td>
+    <td colspan="4">${totPct}% of total budget used</td>
+  </tr></tfoot>`;
+
+  document.getElementById('finance-table').innerHTML = thead + '<tbody>' + rows.join('') + '</tbody>' + tfoot;
+
+  // Utilization bars
+  const sorted = [...projects].sort((a,b) => (b.budget||0)-(a.budget||0));
+  document.getElementById('finance-utilization').innerHTML = sorted.map(p => {
+    const pct = budgetPct(p);
+    const color = finColor(pct);
+    return `<div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+        <span style="font-weight:500;">${p.brand||p.name} <span style="font-size:10px;color:var(--text-hint);">${p.code||''}</span></span>
+        <span style="color:var(--text-muted);">฿${fmtFinance(p.spent||0)} / ฿${fmtFinance(p.budget||0)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:4px;height:8px;overflow:hidden;">
+          <div style="width:${Math.min(100,pct)}%;height:100%;background:${color};border-radius:4px;"></div>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:${color};min-width:40px;text-align:right;">${Math.round(pct)}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ========== TRAINING ==========
+function renderTraining() {
+  const persons = DB.team || [];
+  // Only departments that have at least one member
+  const activeDepts = Object.keys(TRAINING_DATA).filter(d => persons.some(p => p.dept === d));
+  if (!activeDepts.length) {
+    document.getElementById('training-table').innerHTML = '<thead><tr><th>ยังไม่มีข้อมูลทีม</th></tr></thead>';
+    document.getElementById('training-cards').innerHTML = '';
+    return;
+  }
+
+  // Table
+  const thead = `<thead><tr>
+    <th>Department</th><th>T1 Mandatory</th><th>T2 Dept</th><th>T3 Leadership</th>
+    <th>Total/month</th><th>Per week</th><th>% Work hrs</th><th>Ops/week</th><th>Total overhead</th><th>⚠ Flag</th>
+  </tr></thead>`;
+
+  const tbody = activeDepts.map(dept => {
+    const t = TRAINING_DATA[dept];
+    const ops = (OPS_OVERHEAD_DATA[dept] || {hoursPerWeek:5}).hoursPerWeek;
+    const tpw = t.total / 4.33;
+    const overheadPct = ((ops + tpw) / WORK_HOURS_PER_WEEK) * 100;
+    const flag = overheadPct > 15;
+    const members = persons.filter(p => p.dept === dept);
+    return `<tr>
+      <td><div style="font-weight:600;">${dept}</div><div style="font-size:10px;color:var(--text-hint);">${members.length} member${members.length!==1?'s':''}</div></td>
+      <td style="color:var(--accent);">${t.t1}h</td>
+      <td style="color:var(--info);">${t.t2}h</td>
+      <td style="color:var(--success);">${t.t3}h</td>
+      <td style="font-weight:700;">${t.total}h</td>
+      <td style="font-weight:600;color:var(--info);">${tpw.toFixed(1)}h</td>
+      <td style="color:${overheadPct>15?'var(--danger)':'var(--text-muted)'};">${((tpw/WORK_HOURS_PER_WEEK)*100).toFixed(1)}%</td>
+      <td style="color:var(--warning);">${ops}h</td>
+      <td>
+        <span style="font-weight:700;color:${flag?'var(--danger)':'var(--success)'};">${overheadPct.toFixed(1)}%</span>
+        <span style="font-size:10px;color:var(--text-hint);margin-left:4px;">(${(ops+tpw).toFixed(1)}h)</span>
+      </td>
+      <td>${flag?'<span style="color:var(--danger);font-size:12px;">⚠ Review</span>':''}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('training-table').innerHTML = thead + '<tbody>' + tbody + '</tbody>';
+
+  // Cards
+  document.getElementById('training-cards').innerHTML = activeDepts.map(dept => {
+    const t = TRAINING_DATA[dept];
+    const ops = (OPS_OVERHEAD_DATA[dept] || {hoursPerWeek:5}).hoursPerWeek;
+    const tpw = t.total / 4.33;
+    const buf = WORK_HOURS_PER_WEEK * 0.05;
+    const net = WORK_HOURS_PER_WEEK - ops - tpw - buf;
+    const members = persons.filter(p => p.dept === dept);
+    const opsP  = (ops / WORK_HOURS_PER_WEEK * 100).toFixed(1);
+    const trnP  = (tpw / WORK_HOURS_PER_WEEK * 100).toFixed(1);
+    const bufP  = (buf / WORK_HOURS_PER_WEEK * 100).toFixed(1);
+    const netP  = (net / WORK_HOURS_PER_WEEK * 100).toFixed(1);
+    const overheadItems = (OPS_OVERHEAD_DATA[dept]||{items:[]}).items;
+    return `<div class="card">
+      <div style="font-weight:600;margin-bottom:10px;">${dept}</div>
+      <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-bottom:10px;">
+        <div title="Ops ${opsP}%" style="width:${opsP}%;background:var(--warning);"></div>
+        <div title="Training ${trnP}%" style="width:${trnP}%;background:var(--info);"></div>
+        <div title="Buffer ${bufP}%" style="width:${bufP}%;background:#6e7681;"></div>
+        <div title="Net Available ${netP}%" style="width:${Math.max(0,+netP)}%;background:var(--success);"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Work hrs/week</span><span>${WORK_HOURS_PER_WEEK}h</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--warning);">− Ops overhead</span><span>${ops}h</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--info);">− Training/week</span><span>${tpw.toFixed(1)}h</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-hint);">− Buffer 5%</span><span>${buf.toFixed(1)}h</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px solid var(--border);padding-top:5px;margin-top:3px;">
+          <span style="color:var(--success);">Net available</span><span style="color:var(--success);">${net.toFixed(1)}h</span>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">Training Topics</div>
+        ${t.topics.map(tp=>`<div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">• ${tp}</div>`).join('')}
+      </div>
+      ${overheadItems.length?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">Ops Items</div>
+        ${overheadItems.map(i=>`<div style="font-size:11px;color:var(--text-hint);margin-bottom:2px;">• ${i}</div>`).join('')}
+      </div>`:''}
+      <div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap;">
+        ${members.map(m=>`<span style="font-size:10px;padding:2px 7px;background:rgba(255,255,255,0.06);border-radius:4px;color:var(--text-muted);">${m.nickname||m.name}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ========== CAPACITY ==========
+function renderCapacity(clickedPerson) {
+  const persons = DB.team || [];
+  if (!persons.length) {
+    document.getElementById('capacity-table').innerHTML = '<thead><tr><th>ยังไม่มีข้อมูลทีม</th></tr></thead>';
+    return;
+  }
+
+  const now = new Date();
+  const thead = `<thead><tr>
+    <th>Name</th><th>Dept</th><th>Work h/wk</th><th>Ops</th><th>Training</th><th>Buffer</th>
+    <th>Net Avail</th><th>Active Proj</th><th>Load</th><th>Status</th>
+  </tr></thead>`;
+
+  const rows = persons.map(m => {
+    const nick = m.nickname || m.name;
+    const dept = m.dept || '';
+    const ops  = (OPS_OVERHEAD_DATA[dept] || {hoursPerWeek:5}).hoursPerWeek;
+    const t    = TRAINING_DATA[dept] || {total:4};
+    const tpw  = t.total / 4.33;
+    const buf  = WORK_HOURS_PER_WEEK * 0.05;
+    const net  = Math.max(0, WORK_HOURS_PER_WEEK - ops - tpw - buf);
+    const safe = net * 0.8;
+
+    const activeProj = (DB.projects||[]).filter(p =>
+      p.status !== 'Close' && p.status !== 'Pitch Lost' &&
+      (p.owner === nick || p.support === nick || (p.teamMembers||[]).includes(nick))
+    );
+
+    // Simple load estimate: each project ~8h/wk average committed
+    const committed = activeProj.length * 8;
+    const loadPct = net > 0 ? Math.round((committed / net) * 100) : 0;
+    const loadCl = loadColor(loadPct);
+    const loadLabel = loadPct > 100 ? 'OVER' : loadPct > 80 ? 'HIGH' : loadPct > 50 ? 'OK' : 'LOW';
+
+    const isSelected = clickedPerson === nick;
+    return `<tr style="cursor:pointer;${isSelected?'background:rgba(77,166,255,0.08);':''}"
+      onclick="renderCapacity('${nick.replace(/'/g,'')}')">
+      <td style="font-weight:600;color:var(--accent);">${nick}</td>
+      <td style="font-size:12px;color:var(--text-muted);">${dept}</td>
+      <td style="text-align:center;">${WORK_HOURS_PER_WEEK}h</td>
+      <td style="text-align:center;color:var(--warning);">${ops}h</td>
+      <td style="text-align:center;color:var(--info);">${tpw.toFixed(1)}h</td>
+      <td style="text-align:center;color:var(--text-hint);">${buf.toFixed(1)}h</td>
+      <td style="text-align:center;font-weight:600;color:var(--success);">${net.toFixed(1)}h</td>
+      <td style="text-align:center;">${activeProj.length}</td>
+      <td style="min-width:110px;">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:3px;height:5px;overflow:hidden;">
+            <div style="width:${Math.min(100,loadPct)}%;height:100%;background:${loadCl};"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:${loadCl};min-width:32px;">${loadPct}%</span>
+        </div>
+      </td>
+      <td><span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:${loadCl}22;color:${loadCl};">${loadLabel}</span></td>
+    </tr>`;
+  });
+  document.getElementById('capacity-table').innerHTML = thead + '<tbody>' + rows.join('') + '</tbody>';
+
+  // Detail panel for clicked person
+  const detail = document.getElementById('capacity-detail');
+  if (!clickedPerson) { detail.style.display = 'none'; return; }
+  const m = persons.find(x => (x.nickname||x.name) === clickedPerson);
+  if (!m) { detail.style.display = 'none'; return; }
+  const nick = m.nickname || m.name;
+  const dept = m.dept || '';
+  const ops  = (OPS_OVERHEAD_DATA[dept] || {hoursPerWeek:5}).hoursPerWeek;
+  const opsItems = (OPS_OVERHEAD_DATA[dept] || {items:[]}).items;
+  const t    = TRAINING_DATA[dept] || {total:4, topics:[], t1:2, t2:2, t3:0};
+  const tpw  = t.total / 4.33;
+  const buf  = WORK_HOURS_PER_WEEK * 0.05;
+  const net  = Math.max(0, WORK_HOURS_PER_WEEK - ops - tpw - buf);
+  const safe = net * 0.8;
+  const myProj = (DB.projects||[]).filter(p =>
+    p.status !== 'Close' && p.status !== 'Pitch Lost' &&
+    (p.owner === nick || p.support === nick || (p.teamMembers||[]).includes(nick))
+  );
+  const committed = myProj.length * 8;
+  const loadPct = net > 0 ? Math.round((committed / net) * 100) : 0;
+  const loadCl = loadColor(loadPct);
+  const opsP = (ops / WORK_HOURS_PER_WEEK * 100).toFixed(0);
+  const trnP = (tpw / WORK_HOURS_PER_WEEK * 100).toFixed(0);
+  const bufP = (buf / WORK_HOURS_PER_WEEK * 100).toFixed(0);
+  const netP = Math.max(0, +((net / WORK_HOURS_PER_WEEK * 100).toFixed(0)));
+
+  detail.style.display = '';
+  detail.innerHTML = `<div class="card" style="margin-bottom:0;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <div>
+        <div style="font-size:16px;font-weight:700;">${nick}</div>
+        <div style="font-size:12px;color:var(--text-muted);">${m.role||''} · ${dept}</div>
+      </div>
+      <button class="btn btn-sm" onclick="document.getElementById('capacity-detail').style.display='none'">✕ Close</button>
+    </div>
+    <!-- hour bar -->
+    <div style="display:flex;height:14px;border-radius:6px;overflow:hidden;margin-bottom:10px;">
+      <div title="Ops ${opsP}%" style="width:${opsP}%;background:var(--warning);"></div>
+      <div title="Training ${trnP}%" style="width:${trnP}%;background:var(--info);"></div>
+      <div title="Buffer ${bufP}%" style="width:${bufP}%;background:#6e7681;"></div>
+      <div title="Net Available ${netP}%" style="width:${netP}%;background:var(--success);"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:11px;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--warning);display:inline-block;"></span>Ops ${ops}h</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--info);display:inline-block;"></span>Training ${tpw.toFixed(1)}h</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#6e7681;display:inline-block;"></span>Buffer ${buf.toFixed(1)}h</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--success);display:inline-block;"></span>Net ${net.toFixed(1)}h (safe ${safe.toFixed(1)}h)</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;color:var(--text-hint);letter-spacing:.4px;margin-bottom:6px;">Ops Items</div>
+        ${opsItems.map(i=>`<div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">• ${i}</div>`).join('')||'<div style="font-size:11px;color:var(--text-hint);">—</div>'}
+      </div>
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;color:var(--text-hint);letter-spacing:.4px;margin-bottom:6px;">Training Topics</div>
+        ${t.topics.map(tp=>`<div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">• ${tp}</div>`).join('')}
+      </div>
+    </div>
+    <div style="padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+        <span style="color:var(--text-muted);">Committed (~8h/proj)</span>
+        <span style="font-weight:600;">${committed}h</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;">
+        <span style="color:var(--text-muted);">Load %</span>
+        <span style="font-weight:700;color:${loadCl};">${loadPct}%</span>
+      </div>
+    </div>
+    ${myProj.length ? `<div>
+      <div style="font-size:10px;text-transform:uppercase;color:var(--text-hint);letter-spacing:.4px;margin-bottom:6px;">Active Projects (${myProj.length})</div>
+      ${myProj.map(p=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;">
+        <span>${p.brand||p.name} <span style="color:var(--text-hint);font-size:10px;">${p.code||''}</span></span>
+        <span style="color:var(--text-muted);">${p.owner===nick?'Owner':p.support===nick?'Support':'Team'}</span>
+      </div>`).join('')}
+    </div>` : '<div style="font-size:12px;color:var(--text-hint);">No active projects</div>'}
+  </div>`;
+}
 
 // ========== RENDER ALL ==========
 function renderAll() {
@@ -3829,6 +4268,7 @@ function openModal(id) {
   document.getElementById('f-support').value = p.support || '';
   document.getElementById('f-dept').value = p.dept || '';
   document.getElementById('f-budget').value = p.budget || 0;
+  document.getElementById('f-spent').value = p.spent || 0;
   document.getElementById('f-brief').value = p.brief || '';
   document.getElementById('f-present').value = p.present || '';
   document.getElementById('f-launch').value = p.launch || '';
@@ -3980,6 +4420,7 @@ document.getElementById('prj-form').addEventListener('submit', (e) => {
   p.support = document.getElementById('f-support').value.trim();
   p.dept = document.getElementById('f-dept').value.trim();
   p.budget = +document.getElementById('f-budget').value || 0;
+  p.spent  = +document.getElementById('f-spent').value  || 0;
   p.brief = document.getElementById('f-brief').value;
   p.present = document.getElementById('f-present').value;
   p.launch = document.getElementById('f-launch').value;
@@ -5597,6 +6038,9 @@ const ALL_TABS = [
   { key:'team',      label:'Team' },
   { key:'calendar',  label:'Calendar' },
   { key:'framework', label:'SOP & Help' },
+  { key:'finance',   label:'Finance' },
+  { key:'training',  label:'Training' },
+  { key:'capacity',  label:'Capacity' },
 ];
 
 // ── SHA-256 hash ─────────────────────────────────────────
