@@ -723,6 +723,12 @@ details ul { padding-left: 18px; }
           <option value="active">Working + Proposing</option>
           <option value="Working">Working only</option>
         </select>
+        <label>นับ role:</label>
+        <select id="wl-role-mode">
+          <option value="all">Owner + Support + Team</option>
+          <option value="owner-only">Owner only</option>
+          <option value="no-support">Owner + Team (ไม่นับ Support)</option>
+        </select>
       </div>
       <div class="legend">
         <span class="legend-item"><span class="legend-swatch" style="background:#F1EFE8;"></span>0</span>
@@ -4259,13 +4265,23 @@ function renderKPI() {
 
 function personMonthMatrix(filterFn) {
   const m = {};
+  const bundleSeen = {}; // same dedup logic as renderWorkload
   activeProjects().forEach(p => {
     if (filterFn && !filterFn(p)) return;
     const ms = monthSpan(p);
+    // owner + teamMembers count full; support counts 0.5 (rounds up only when no other slot)
+    // But for simplicity keep equal weight — just apply bundle dedup
     [...new Set([p.owner, p.support, ...(p.teamMembers||[])].filter(Boolean))].forEach(n => {
       if (!n) return;
       if (!m[n]) m[n] = Array(12).fill(0);
-      ms.forEach(mo => m[n][mo]++);
+      ms.forEach(mo => {
+        if (p.bundle) {
+          const key = `${n}__${p.bundle}__${mo}`;
+          if (!bundleSeen[key]) { bundleSeen[key] = true; m[n][mo]++; }
+        } else {
+          m[n][mo]++;
+        }
+      });
     });
   });
   return m;
@@ -4494,6 +4510,7 @@ function colorFor(v) {
 function renderWorkload() {
   const view = document.getElementById('wl-view').value;
   const sf = document.getElementById('wl-status').value;
+  const roleMode = (document.getElementById('wl-role-mode')||{}).value || 'all';
   const filter = (p) => {
     if (sf==='active') return p.status==='Working'||p.status==='Proposing';
     if (sf==='Working') return p.status==='Working';
@@ -4510,7 +4527,12 @@ function renderWorkload() {
     const bundleSeen = {}; // key: "person__bundle__month"
     activeProjects().filter(filter).forEach(p => {
       const ms = monthSpan(p);
-      [...new Set([p.owner, p.support, ...(p.teamMembers||[])].filter(Boolean))].forEach(n => {
+      // Build people list based on role-mode filter
+      let people = [];
+      if (roleMode === 'owner-only') { if (p.owner) people = [p.owner]; }
+      else if (roleMode === 'no-support') { people = [p.owner, ...(p.teamMembers||[])].filter(Boolean); }
+      else { people = [p.owner, p.support, ...(p.teamMembers||[])].filter(Boolean); }
+      [...new Set(people)].forEach(n => {
         if (!matrix[n]) matrix[n] = Array(12).fill(0);
         ms.forEach(mo => {
           if (p.bundle) {
@@ -5135,7 +5157,7 @@ function bind() {
   ['gantt-status','gantt-owner','gantt-sort','gantt-search'].forEach(id => document.getElementById(id).addEventListener('input', renderGantt));
   ['prj-search','prj-status','prj-owner','prj-pfpg'].forEach(id => document.getElementById(id).addEventListener('input', renderTable));
   ['kanban-search','kanban-owner','kanban-dept'].forEach(id => document.getElementById(id).addEventListener('input', renderKanban));
-  ['wl-view','wl-status'].forEach(id => document.getElementById(id).addEventListener('change', renderWorkload));
+  ['wl-view','wl-status','wl-role-mode'].forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('change', renderWorkload); });
 }
 
 // ========== DBD LOOKUP ==========
