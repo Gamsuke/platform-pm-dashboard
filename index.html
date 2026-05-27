@@ -65,10 +65,10 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .btn { padding: 6px 13px; border: 1px solid rgba(255,255,255,0.28); background: rgba(255,255,255,0.12); border-radius: var(--radius-md); cursor: pointer; font-size: 12px; font-family: inherit; color: #FFFFFF; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s; }
 .btn:hover { background: rgba(255,255,255,0.22); }
 /* Buttons outside the topbar revert to surface style */
-.panel .btn, .card .btn, .modal-content .btn, .form-field .btn, .filter-bar .btn, table .btn {
+.panel .btn, .card .btn, .modal-content .btn, .modal-box .btn, .form-field .btn, .filter-bar .btn, table .btn {
   background: var(--surface); color: var(--text); border-color: var(--border-strong); font-size: 12px;
 }
-.panel .btn:hover, .card .btn:hover, table .btn:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+.panel .btn:hover, .card .btn:hover, .modal-box .btn:hover, table .btn:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
 .btn-primary { background: var(--ci-blue) !important; color: #fff !important; border-color: var(--ci-blue) !important; font-weight: 600; }
 .btn-primary:hover { background: #2E63B8 !important; }
 .btn-danger { background: var(--surface); color: var(--danger); border-color: var(--danger); }
