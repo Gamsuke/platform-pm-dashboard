@@ -45,8 +45,105 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
-.app { min-height: 100vh; display: flex; flex-direction: column; }
-.app { max-width: 1500px; margin: 0 auto; padding: 20px; }
+
+/* ── App layout ──────────────────────────────── */
+.app-layout { display: flex; min-height: 100vh; }
+
+/* ── Sidebar ─────────────────────────────────── */
+.sidebar {
+  width: 220px;
+  background: var(--ci-navy);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 200;
+  flex-shrink: 0;
+}
+.sidebar-header {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.90);
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+/* ── Sidebar user section ────────────────────── */
+.sidebar-user {
+  border-top: 1px solid rgba(255,255,255,0.10);
+  padding: 12px 14px;
+}
+.sidebar-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  margin-bottom: 8px;
+}
+.sidebar-user-chip .topbar-user-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--ci-yellow);
+  color: var(--ci-navy);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+  flex-shrink: 0;
+}
+.sidebar-user-chip .topbar-user-name {
+  font-size: 13px; color: #fff; font-weight: 600; line-height: 1.2;
+}
+.sidebar-user-chip .topbar-role-admin {
+  font-size: 10px; background: rgba(253,224,33,0.20);
+  color: var(--ci-yellow); padding: 1px 6px; border-radius: 8px; font-weight: 700;
+}
+.sidebar-user-actions {
+  display: flex; flex-direction: column; gap: 5px;
+}
+.sidebar-user-actions .btn {
+  width: 100%; justify-content: center;
+  background: rgba(255,255,255,0.09) !important;
+  color: rgba(255,255,255,0.80) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  font-size: 12px;
+}
+.sidebar-user-actions .btn:hover {
+  background: rgba(255,255,255,0.16) !important;
+  color: #fff !important;
+}
+.sidebar-user-actions .btn-logout {
+  background: rgba(184,50,48,0.15) !important;
+  color: rgba(255,180,180,0.85) !important;
+  border-color: rgba(184,50,48,0.30) !important;
+}
+.sidebar-user-actions .btn-logout:hover {
+  background: rgba(184,50,48,0.28) !important;
+  color: #FFB8B8 !important;
+}
+
+/* ── Main area ───────────────────────────────── */
+.main-area {
+  margin-left: 220px;
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: calc(1500px - 220px);
+}
 
 /* ── Navy header bar ─────────────────────────── */
 .topbar {
@@ -54,7 +151,6 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
   gap: 12px; flex-wrap: wrap;
   background: var(--ci-navy);
   padding: 12px 24px;
-  margin-bottom: 0;
   position: sticky; top: 0; z-index: 100;
   box-shadow: 0 2px 12px rgba(0,33,105,0.25);
 }
@@ -79,24 +175,36 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .file-status.unsaved { background: rgba(212,96,58,0.30); color: #FFD0BC; border-color: rgba(212,96,58,0.5); }
 .file-status.connected { background: rgba(27,122,75,0.30); color: #A0ECC8; border-color: rgba(27,122,75,0.4); }
 
-.tabs {
-  display: flex; gap: 0; flex-wrap: wrap;
-  background: var(--surface);
-  border-bottom: 2px solid var(--border);
-  padding: 0 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 4px rgba(0,33,105,0.06);
-}
+/* ── Sidebar nav items — reuse .tab class ────── */
 .tab {
-  padding: 11px 15px; background: transparent; border: none; cursor: pointer;
-  font-size: 12.5px; font-weight: 500; color: var(--text-muted);
-  border-bottom: 2.5px solid transparent; margin-bottom: -2px;
-  font-family: inherit; transition: color 0.15s; white-space: nowrap;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 9px 18px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.65);
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+  text-align: left;
+  white-space: nowrap;
 }
-.tab.active { color: var(--ci-navy); border-bottom-color: var(--ci-blue); font-weight: 600; }
-.tab:hover { color: var(--ci-navy); background: var(--accent-bg); }
+.tab:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.95);
+}
+.tab.active {
+  background: rgba(255,255,255,0.13);
+  color: #ffffff;
+  border-left-color: var(--ci-yellow);
+  font-weight: 600;
+}
 
-.panel { display: none; }
+.panel { display: none; padding: 20px; }
 .panel.active { display: block; }
 
 .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 18px; }
@@ -256,7 +364,7 @@ details ul { padding-left: 18px; }
 .recom { background: var(--accent-bg); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: var(--radius-md); margin: 8px 0; font-size: 12px; }
 .recom strong { color: var(--accent); }
 
-.alerts-strip { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.alerts-strip { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; padding: 0 20px; }
 
 .section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
 
@@ -435,52 +543,73 @@ details ul { padding-left: 18px; }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="topbar">
-    <div>
-      <h1>Project Management Dashboard</h1>
-      <div class="sub">Platform Group · <span id="prj-count"></span> projects · last update <span id="last-update">—</span></div>
+<div class="app-layout">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <!-- TOP: logo + app title -->
+    <div class="sidebar-header">
+      <div id="sidebar-logo-wrap"></div>
+      <div class="sidebar-title">PM Dashboard</div>
     </div>
-    <div class="topbar-actions">
-      <div class="sync-group">
-        <span class="sync-time" id="sync-time" title="เวลา sync ล่าสุด">—</span>
-        <button class="btn btn-pull" id="btn-pull" title="ดึงข้อมูลล่าสุดจาก cloud (↓ Pull)">↓ Pull</button>
-        <button class="btn btn-push" id="btn-push" title="ส่งข้อมูลตัวเองขึ้น cloud (↑ Push)">↑ Push</button>
-        <span class="sync-status idle" id="sync-status" title="คลิกเพื่อตั้งค่า MongoDB Atlas">☁️</span>
-      </div>
-      <button class="btn" id="btn-mongo-settings" title="ตั้งค่า MongoDB Atlas Cloud Sync">⚙ MongoDB</button>
-      <button class="btn" id="btn-import">Import JSON</button>
-      <button class="btn" id="btn-import-qt" title="Upload QT list จาก Excel / CSV แล้ว match กับ project อัตโนมัติ">📥 Import QT</button>
-      <button class="btn" id="btn-export">Export JSON</button>
-      <button class="btn btn-primary" id="btn-add">+ New Project</button>
-      <div class="topbar-user" id="topbar-user" style="display:none;">
+
+    <!-- MIDDLE: nav (scrollable if tall) -->
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <button class="tab active" data-panel="overview">Overview</button>
+      <button class="tab" data-panel="kanban">Kanban</button>
+      <button class="tab" data-panel="timeline">Gantt Timeline</button>
+      <button class="tab" data-panel="workload">Workload</button>
+      <button class="tab" data-panel="roles">Role Demand</button>
+      <button class="tab" data-panel="projects">Project List</button>
+      <button class="tab" data-panel="clients">Clients</button>
+      <button class="tab" data-panel="team">Team</button>
+      <button class="tab" data-panel="calendar">📅 Calendar</button>
+      <button class="tab" data-panel="framework">SOP & Help</button>
+      <button class="tab" data-panel="finance">💰 Finance</button>
+      <button class="tab" data-panel="training">🎓 Training</button>
+      <button class="tab" data-panel="capacity">⚡ Capacity</button>
+      <button class="tab" data-panel="admin" style="display:none;">🔐 Admin</button>
+    </nav>
+
+    <!-- BOTTOM: user profile -->
+    <div class="sidebar-user" id="sidebar-user-section">
+      <div id="topbar-user" style="display:none;" class="sidebar-user-chip">
         <div class="topbar-user-avatar" id="topbar-user-initials">?</div>
-        <span class="topbar-user-name" id="topbar-user-label">—</span>
-        <span class="topbar-role-admin" id="topbar-role-badge">Admin</span>
+        <div>
+          <div class="topbar-user-name" id="topbar-user-label">—</div>
+          <div class="topbar-role-admin" id="topbar-role-badge">Admin</div>
+        </div>
       </div>
-      <button class="btn btn-chpw" id="btn-change-pw" style="display:none;" title="เปลี่ยนรหัสผ่าน">🔑</button>
-      <button class="btn btn-logout" id="btn-logout" style="display:none;">ออกจากระบบ</button>
+      <div class="sidebar-user-actions">
+        <button class="btn btn-chpw" id="btn-change-pw" style="display:none;" title="เปลี่ยนรหัสผ่าน">🔑 เปลี่ยนรหัสผ่าน</button>
+        <button class="btn btn-logout" id="btn-logout" style="display:none;">ออกจากระบบ</button>
+      </div>
     </div>
-  </div>
+  </aside>
 
-  <div class="alerts-strip" id="alerts-strip"></div>
+  <!-- RIGHT: main content -->
+  <div class="main-area">
+    <div class="topbar">
+      <div>
+        <h1>Project Management Dashboard</h1>
+        <div class="sub">Platform Group · <span id="prj-count"></span> projects · last update <span id="last-update">—</span></div>
+      </div>
+      <div class="topbar-actions">
+        <div class="sync-group">
+          <span class="sync-time" id="sync-time" title="เวลา sync ล่าสุด">—</span>
+          <button class="btn btn-pull" id="btn-pull" title="ดึงข้อมูลล่าสุดจาก cloud (↓ Pull)">↓ Pull</button>
+          <button class="btn btn-push" id="btn-push" title="ส่งข้อมูลตัวเองขึ้น cloud (↑ Push)">↑ Push</button>
+          <span class="sync-status idle" id="sync-status" title="คลิกเพื่อตั้งค่า MongoDB Atlas">☁️</span>
+        </div>
+        <button class="btn" id="btn-mongo-settings" title="ตั้งค่า MongoDB Atlas Cloud Sync">⚙ MongoDB</button>
+        <button class="btn" id="btn-import">Import JSON</button>
+        <button class="btn" id="btn-import-qt" title="Upload QT list จาก Excel / CSV แล้ว match กับ project อัตโนมัติ">📥 Import QT</button>
+        <button class="btn" id="btn-export">Export JSON</button>
+        <button class="btn btn-primary" id="btn-add">+ New Project</button>
+      </div>
+    </div>
 
-  <div class="tabs">
-    <button class="tab active" data-panel="overview">Overview</button>
-    <button class="tab" data-panel="kanban">Kanban</button>
-    <button class="tab" data-panel="timeline">Gantt Timeline</button>
-    <button class="tab" data-panel="workload">Workload</button>
-    <button class="tab" data-panel="roles">Role Demand</button>
-    <button class="tab" data-panel="projects">Project List</button>
-    <button class="tab" data-panel="clients">Clients</button>
-    <button class="tab" data-panel="team">Team</button>
-    <button class="tab" data-panel="calendar">📅 Calendar</button>
-    <button class="tab" data-panel="framework">SOP & Help</button>
-    <button class="tab" data-panel="finance">💰 Finance</button>
-    <button class="tab" data-panel="training">🎓 Training</button>
-    <button class="tab" data-panel="capacity">⚡ Capacity</button>
-    <button class="tab" data-panel="admin" style="display:none;">🔐 Admin</button>
-  </div>
+    <div class="alerts-strip" id="alerts-strip"></div>
 
   <!-- OVERVIEW -->
   <div class="panel active" id="overview">
@@ -867,7 +996,9 @@ details ul { padding-left: 18px; }
     </ul>
   </div>
 </div>
-</div><!-- end .app -->
+  </div><!-- end .main-area -->
+
+</div><!-- end .app-layout -->
 
 <!-- QT IMPORT MODAL -->
 <div class="modal" id="qt-import-modal">
@@ -6786,22 +6917,19 @@ function deleteUser() {
   document.getElementById('btn-logout').addEventListener('click', doLogout);
   document.getElementById('btn-change-pw').addEventListener('click', () => openChangePassword(false));
 
-  // Topbar logo — built via JS so the HTML parser never sees the long data-URI
+  // Sidebar logo — built via JS so the HTML parser never sees the long data-URI
   (function() {
-    var tb = document.querySelector('.topbar-actions');
-    if (!tb) return;
-    var wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;align-items:center;margin-left:4px;flex-shrink:0;';
+    var wrap = document.getElementById('sidebar-logo-wrap');
+    if (!wrap) return;
     var pill = document.createElement('div');
-    pill.style.cssText = 'background:rgba(255,255,255,0.95);border-radius:7px;padding:3px 10px;line-height:0;box-shadow:0 1px 4px rgba(0,33,105,0.20);';
+    pill.style.cssText = 'background:rgba(255,255,255,0.95);border-radius:7px;padding:3px 8px;line-height:0;box-shadow:0 1px 4px rgba(0,33,105,0.20);';
     var img = document.createElement('img');
     img.id  = 'topbar-logo-img';
     img.alt = 'Platform Group';
-    img.style.cssText = 'height:26px;width:auto;display:block;';
+    img.style.cssText = 'height:28px;width:auto;display:block;';
     img.src = 'data:image/png;base64,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';
     pill.appendChild(img);
     wrap.appendChild(pill);
-    tb.appendChild(wrap);
   }());
   document.getElementById('chpw-save').addEventListener('click', saveChangePassword);
   document.getElementById('chpw-close').addEventListener('click', () => document.getElementById('chpw-modal').classList.remove('show'));
