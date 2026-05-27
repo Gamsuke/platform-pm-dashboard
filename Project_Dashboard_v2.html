@@ -540,6 +540,27 @@ details ul { padding-left: 18px; }
 .perm-item:hover { background:var(--accent-bg); border-color:var(--ci-blue); }
 .perm-item input[type=checkbox] { width:14px; height:14px; accent-color:var(--ci-navy); flex-shrink:0; }
 @keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── Training Hub ── */
+.th-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; display:flex; flex-direction:column; transition:box-shadow 0.18s, transform 0.15s; }
+.th-card:hover { box-shadow:0 6px 22px rgba(0,33,105,0.13); transform:translateY(-2px); }
+.th-thumb { width:100%; height:156px; object-fit:cover; display:block; background:var(--surface-2); }
+.th-thumb-ph { width:100%; height:156px; background:linear-gradient(135deg,#002169 0%,#1a3a7a 100%); display:flex; align-items:center; justify-content:center; font-size:40px; }
+.th-body { padding:14px 16px; flex:1; }
+.th-cat-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.3px; }
+.th-cat-tutorial { background:#DBEAFE; color:#1E40AF; }
+.th-cat-manual { background:#D1FAE5; color:#065F46; }
+.th-cat-knowledge { background:#EDE9FE; color:#4C1D95; }
+.th-card-title { font-size:14px; font-weight:700; line-height:1.35; margin-bottom:6px; color:var(--text); }
+.th-card-desc { font-size:12px; color:var(--text-muted); line-height:1.55; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.th-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:10px; }
+.th-tag { font-size:10px; padding:1px 7px; border-radius:4px; background:var(--accent-bg); color:var(--accent); }
+.th-actions { display:flex; gap:6px; padding:10px 14px; border-top:1px solid var(--border); background:var(--surface-2); flex-wrap:wrap; }
+.th-cat-pill { padding:5px 14px; border-radius:20px; border:1.5px solid var(--border-strong); background:var(--surface); font-size:12px; font-weight:500; cursor:pointer; color:var(--text-muted); font-family:inherit; transition:all 0.15s; }
+.th-cat-pill:hover { background:var(--accent-bg); color:var(--accent); border-color:var(--accent); }
+.th-cat-pill.active { background:var(--ci-navy); color:#fff; border-color:var(--ci-navy); font-weight:600; }
+.th-empty { grid-column:1/-1; text-align:center; padding:48px 20px; color:var(--text-muted); }
+.th-empty-icon { font-size:48px; margin-bottom:12px; }
 </style>
 </head>
 <body>
@@ -927,27 +948,24 @@ details ul { padding-left: 18px; }
 
 <!-- TRAINING PANEL -->
 <div class="panel" id="training">
-  <div style="padding:20px 24px;">
-    <div style="margin-bottom:16px;">
-      <h2 style="font-size:17px;font-weight:700;margin-bottom:4px;">🎓 Training Allocation</h2>
-      <p style="font-size:12px;color:var(--text-muted);margin:0;">
-        T1 = AI Foundation (mandatory all staff · Platform KPI) &nbsp;|&nbsp; T2 = Department-specific &nbsp;|&nbsp; T3 = Leadership
-      </p>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <div>
+        <h2 style="margin:0;font-size:17px;font-weight:700;">🎓 Training Hub</h2>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--text-muted);">แหล่งเรียนรู้สำหรับทีม — คลิปสอนใช้งาน, คู่มือ, ความรู้องค์กร</p>
+      </div>
+      <button class="btn btn-primary" id="btn-add-training">+ Add</button>
     </div>
-    <div class="card" style="padding:0;overflow:hidden;margin-bottom:18px;">
-      <div class="table-wrap"><table id="training-table"></table></div>
+    <div class="filter-bar" style="margin-bottom:16px;gap:8px;flex-wrap:wrap;">
+      <input id="th-search" placeholder="🔍 ค้นหา..." style="min-width:200px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="th-cat-pills">
+        <button class="th-cat-pill active" data-cat="">ทั้งหมด</button>
+        <button class="th-cat-pill" data-cat="tutorial">🎬 Tutorial</button>
+        <button class="th-cat-pill" data-cat="manual">📖 Manual</button>
+        <button class="th-cat-pill" data-cat="knowledge">🏢 Knowledge</button>
+      </div>
     </div>
-    <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">Capacity Impact per Department</h3>
-    <div id="training-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:18px;"></div>
-    <div class="card" style="background:rgba(77,102,214,0.07);border-color:rgba(77,102,214,0.25);">
-      <div style="font-weight:600;margin-bottom:8px;color:var(--accent);">📋 Business Rules (SPEC §6)</div>
-      <ul style="font-size:12px;color:var(--text-muted);padding-left:18px;line-height:2;margin:0;">
-        <li>T1 AI Foundation = mandatory for ALL staff — Platform KPI. Cannot be removed from calculation.</li>
-        <li>Ops overhead is non-negotiable — represents real recurring time cost per role.</li>
-        <li>Personal buffer 5% = minimum reserve. Always included.</li>
-        <li>10–15% overhead rule — ops + training should consume 10–15% of workHours/week. Red = &gt;15%.</li>
-      </ul>
-    </div>
+    <div id="th-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;"></div>
   </div>
 </div>
 
@@ -1353,6 +1371,44 @@ details ul { padding-left: 18px; }
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" id="tf-delete">Delete</button>
         <button type="button" class="btn" id="team-modal-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TRAINING HUB ADD/EDIT MODAL -->
+<div class="modal" id="th-modal">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <h2 id="th-modal-title">Add Training</h2>
+      <button class="modal-close" id="th-modal-close">&times;</button>
+    </div>
+    <form id="th-form">
+      <input type="hidden" id="th-id">
+      <div class="form-grid">
+        <div class="form-field full"><label>ชื่อ / Title *</label><input id="th-title" placeholder="เช่น วิธีเพิ่ม Project ใหม่" required></div>
+        <div class="form-field"><label>Category</label>
+          <select id="th-cat">
+            <option value="tutorial">🎬 Tutorial — คลิปสอนใช้งาน</option>
+            <option value="manual">📖 Manual — คู่มือการใช้งาน</option>
+            <option value="knowledge">🏢 Knowledge — ความรู้องค์กร</option>
+          </select>
+        </div>
+        <div class="form-field full"><label>Description</label><textarea id="th-desc" rows="3" placeholder="อธิบายเนื้อหาโดยย่อ..." style="resize:vertical;"></textarea></div>
+        <div class="form-field full">
+          <label>🎬 YouTube URL</label>
+          <input id="th-youtube" placeholder="https://www.youtube.com/watch?v=...">
+          <div id="th-yt-preview" style="margin-top:8px;display:none;">
+            <img id="th-yt-thumb" src="" alt="thumbnail" style="width:100%;max-width:240px;border-radius:6px;display:block;">
+          </div>
+        </div>
+        <div class="form-field full"><label>📊 Slides / คู่มือ URL</label><input id="th-slide" placeholder="https://drive.google.com/... หรือ URL อื่นๆ"></div>
+        <div class="form-field full"><label>🏷️ Tags <span style="font-weight:400;color:var(--text-hint);">(คั่นด้วยจุลภาค)</span></label><input id="th-tags" placeholder="dashboard, tutorial, beginner"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="th-delete">Delete</button>
+        <button type="button" class="btn" id="th-cancel">Cancel</button>
         <button type="submit" class="btn btn-primary">Save</button>
       </div>
     </form>
@@ -3160,6 +3216,7 @@ details ul { padding-left: 18px; }
     {"id":"tm-008","name":"แกม","nickname":"Gam","dept":"Business Development","role":"BD Executive","email":""},
     {"id":"tm-009","name":"MK","nickname":"MK","dept":"Strategy","role":"Strategy Director","email":""}
   ]
+  ,"trainingHub": []
 }</script>
 <script>
 // ========== STATE ==========
@@ -3706,7 +3763,7 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.panel === 'roles' && !_tabInited.has('roles')) { _tabInited.add('roles'); initRoleDemand(); }
     if (t.dataset.panel === 'calendar' && !_tabInited.has('calendar')) { _tabInited.add('calendar'); initCalendar(); }
     if (t.dataset.panel === 'finance') renderFinance();
-    if (t.dataset.panel === 'training') renderTraining();
+    if (t.dataset.panel === 'training') initTrainingHub();
     if (t.dataset.panel === 'capacity') renderCapacity();
     if (t.dataset.panel === 'admin') renderUsers();
   });
@@ -3729,6 +3786,7 @@ const OPS_OVERHEAD_DATA = {
   'Accounting':          { hoursPerWeek: 5,  items: ['Invoice processing', 'Budget reconciliation', 'Tax filing prep'] },
 };
 
+// Training hours per dept — used by Capacity panel
 const TRAINING_DATA = {
   'Management':           { t1:2, t2:3, t3:3, total:8,   topics:['AI Foundation — mandatory','Leadership & strategic planning','Executive communication'] },
   'Account Management':  { t1:2, t2:3, t3:2, total:7,   topics:['AI Foundation — mandatory','Brief writing & pitching','Leadership & feedback skills'] },
@@ -3859,88 +3917,139 @@ function renderFinance() {
   }).join('');
 }
 
-// ========== TRAINING ==========
-function renderTraining() {
-  const persons = DB.team || [];
-  // Only departments that have at least one member
-  const activeDepts = Object.keys(TRAINING_DATA).filter(d => persons.some(p => p.dept === d));
-  if (!activeDepts.length) {
-    document.getElementById('training-table').innerHTML = '<thead><tr><th>ยังไม่มีข้อมูลทีม</th></tr></thead>';
-    document.getElementById('training-cards').innerHTML = '';
+// ========== TRAINING HUB ==========
+function ytId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([^&\s?#]{11})/);
+  return m ? m[1] : null;
+}
+function ytThumb(url) {
+  const id = ytId(url);
+  return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
+}
+function catLabel(cat) {
+  return cat==='tutorial'?'🎬 Tutorial':cat==='manual'?'📖 Manual':cat==='knowledge'?'🏢 Knowledge':'–';
+}
+
+let _thInited = false;
+function initTrainingHub() {
+  if (_thInited) { renderTrainingHub(); return; }
+  _thInited = true;
+  // Search
+  document.getElementById('th-search').addEventListener('input', renderTrainingHub);
+  // Category pills
+  document.getElementById('th-cat-pills').addEventListener('click', e => {
+    const pill = e.target.closest('.th-cat-pill');
+    if (!pill) return;
+    document.querySelectorAll('.th-cat-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    renderTrainingHub();
+  });
+  // Add button
+  document.getElementById('btn-add-training').addEventListener('click', () => openThModal(null));
+  // Modal close/cancel
+  document.getElementById('th-modal-close').addEventListener('click', () => document.getElementById('th-modal').classList.remove('show'));
+  document.getElementById('th-cancel').addEventListener('click', () => document.getElementById('th-modal').classList.remove('show'));
+  // YouTube preview on input
+  document.getElementById('th-youtube').addEventListener('input', function() {
+    const thumb = ytThumb(this.value);
+    const preview = document.getElementById('th-yt-preview');
+    const img = document.getElementById('th-yt-thumb');
+    if (thumb) { img.src = thumb; preview.style.display = ''; }
+    else { preview.style.display = 'none'; }
+  });
+  // Delete
+  document.getElementById('th-delete').addEventListener('click', () => {
+    const id = document.getElementById('th-id').value;
+    if (!id) return;
+    if (!confirm('ลบรายการนี้?')) return;
+    DB.trainingHub = (DB.trainingHub||[]).filter(x => x.id !== id);
+    saveDB();
+    document.getElementById('th-modal').classList.remove('show');
+    renderTrainingHub();
+  });
+  // Form submit
+  document.getElementById('th-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const id = document.getElementById('th-id').value || ('th-' + Math.random().toString(36).slice(2,9));
+    if (!DB.trainingHub) DB.trainingHub = [];
+    let item = DB.trainingHub.find(x => x.id === id);
+    if (!item) { item = { id, createdAt: new Date().toISOString().slice(0,10), createdBy: 'Admin' }; DB.trainingHub.push(item); }
+    item.title      = document.getElementById('th-title').value.trim();
+    item.category   = document.getElementById('th-cat').value;
+    item.desc       = document.getElementById('th-desc').value.trim();
+    item.youtubeUrl = document.getElementById('th-youtube').value.trim();
+    item.slideUrl   = document.getElementById('th-slide').value.trim();
+    item.tags       = document.getElementById('th-tags').value.trim();
+    saveDB();
+    document.getElementById('th-modal').classList.remove('show');
+    renderTrainingHub();
+  });
+  renderTrainingHub();
+}
+
+function openThModal(id) {
+  const modal = document.getElementById('th-modal');
+  const item = id ? (DB.trainingHub||[]).find(x=>x.id===id) : null;
+  document.getElementById('th-modal-title').textContent = item ? 'Edit Training' : 'Add Training';
+  document.getElementById('th-id').value      = item ? item.id : '';
+  document.getElementById('th-title').value   = item ? item.title : '';
+  document.getElementById('th-cat').value     = item ? item.category : 'tutorial';
+  document.getElementById('th-desc').value    = item ? item.desc||'' : '';
+  document.getElementById('th-youtube').value = item ? item.youtubeUrl||'' : '';
+  document.getElementById('th-slide').value   = item ? item.slideUrl||'' : '';
+  document.getElementById('th-tags').value    = item ? item.tags||'' : '';
+  // thumb preview
+  const thumb = item ? ytThumb(item.youtubeUrl) : null;
+  const preview = document.getElementById('th-yt-preview');
+  const img = document.getElementById('th-yt-thumb');
+  if (thumb) { img.src = thumb; preview.style.display = ''; }
+  else { preview.style.display = 'none'; }
+  // hide delete for new
+  document.getElementById('th-delete').style.display = item ? '' : 'none';
+  modal.classList.add('show');
+}
+
+function renderTrainingHub() {
+  const q     = (document.getElementById('th-search').value||'').toLowerCase();
+  const cat   = (document.querySelector('.th-cat-pill.active')||{}).dataset?.cat || '';
+  const items = (DB.trainingHub||[]).filter(x =>
+    (!cat || x.category === cat) &&
+    (!q || `${x.title} ${x.desc||''} ${x.tags||''}`.toLowerCase().includes(q))
+  );
+  const grid = document.getElementById('th-grid');
+  if (!items.length) {
+    grid.innerHTML = `<div class="th-empty">
+      <div class="th-empty-icon">🎓</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px;">ยังไม่มีเนื้อหา</div>
+      <div style="font-size:13px;">กด <b>+ Add</b> เพื่อเพิ่มคลิป, คู่มือ หรือสไลด์แรก</div>
+    </div>`;
     return;
   }
-
-  // Table
-  const thead = `<thead><tr>
-    <th>Department</th><th>T1 Mandatory</th><th>T2 Dept</th><th>T3 Leadership</th>
-    <th>Total/month</th><th>Per week</th><th>% Work hrs</th><th>Ops/week</th><th>Total overhead</th><th>⚠ Flag</th>
-  </tr></thead>`;
-
-  const tbody = activeDepts.map(dept => {
-    const t = TRAINING_DATA[dept];
-    const ops = (OPS_OVERHEAD_DATA[dept] || {hoursPerWeek:5}).hoursPerWeek;
-    const tpw = t.total / 4.33;
-    const overheadPct = ((ops + tpw) / WORK_HOURS_PER_WEEK) * 100;
-    const flag = overheadPct > 15;
-    const members = persons.filter(p => p.dept === dept);
-    return `<tr>
-      <td><div style="font-weight:600;">${dept}</div><div style="font-size:10px;color:var(--text-hint);">${members.length} member${members.length!==1?'s':''}</div></td>
-      <td style="color:var(--accent);">${t.t1}h</td>
-      <td style="color:var(--info);">${t.t2}h</td>
-      <td style="color:var(--success);">${t.t3}h</td>
-      <td style="font-weight:700;">${t.total}h</td>
-      <td style="font-weight:600;color:var(--info);">${tpw.toFixed(1)}h</td>
-      <td style="color:${overheadPct>15?'var(--danger)':'var(--text-muted)'};">${((tpw/WORK_HOURS_PER_WEEK)*100).toFixed(1)}%</td>
-      <td style="color:var(--warning);">${ops}h</td>
-      <td>
-        <span style="font-weight:700;color:${flag?'var(--danger)':'var(--success)'};">${overheadPct.toFixed(1)}%</span>
-        <span style="font-size:10px;color:var(--text-hint);margin-left:4px;">(${(ops+tpw).toFixed(1)}h)</span>
-      </td>
-      <td>${flag?'<span style="color:var(--danger);font-size:12px;">⚠ Review</span>':''}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('training-table').innerHTML = thead + '<tbody>' + tbody + '</tbody>';
-
-  // Cards
-  document.getElementById('training-cards').innerHTML = activeDepts.map(dept => {
-    const t = TRAINING_DATA[dept];
-    const ops = (OPS_OVERHEAD_DATA[dept] || {hoursPerWeek:5}).hoursPerWeek;
-    const tpw = t.total / 4.33;
-    const buf = WORK_HOURS_PER_WEEK * 0.05;
-    const net = WORK_HOURS_PER_WEEK - ops - tpw - buf;
-    const members = persons.filter(p => p.dept === dept);
-    const opsP  = (ops / WORK_HOURS_PER_WEEK * 100).toFixed(1);
-    const trnP  = (tpw / WORK_HOURS_PER_WEEK * 100).toFixed(1);
-    const bufP  = (buf / WORK_HOURS_PER_WEEK * 100).toFixed(1);
-    const netP  = (net / WORK_HOURS_PER_WEEK * 100).toFixed(1);
-    const overheadItems = (OPS_OVERHEAD_DATA[dept]||{items:[]}).items;
-    return `<div class="card">
-      <div style="font-weight:600;margin-bottom:10px;">${dept}</div>
-      <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-bottom:10px;">
-        <div title="Ops ${opsP}%" style="width:${opsP}%;background:var(--warning);"></div>
-        <div title="Training ${trnP}%" style="width:${trnP}%;background:var(--info);"></div>
-        <div title="Buffer ${bufP}%" style="width:${bufP}%;background:var(--text-hint);"></div>
-        <div title="Net Available ${netP}%" style="width:${Math.max(0,+netP)}%;background:var(--success);"></div>
+  grid.innerHTML = items.map(item => {
+    const thumb = ytThumb(item.youtubeUrl);
+    const thumbHtml = thumb
+      ? `<img class="th-thumb" src="${thumb}" alt="${item.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+         <div class="th-thumb-ph" style="display:none;">${item.category==='tutorial'?'🎬':item.category==='manual'?'📖':'🏢'}</div>`
+      : `<div class="th-thumb-ph">${item.category==='tutorial'?'🎬':item.category==='manual'?'📖':'🏢'}</div>`;
+    const tags = (item.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    const ytBtn = item.youtubeUrl
+      ? `<a href="${item.youtubeUrl}" target="_blank" class="btn btn-sm btn-primary" style="text-decoration:none;font-size:11px;">▶ ดูคลิป</a>`
+      : '';
+    const slideBtn = item.slideUrl
+      ? `<a href="${item.slideUrl}" target="_blank" class="btn btn-sm" style="text-decoration:none;font-size:11px;">📊 Slides</a>`
+      : '';
+    return `<div class="th-card">
+      ${thumbHtml}
+      <div class="th-body">
+        <div class="th-cat-badge th-cat-${item.category}">${catLabel(item.category)}</div>
+        <div class="th-card-title">${item.title}</div>
+        ${item.desc ? `<div class="th-card-desc">${item.desc}</div>` : ''}
+        ${tags.length ? `<div class="th-tags">${tags.map(t=>`<span class="th-tag">${t}</span>`).join('')}</div>` : ''}
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;">
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Work hrs/week</span><span>${WORK_HOURS_PER_WEEK}h</span></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--warning);">− Ops overhead</span><span>${ops}h</span></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--info);">− Training/week</span><span>${tpw.toFixed(1)}h</span></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-hint);">− Buffer 5%</span><span>${buf.toFixed(1)}h</span></div>
-        <div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px solid var(--border);padding-top:5px;margin-top:3px;">
-          <span style="color:var(--success);">Net available</span><span style="color:var(--success);">${net.toFixed(1)}h</span>
-        </div>
-      </div>
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-        <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">Training Topics</div>
-        ${t.topics.map(tp=>`<div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">• ${tp}</div>`).join('')}
-      </div>
-      ${overheadItems.length?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-        <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">Ops Items</div>
-        ${overheadItems.map(i=>`<div style="font-size:11px;color:var(--text-hint);margin-bottom:2px;">• ${i}</div>`).join('')}
-      </div>`:''}
-      <div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap;">
-        ${members.map(m=>`<span style="font-size:10px;padding:2px 7px;background:rgba(255,255,255,0.06);border-radius:4px;color:var(--text-muted);">${m.nickname||m.name}</span>`).join('')}
+      <div class="th-actions">
+        ${ytBtn}${slideBtn}
+        <button class="btn btn-sm" style="margin-left:auto;font-size:11px;" onclick="openThModal('${item.id}')">✏️ Edit</button>
       </div>
     </div>`;
   }).join('');
