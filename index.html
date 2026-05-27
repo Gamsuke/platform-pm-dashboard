@@ -541,6 +541,10 @@ details ul { padding-left: 18px; }
 .perm-item input[type=checkbox] { width:14px; height:14px; accent-color:var(--ci-navy); flex-shrink:0; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
+/* ── Bundle Badge ── */
+.bundle-badge { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; background:rgba(253,224,33,0.18); color:#8A6F00; border:1px solid rgba(253,224,33,0.45); white-space:nowrap; letter-spacing:0.2px; }
+.bundle-badge::before { content:'📦'; font-size:9px; }
+
 /* ── Training Hub ── */
 .th-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; display:flex; flex-direction:column; transition:box-shadow 0.18s, transform 0.15s; }
 .th-card:hover { box-shadow:0 6px 22px rgba(0,33,105,0.13); transform:translateY(-2px); }
@@ -1121,6 +1125,11 @@ details ul { padding-left: 18px; }
           <input id="f-company" list="company-list" autocomplete="off">
         </div>
         <div class="form-field full"><label>Project Name</label><input id="f-name"></div>
+        <div class="form-field full">
+          <label>📦 Bundle <span style="font-weight:400;color:var(--text-muted);font-size:11px;">ถ้า project นี้เป็นส่วนหนึ่งของ bundle เช่น "Boost" ให้ใส่ชื่อ bundle เดียวกัน — Workload จะนับ bundle นี้เป็น 1 slot</span></label>
+          <input id="f-bundle" list="bundle-list" autocomplete="off" placeholder="เช่น Boost, Milo Retainer, PTTEP Account">
+          <datalist id="bundle-list"></datalist>
+        </div>
         <div class="form-field full"><label>Basecamp URL <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(link ไป project ใน Basecamp)</span></label><div style="display:flex;gap:6px;"><input id="f-basecamp" placeholder="https://3.basecamp.com/..."><a id="f-basecamp-link" href="#" target="_blank" style="display:none;padding:7px 10px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;color:var(--accent);white-space:nowrap;text-decoration:none;">🔗 Open</a></div></div>
         <div class="form-field full"><label>Google Drive URL <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(link ไป folder หรือ doc ใน Google Drive)</span></label><div style="display:flex;gap:6px;"><input id="f-drive" placeholder="https://drive.google.com/..."><a id="f-drive-link" href="#" target="_blank" style="display:none;padding:7px 10px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;color:#1a73e8;white-space:nowrap;text-decoration:none;">📁 Open</a></div></div>
         <div class="form-field full">
@@ -4450,6 +4459,7 @@ function renderGantt() {
       <span class="gp-code">${codeBadge(p.code)} · ${badgeFor(p.status)}</span>
       <span class="gp-name" title="${((p.brand||p.name||'')+' '+( p.name||'')).trim().replace(/"/g,'&quot;')}">${p.brand||p.name||'–'}</span>
       ${p.brand&&p.name?`<span class="gp-subname">${p.name}</span>`:''}
+      ${p.bundle?`<span class="bundle-badge" style="display:inline-flex;margin-top:1px;">${p.bundle}</span>`:''}
       <span class="gp-meta">${p.owner||'–'}${p.support&&p.support!==p.owner?' / '+p.support:''} · ฿${fmtMoney(p.budget)}</span>
     </div><div class="gantt-track"><div class="months">`;
     for(let i=0;i<12;i++) html+=`<div class="month-div"></div>`;
@@ -4496,11 +4506,20 @@ function renderWorkload() {
       const nick = m.nickname || m.name;
       if (!matrix[nick]) matrix[nick] = Array(12).fill(0);
     });
+    // Bundle deduplication: same bundle counts as 1 slot per person per month
+    const bundleSeen = {}; // key: "person__bundle__month"
     activeProjects().filter(filter).forEach(p => {
       const ms = monthSpan(p);
       [...new Set([p.owner, p.support, ...(p.teamMembers||[])].filter(Boolean))].forEach(n => {
         if (!matrix[n]) matrix[n] = Array(12).fill(0);
-        ms.forEach(m => matrix[n][m]++);
+        ms.forEach(mo => {
+          if (p.bundle) {
+            const key = `${n}__${p.bundle}__${mo}`;
+            if (!bundleSeen[key]) { bundleSeen[key] = true; matrix[n][mo]++; }
+          } else {
+            matrix[n][mo]++;
+          }
+        });
       });
     });
   } else if (view === 'dept') {
@@ -4740,6 +4759,7 @@ function renderKanban() {
           </span>
         </div>
         <div class="k-card-meta">${p.code} · ${p.owner||'–'}</div>
+        ${p.bundle?`<div style="margin-top:3px;"><span class="bundle-badge">${p.bundle}</span></div>`:''}
         ${lostTag}
         <div class="k-card-budget">฿${fmtMoney(p.budget)}</div>
       </div>`;
@@ -4834,6 +4854,7 @@ function renderTable() {
     <td style="max-width:220px;" class="brand-cell">
       <div class="brand-name">${p.brand || p.name || '–'}</div>
       ${p.brand && p.name ? `<div class="project-name">${p.name}</div>` : ''}
+      ${p.bundle ? `<span class="bundle-badge" style="margin-top:3px;">${p.bundle}</span>` : ''}
     </td>
     <td>${p.owner ? `<div class="owner-cell"><div class="main-owner">${p.owner}</div>${p.support?`<div class="sub-support">+${p.support}</div>`:''}</div>` : '–'}</td>
     <td>${badgeFor(p.status)}${p.status==='Pitch Lost'&&p.decisionFactor?`<br><span style="font-size:10px;color:#991B1B;">${p.decisionFactor}</span>`:''}</td>
@@ -4887,6 +4908,10 @@ function openModal(id) {
   document.getElementById('f-launch').value = p.launch || '';
   document.getElementById('f-end').value = p.end || '';
   renderTeamPickerInForm(new Set(p.teamMembers||[]));
+  document.getElementById('f-bundle').value = p.bundle || '';
+  // Populate bundle datalist
+  const bundleList = document.getElementById('bundle-list');
+  bundleList.innerHTML = [...new Set((DB.projects||[]).map(x=>x.bundle).filter(Boolean))].map(b=>`<option value="${b}">`).join('');
   document.getElementById('f-types').value = (p.types||[]).join('\n');
   // Loss analysis fields
   document.getElementById('f-loss-reason').value = p.lossReason || '';
@@ -5048,6 +5073,7 @@ document.getElementById('prj-form').addEventListener('submit', (e) => {
   const _pickedChips = document.querySelectorAll('#f-team-picker .team-chip.selected');
   p.teamMembers = [..._pickedChips].map(c=>c.dataset.pick);
   p.roles = [...new Set(p.teamMembers.map(nick=>{const m=(DB.team||[]).find(x=>(x.nickname||x.name)===nick);return m&&m.role;}).filter(Boolean))];
+  p.bundle = document.getElementById('f-bundle').value.trim() || undefined;
   p.types = document.getElementById('f-types').value.split('\n').map(s=>s.trim()).filter(Boolean);
   // Loss analysis (บังคับ lossReason ถ้าเป็น Pitch Lost)
   if (p.status === 'Pitch Lost') {
