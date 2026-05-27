@@ -3028,7 +3028,7 @@ details ul { padding-left: 18px; }
     {"id":"tm-007","name":"โทย์","nickname":"Toey","dept":"Business Development","role":"BD Director","email":""},
     {"id":"tm-008","name":"แกม","nickname":"Gam","dept":"Business Development","role":"BD Executive","email":""},
     {"id":"tm-009","name":"MK","nickname":"MK","dept":"Strategy","role":"Strategy Director","email":""},
-    {"id":"tm-010","name":"เอ็มเค","nickname":"MK","dept":"Strategy","role":"Strategist","email":""}
+    {"id":"tm-010","name":"เอ็มเค","nickname":"MK2","dept":"Strategy","role":"Strategist","email":""}
   ]
 }</script>
 <script>
@@ -4252,8 +4252,8 @@ function renderWorkload() {
   };
   let matrix = {};
   if (view === 'person') {
-    // Include ALL team members (even 0-project) so nobody is invisible
-    (DB.team||[]).forEach(m => {
+    // Include all ACTIVE team members (even 0-project) so nobody is invisible
+    (DB.team||[]).filter(m=>(m.status||'active')==='active').forEach(m => {
       const nick = m.nickname || m.name;
       if (!matrix[nick]) matrix[nick] = Array(12).fill(0);
     });
@@ -4283,7 +4283,8 @@ function renderWorkload() {
   let h = `<div class="workload-grid"><div class="wl-h">${view==='person'?'Person':view==='dept'?'Department':'Function'}</div>`;
   MONTH_LABELS.forEach(m=>h+=`<div class="wl-h">${m}</div>`);
   arr.forEach(row=>{
-    const wlMember = (DB.team||[]).find(m=>(m.nickname||m.name)===row.n);
+    const rowNL = row.n.toLowerCase();
+    const wlMember = (DB.team||[]).find(m=>{const dbN=(m.nickname||m.name).toLowerCase();return dbN===rowNL||dbN.includes(rowNL)||rowNL.includes(dbN);});
     const nameEl = wlMember
       ? `<span data-wl-profile="${wlMember.id}" style="cursor:pointer;color:var(--accent);text-decoration:underline dotted;">${row.n}</span>`
       : row.n;
@@ -4320,7 +4321,7 @@ function initRoleDemand() {
   const ps = document.getElementById('rd-person-select');
   ps.innerHTML = '<option value="">— เลือกคน —</option>';
   const people = [...new Set([
-    ...(DB.team||[]).map(m=>m.nickname||m.name),
+    ...(DB.team||[]).filter(m=>(m.status||'active')==='active').map(m=>m.nickname||m.name),
     ...DB.projects.flatMap(p=>[p.owner,p.support]).filter(Boolean)
   ])].sort();
   people.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; ps.appendChild(o); });
@@ -4848,8 +4849,8 @@ document.getElementById('btn-delete').addEventListener('click', () => {
 // ========== FILTERS ==========
 function populateOwnerFilters() {
   const names = new Set(DB.projects.flatMap(p => [p.owner, p.support]).filter(Boolean));
-  // also add team member nicknames
-  (DB.team||[]).forEach(m => { if (m.nickname||m.name) names.add(m.nickname||m.name); });
+  // also add active team member nicknames
+  (DB.team||[]).filter(m=>(m.status||'active')==='active').forEach(m => { if (m.nickname||m.name) names.add(m.nickname||m.name); });
   const owners = [...names].sort();
   const depts = [...new Set(DB.projects.map(p => p.dept).filter(Boolean))].sort();
   ['gantt-owner','prj-owner','kanban-owner'].forEach(id => {
