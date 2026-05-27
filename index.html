@@ -5488,8 +5488,18 @@ function initTeamPage() {
   document.getElementById('tf-delete').addEventListener('click', () => {
     const id = document.getElementById('tf-id').value;
     if (!id) return;
-    if (!confirm('ลบสมาชิกคนนี้?')) return;
+    if (!confirm('ลบสมาชิกคนนี้? ชื่อจะถูกลบออกจากทุก project ด้วย')) return;
+    const delMember = (DB.team||[]).find(m => m.id === id);
+    const delNick = delMember ? (delMember.nickname || delMember.name) : null;
     DB.team = (DB.team||[]).filter(m => m.id !== id);
+    // Scrub name from all project data
+    if (delNick) {
+      (DB.projects||[]).forEach(p => {
+        if (p.owner === delNick) p.owner = '';
+        if (p.support === delNick) p.support = '';
+        if (p.teamMembers) p.teamMembers = p.teamMembers.filter(n => n !== delNick);
+      });
+    }
     saveDB();
     document.getElementById('team-modal').classList.remove('show');
     renderTeam();
@@ -5691,6 +5701,41 @@ function renderTeam() {
     });
   }
 
+  // ── Unmatched: names in projects that don't resolve to any team member ──
+  const teamNicksLC = new Set((DB.team||[]).map(m=>(m.nickname||m.name).toLowerCase()));
+  const ghostNames = [...new Set(
+    (DB.projects||[]).flatMap(p=>[p.owner, p.support, ...(p.teamMembers||[])]).filter(Boolean)
+  )].filter(n => !teamNicksLC.has(n.toLowerCase())).sort();
+  if (ghostNames.length > 0 && !deptFilter && !statusFilter) {
+    anyRow = true;
+    html += `<tr class="team-dept-row">
+      <td colspan="7" style="padding:6px 12px 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#b45309;background:#fffbeb;border-bottom:1px solid #fde68a;">
+        ⚠️ Unmatched — ชื่อใน project ที่ไม่มีในทีม <span style="font-weight:400;opacity:0.7;">(${ghostNames.length} รายการ)</span>
+      </td>
+    </tr>`;
+    ghostNames.forEach(name => {
+      if (q && !name.toLowerCase().includes(q)) return;
+      const cnt = activeProjCount(name);
+      html += `<tr class="team-row" style="opacity:0.75;">
+        <td style="padding:8px 8px 8px 12px;">
+          <div class="team-avatar-sm" style="background:#fde68a;color:#92400e;">?</div>
+        </td>
+        <td>
+          <div style="font-weight:600;font-size:13px;">${name}</div>
+          <div style="font-size:11px;color:#b45309;">ไม่พบในรายชื่อทีม</div>
+        </td>
+        <td style="font-size:12px;color:var(--text-muted);">–</td>
+        <td><span class="team-dept-badge" style="background:#fde68a44;color:#92400e;">Unmatched</span></td>
+        <td style="text-align:center;"><span class="${cnt > 0 ? 'team-proj-count' : 'team-proj-zero'}">${cnt}</span></td>
+        <td style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:#fde68a;color:#92400e;">⚠️ Unknown</span></td>
+        <td style="text-align:right;padding-right:8px;white-space:nowrap;">
+          <button class="btn btn-sm" data-ghost-add="${name}" style="margin-right:4px;" title="เพิ่มเป็น team member">➕ Add</button>
+          <button class="btn btn-sm btn-danger" data-ghost-delete="${name}" title="ลบออกจากทุก project">🗑️ Delete</button>
+        </td>
+      </tr>`;
+    });
+  }
+
   html += `</tbody></table>`;
 
   if (!anyRow) html = `<p style="color:var(--text-muted);text-align:center;padding:24px;">ยังไม่มีสมาชิก — กด "+ Add Member"</p>`;
@@ -5698,6 +5743,32 @@ function renderTeam() {
 
   container.querySelectorAll('[data-team-profile]').forEach(c => c.addEventListener('click', () => openMemberProfile(c.dataset.teamProfile)));
   container.querySelectorAll('[data-team-edit]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openTeamModal(b.dataset.teamEdit); }));
+
+  // Ghost: add quick-add (pre-fill modal) and delete-from-projects
+  container.querySelectorAll('[data-ghost-add]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const name = b.dataset.ghostAdd;
+      // Pre-fill nickname and open add modal
+      openTeamModal(null);
+      setTimeout(() => { document.getElementById('tf-nickname').value = name; }, 50);
+    });
+  });
+  container.querySelectorAll('[data-ghost-delete]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const name = b.dataset.ghostDelete;
+      if (!confirm(`ลบ "${name}" ออกจากทุก project?\nจะล้างจาก owner / support / teamMembers ทุกที่`)) return;
+      (DB.projects||[]).forEach(p => {
+        if (p.owner === name) p.owner = '';
+        if (p.support === name) p.support = '';
+        if (p.teamMembers) p.teamMembers = p.teamMembers.filter(n => n !== name);
+      });
+      saveDB();
+      renderTeam();
+      populateOwnerFilters();
+    });
+  });
   container.querySelectorAll('[data-team-projects]').forEach(b => b.addEventListener('click', () => {
     const nick = b.dataset.teamProjects;
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
