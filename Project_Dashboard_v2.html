@@ -565,6 +565,88 @@ details ul { padding-left: 18px; }
 .th-cat-pill.active { background:var(--ci-navy); color:#fff; border-color:var(--ci-navy); font-weight:600; }
 .th-empty { grid-column:1/-1; text-align:center; padding:48px 20px; color:var(--text-muted); }
 .th-empty-icon { font-size:48px; margin-bottom:12px; }
+/* ── My Profile ──────────────────────────────── */
+.prof-hero-inner { display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+.prof-avatar { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; color:#fff; flex-shrink:0; background:var(--ci-blue); }
+.prof-meta { flex:1; min-width:180px; }
+.prof-name { font-size:22px; font-weight:700; color:var(--ci-navy); margin-bottom:4px; }
+.prof-role-line { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.prof-quick-stats { display:flex; gap:16px; flex-wrap:wrap; }
+.prof-stat { text-align:center; }
+.prof-stat-val { font-size:22px; font-weight:800; color:var(--ci-blue); line-height:1; }
+.prof-stat-lbl { font-size:10px; color:var(--text-muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.3px; }
+.prof-wl-block { min-width:180px; }
+.prof-wl-label { font-size:11px; color:var(--text-muted); margin-bottom:5px; }
+.prof-wl-bar { height:8px; border-radius:4px; background:var(--border); overflow:hidden; margin-bottom:4px; }
+.prof-wl-fill { height:100%; border-radius:4px; }
+.prof-wl-months { display:flex; gap:3px; margin-top:6px; flex-wrap:wrap; }
+.prof-wl-month { width:20px; height:20px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:600; color:#fff; }
+.prof-stabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:16px; overflow-x:auto; flex-wrap:nowrap; }
+.prof-stab { padding:8px 16px; background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; font-size:13px; font-family:inherit; color:var(--text-muted); white-space:nowrap; font-weight:500; transition:color 0.15s,border-color 0.15s; }
+.prof-stab:hover { color:var(--text); }
+.prof-stab.active { color:var(--ci-navy); border-bottom-color:var(--ci-blue); font-weight:700; }
+.prof-stab-sep { border-left:1px solid var(--border); margin:6px 4px; }
+.kpi-table { width:100%; border-collapse:collapse; }
+.kpi-table th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-muted); padding:8px 10px; border-bottom:1px solid var(--border); text-align:left; }
+.kpi-table td { padding:9px 10px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+.kpi-table tr:last-child td { border-bottom:none; }
+.kpi-status { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700; }
+.kpi-status.achieved { background:var(--success-bg); color:var(--success); }
+.kpi-status.on-track { background:var(--info-bg); color:var(--info); }
+.kpi-status.at-risk { background:var(--warning-bg); color:var(--warning); }
+.kpi-status.missed { background:var(--danger-bg); color:var(--danger); }
+.kpi-progress { width:100%; height:6px; border-radius:3px; background:var(--border); overflow:hidden; }
+.kpi-progress-fill { height:100%; border-radius:3px; }
+.mt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media(max-width:700px){ .mt-board { grid-template-columns:1fr; } }
+.mt-col { background:var(--bg); border-radius:var(--radius-md); padding:12px; min-height:100px; }
+.mt-col-head { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px; }
+.mt-card { background:var(--surface); border-radius:8px; padding:10px 12px; margin-bottom:8px; box-shadow:0 1px 3px rgba(0,33,105,0.06); border:1px solid var(--border); cursor:pointer; transition:box-shadow 0.15s; }
+.mt-card:hover { box-shadow:0 3px 10px rgba(0,33,105,0.12); }
+.mt-card-title { font-size:13px; font-weight:600; margin-bottom:3px; }
+.mt-card-meta { font-size:11px; color:var(--text-muted); display:flex; gap:8px; flex-wrap:wrap; }
+.mt-card-due { font-size:11px; font-weight:600; }
+.mt-card-due.overdue { color:var(--danger); }
+.mt-card-due.soon { color:var(--warning); }
+.act-feed { display:flex; flex-direction:column; }
+.act-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+.act-item:last-child { border-bottom:none; }
+.act-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.act-body { flex:1; }
+.act-title { font-size:13px; font-weight:600; color:var(--text); }
+.act-detail { font-size:12px; color:var(--text-muted); margin-top:1px; }
+.act-time { font-size:11px; color:var(--text-hint); margin-top:2px; }
+.pcal-wrap { display:flex; gap:16px; flex-wrap:wrap; }
+.pcal-main { flex:1; min-width:280px; }
+.pcal-sidebar { width:220px; flex-shrink:0; }
+.pcal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.pcal-nav { background:none; border:1px solid var(--border); border-radius:6px; padding:3px 10px; cursor:pointer; font-size:16px; color:var(--text-muted); }
+.pcal-nav:hover { background:var(--accent-bg); }
+.pcal-title { font-size:15px; font-weight:700; color:var(--ci-navy); }
+.pcal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.pcal-dow { font-size:10px; font-weight:700; text-align:center; color:var(--text-muted); padding:4px 0; }
+.pcal-day { min-height:52px; border-radius:6px; padding:4px; border:1px solid transparent; cursor:pointer; }
+.pcal-day:hover { background:var(--accent-bg); }
+.pcal-day.today { background:var(--highlight-bg); border-color:var(--highlight); }
+.pcal-day.other-month { opacity:0.3; }
+.pcal-day-num { font-size:11px; font-weight:700; }
+.pcal-day.today .pcal-day-num { background:var(--ci-navy); color:#fff; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.pcal-evt { font-size:9px; font-weight:600; border-radius:3px; padding:1px 3px; margin-top:1px; color:#fff; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.pcal-upcoming { display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; }
+.pcal-up-item { border-left:3px solid var(--ci-blue); padding:5px 8px; background:var(--accent-bg); border-radius:0 6px 6px 0; }
+.pcal-up-date { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; }
+.pcal-up-title { font-size:12px; font-weight:600; color:var(--text); }
+.team-overview-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
+.tmc { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; display:flex; align-items:center; gap:10px; }
+.tmc-avatar { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; }
+.tmc-name { font-size:13px; font-weight:700; }
+.tmc-role { font-size:11px; color:var(--text-muted); }
+.tmc-load { font-size:11px; margin-top:3px; }
+.prof-empty { text-align:center; padding:32px 20px; color:var(--text-muted); }
+.prof-empty-icon { font-size:32px; margin-bottom:8px; }
+.prof-empty-text { font-size:13px; }
+.prof-goto { cursor:pointer; }
+.prof-goto:hover .topbar-user-avatar { box-shadow:0 0 0 2px var(--ci-yellow); }
 </style>
 </head>
 <body>
@@ -593,12 +675,14 @@ details ul { padding-left: 18px; }
       <button class="tab" data-panel="finance">💰 Finance</button>
       <button class="tab" data-panel="training">🎓 Training</button>
       <button class="tab" data-panel="capacity">⚡ Capacity</button>
+      <button class="tab" data-panel="profile">👤 My Profile</button>
+      <div style="height:1px;background:rgba(255,255,255,0.1);margin:6px 14px;"></div>
       <button class="tab" data-panel="admin" style="display:none;">🔐 Admin</button>
     </nav>
 
     <!-- BOTTOM: user profile -->
     <div class="sidebar-user" id="sidebar-user-section">
-      <div id="topbar-user" style="display:none;" class="sidebar-user-chip">
+      <div id="topbar-user" style="display:none;" class="sidebar-user-chip prof-goto" onclick="gotoMyProfile()" title="ดู My Profile">
         <div class="topbar-user-avatar" id="topbar-user-initials">?</div>
         <div>
           <div class="topbar-user-name" id="topbar-user-label">—</div>
@@ -1023,6 +1107,16 @@ details ul { padding-left: 18px; }
       <li>ผู้ใช้แต่ละคนสามารถ reset รหัสผ่านตัวเองได้ผ่านปุ่ม 🔑 ด้านบน</li>
     </ul>
   </div>
+</div>
+<!-- MY PROFILE PANEL -->
+<div class="panel" id="profile">
+  <div class="card" style="margin-bottom:16px;">
+    <div class="prof-hero-inner" id="prof-hero-inner">
+      <div class="prof-empty"><div class="prof-empty-icon">👤</div><div class="prof-empty-text">กำลังโหลด...</div></div>
+    </div>
+  </div>
+  <div class="prof-stabs" id="prof-stabs"></div>
+  <div id="prof-content" style="min-height:200px;"></div>
 </div>
   </div><!-- end .main-area -->
 
@@ -1547,6 +1641,18 @@ details ul { padding-left: 18px; }
           <option value="admin">🔴 Admin</option>
         </select>
       </div>
+      <div class="form-field">
+        <label>🔗 สมาชิกทีม (ลิงค์กับ My Profile)</label>
+        <select id="um-linked-nick">
+          <option value="">— ไม่ระบุ (Admin-only) —</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+        <input type="checkbox" id="um-is-lead" style="width:14px;height:14px;accent-color:var(--accent);">
+        🏅 เป็น Team Lead (เห็น Team sections ใน My Profile)
+      </label>
     </div>
     <div style="margin-top:12px;">
       <label style="font-size:12px;font-weight:500;color:var(--text-muted);display:block;margin-bottom:8px;">🗂 สิทธิ์ Tab <span style="font-weight:400;">(เฉพาะ Member)</span></label>
@@ -6733,6 +6839,506 @@ document.getElementById('mg-btn-save').addEventListener('click', async () => {
 document.getElementById('btn-push').addEventListener('click', () => mongoPush());
 document.getElementById('btn-pull').addEventListener('click', () => mongoPull());
 
+// ========== MY PROFILE ==========
+
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(ds) { if (!ds) return ''; try { const d=new Date(ds+'T00:00:00'); return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}); } catch(e) { return ds; } }
+function timeAgo(ts) { if (!ts) return ''; const diff=Date.now()-new Date(ts).getTime(); const mins=Math.floor(diff/60000); if(mins<2) return 'เมื่อกี้'; if(mins<60) return `${mins} นาทีที่แล้ว`; const hrs=Math.floor(mins/60); if(hrs<24) return `${hrs} ชั่วโมงที่แล้ว`; const days=Math.floor(hrs/24); if(days<30) return `${days} วันที่แล้ว`; return fmtDate(ts.slice(0,10)); }
+const AVATAR_PALETTE = ['#427DDA','#D4603A','#1B7A4B','#7C3AED','#B45309','#0E7490','#BE185D','#374151','#D97706','#059669'];
+function avatarColor(name) { let h=0; for(let i=0;i<(name||'').length;i++) h=(h*31+name.charCodeAt(i))&0xffff; return AVATAR_PALETTE[h%AVATAR_PALETTE.length]; }
+
+function getMyMember() {
+  if (!SESSION) return null;
+  const user = (DB.users||[]).find(u => u.id === SESSION.userId);
+  const nick = user?.linkedNick;
+  if (nick) return (DB.team||[]).find(m => (m.nickname||m.name) === nick) || null;
+  const searchName = (SESSION.name||SESSION.username||'').toLowerCase();
+  return (DB.team||[]).find(m => {
+    const n = (m.nickname||m.name||'').toLowerCase();
+    return n === searchName || (m.name||'').toLowerCase() === searchName;
+  }) || null;
+}
+
+function isTeamLead() {
+  if (!SESSION) return false;
+  if (SESSION.role === 'admin') return true;
+  const user = (DB.users||[]).find(u => u.id === SESSION.userId);
+  if (user?.isLead) return true;
+  const m = getMyMember();
+  if (!m) return false;
+  const r = (m.role||'').toLowerCase();
+  return ['director','manager','lead','head','chief','vp','ผู้จัดการ','หัวหน้า','กรรมการ'].some(kw => r.includes(kw));
+}
+
+function getMyDeptTeam() {
+  const m = getMyMember();
+  if (!m) return (DB.team||[]).filter(tm=>(tm.status||'active')==='active');
+  return (DB.team||[]).filter(tm => (tm.status||'active')==='active' && tm.dept === m.dept);
+}
+
+function myNick() {
+  const m = getMyMember();
+  return m ? (m.nickname||m.name) : (SESSION?.name||SESSION?.username||'');
+}
+
+function logActivity(personNick, type, action, projectId, detail) {
+  if (!DB.activityLog) DB.activityLog = [];
+  DB.activityLog.unshift({ id:'act_'+Date.now()+'_'+Math.random().toString(36).slice(2,5), personNick, type, action, projectId, detail, ts:new Date().toISOString() });
+  if (DB.activityLog.length > 300) DB.activityLog = DB.activityLog.slice(0,300);
+}
+
+function gotoMyProfile() {
+  const tab = document.querySelector('[data-panel="profile"]');
+  if (tab) tab.click();
+}
+
+let _profTab = 'overview';
+let _myCalYear = new Date().getFullYear();
+let _myCalMonth = new Date().getMonth();
+let _teamCalYear = new Date().getFullYear();
+let _teamCalMonth = new Date().getMonth();
+
+function initProfile() {
+  _profTab = 'overview';
+  renderProfile();
+}
+
+function renderProfile() {
+  renderProfHero();
+  buildProfSubTabs();
+  renderProfContent();
+}
+
+function renderProfHero() {
+  const m = getMyMember();
+  const nick = m ? (m.nickname||m.name) : (SESSION?.name||'?');
+  const col = avatarColor(nick);
+  const initials = nick.slice(0,2).toUpperCase();
+  const matrix = personMonthMatrix();
+  const myRow = matrix[nick] || Array(12).fill(0);
+  const currMo = new Date().getMonth();
+  const currLoad = myRow[currMo] || 0;
+  const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const myOwned = activeProjects().filter(p => p.owner === nick);
+  const myAll = activeProjects().filter(p => [p.owner,p.support,...(p.teamMembers||[])].includes(nick));
+  const myOpenTasks = (DB.tasks||[]).filter(t => t.assignee === nick && !t.done);
+  const myKpis = (DB.kpis||[]).filter(k => k.personNick === nick);
+  const kpiAchieved = myKpis.filter(k => k.status==='achieved').length;
+  const wlColor = currLoad>=7?'#A32D2D':currLoad>=5?'#EF9F27':currLoad>=3?'#FAC775':'#C0DD97';
+  const wlPct = Math.min(100,(currLoad/8)*100);
+  const monthBars = myRow.map((v,i)=>{
+    const c=v>=7?'#A32D2D':v>=5?'#EF9F27':v>=3?'#FAC775':v>=1?'#C0DD97':'rgba(0,0,0,0.1)';
+    const isNow=i===currMo;
+    return `<div class="prof-wl-month" style="background:${c};opacity:${isNow?1:0.65};outline:${isNow?'2px solid #fff':'none'};outline-offset:1px;" title="${MONTHS[i]}: ${v}">${v||''}</div>`;
+  }).join('');
+  const deptBg = m ? deptColor(m.dept) : '#eee';
+  const deptFg = m ? deptTextColor(m.dept) : '#333';
+  document.getElementById('prof-hero-inner').innerHTML = `
+    <div class="prof-avatar" style="background:${col};">${initials}</div>
+    <div class="prof-meta">
+      <div class="prof-name">${m?m.name:nick}</div>
+      <div class="prof-role-line">
+        ${m?`<span class="team-dept-badge" style="background:${deptBg}33;color:${deptFg};">${m.dept||'—'}</span>`:''}
+        <span style="font-size:12px;color:var(--text-muted);">${m?.role||SESSION?.role||''}</span>
+        ${isTeamLead()?'<span style="font-size:11px;background:rgba(253,224,33,0.25);color:#8A6F00;padding:2px 7px;border-radius:10px;font-weight:700;">🏅 Team Lead</span>':''}
+      </div>
+      <div class="prof-quick-stats">
+        <div class="prof-stat"><div class="prof-stat-val">${myOwned.length}</div><div class="prof-stat-lbl">Owner</div></div>
+        <div class="prof-stat"><div class="prof-stat-val">${myAll.length}</div><div class="prof-stat-lbl">ทั้งหมด</div></div>
+        <div class="prof-stat"><div class="prof-stat-val" style="color:${currLoad>=7?'var(--danger)':currLoad>=5?'var(--warning)':'var(--ci-blue)'};">${currLoad}</div><div class="prof-stat-lbl">ภาระงาน</div></div>
+        <div class="prof-stat"><div class="prof-stat-val" style="color:var(--warning);">${myOpenTasks.length}</div><div class="prof-stat-lbl">Tasks</div></div>
+        ${myKpis.length?`<div class="prof-stat"><div class="prof-stat-val" style="color:var(--success);">${kpiAchieved}/${myKpis.length}</div><div class="prof-stat-lbl">KPIs</div></div>`:''}
+      </div>
+    </div>
+    <div class="prof-wl-block">
+      <div class="prof-wl-label">Workload ${new Date().getFullYear()} · เดือนนี้ ${currLoad} projects</div>
+      <div class="prof-wl-bar"><div class="prof-wl-fill" style="width:${wlPct}%;background:${wlColor};"></div></div>
+      <div class="prof-wl-months">${monthBars}</div>
+    </div>`;
+}
+
+function buildProfSubTabs() {
+  const lead = isTeamLead();
+  const tabs = [
+    {key:'overview',label:'📊 Overview'},
+    {key:'tasks',label:'✅ My Tasks'},
+    {key:'kpis',label:'🎯 My KPIs'},
+    {key:'calendar',label:'📅 My Calendar'},
+    {key:'activity',label:'📋 Activity'},
+  ];
+  if (lead) tabs.push(
+    {key:'sep',sep:true},
+    {key:'team-overview',label:'👥 Team'},
+    {key:'team-tasks',label:'📋 Team Tasks'},
+    {key:'team-kpis',label:'🎯 Team KPIs'},
+    {key:'team-calendar',label:'📅 Team Calendar'},
+    {key:'team-activity',label:'📈 Team Activity'},
+  );
+  document.getElementById('prof-stabs').innerHTML = tabs.map(t=>
+    t.sep ? `<div class="prof-stab-sep"></div>` :
+    `<button class="prof-stab${_profTab===t.key?' active':''}" data-stab="${t.key}" onclick="switchProfTab('${t.key}')">${t.label}</button>`
+  ).join('');
+}
+
+function switchProfTab(tab) {
+  _profTab = tab;
+  document.querySelectorAll('.prof-stab').forEach(b => b.classList.toggle('active', b.dataset.stab===tab));
+  renderProfContent();
+}
+
+function renderProfContent() {
+  const el = document.getElementById('prof-content');
+  if (!el) return;
+  switch(_profTab) {
+    case 'overview':      el.innerHTML = buildMyOverview(); break;
+    case 'tasks':         buildMyTaskBoard(el); break;
+    case 'kpis':          el.innerHTML = buildMyKPIs(); break;
+    case 'calendar':      buildMyCalendar(el); break;
+    case 'activity':      el.innerHTML = buildMyActivity(); break;
+    case 'team-overview': el.innerHTML = buildTeamOverview(); break;
+    case 'team-tasks':    buildTeamTaskBoard(el); break;
+    case 'team-kpis':     el.innerHTML = buildTeamKPIs(); break;
+    case 'team-calendar': buildTeamCalendar(el); break;
+    case 'team-activity': el.innerHTML = buildTeamActivity(); break;
+    default: el.innerHTML='';
+  }
+}
+
+// ── My Overview ───────────────────────────────────
+function buildMyOverview() {
+  const nick = myNick();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const soon = new Date(today); soon.setDate(soon.getDate()+14);
+  const myOwned = activeProjects().filter(p=>p.owner===nick);
+  const myAll   = activeProjects().filter(p=>[p.owner,p.support,...(p.teamMembers||[])].includes(nick));
+  const myTasks = (DB.tasks||[]).filter(t=>t.assignee===nick);
+  const openTasks = myTasks.filter(t=>!t.done);
+  const doneTasks = myTasks.filter(t=>t.done);
+  const upcoming = myAll.filter(p=>p.deadline).map(p=>({name:p.name||p.code,dl:new Date(p.deadline),status:p.status})).filter(p=>p.dl>=today&&p.dl<=soon).sort((a,b)=>a.dl-b.dl).slice(0,5);
+  const SC={'Working':'var(--success)','Proposing':'var(--ci-blue)','On Hold':'var(--text-muted)','Closed':'var(--danger)'};
+  const kpis=(DB.kpis||[]).filter(k=>k.personNick===nick);
+  const kpiHtml = kpis.length ? kpis.slice(0,3).map(k=>{
+    const pct=k.target>0?Math.min(100,Math.round((k.actual/k.target)*100)):0;
+    const c=k.status==='achieved'?'#1B7A4B':k.status==='on-track'?'#427DDA':k.status==='at-risk'?'#D4603A':'#B83230';
+    const sl={achieved:'✅',['on-track']:'🔵',['at-risk']:'⚠️',missed:'❌'}[k.status]||'';
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><span style="font-size:12px;font-weight:600;">${escHtml(k.title)}</span><span style="font-size:10px;font-weight:700;color:${c};">${sl} ${pct}%</span></div>
+      <div class="kpi-progress"><div class="kpi-progress-fill" style="width:${pct}%;background:${c};"></div></div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${k.actual}/${k.target} ${k.unit||''}</div>
+    </div>`;
+  }).join('') : `<div style="color:var(--text-muted);font-size:12px;">ยังไม่มี KPI <button class="btn btn-sm" onclick="switchProfTab('kpis')" style="margin-left:6px;">+ เพิ่ม</button></div>`;
+  return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;">
+    <div class="card">
+      <h3 style="margin:0 0 12px;font-size:14px;color:var(--ci-navy);">📁 Projects ที่ฉันรับผิดชอบ</h3>
+      ${myOwned.length?myOwned.map(p=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">
+        <div style="width:8px;height:8px;border-radius:50%;background:${SC[p.status]||'#ccc'};flex-shrink:0;"></div>
+        <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.name||p.code)}</div><div style="font-size:11px;color:var(--text-muted);">${p.client||'—'} · ${p.status||'—'}</div></div>
+        ${p.deadline?`<div style="font-size:11px;color:var(--text-hint);white-space:nowrap;">${fmtDate(p.deadline)}</div>`:''}
+      </div>`).join(''):`<div class="prof-empty"><div class="prof-empty-icon" style="font-size:24px;">📭</div><div class="prof-empty-text">ไม่มี project ที่เป็น owner</div></div>`}
+      ${myAll.length>myOwned.length?`<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">+ Support / Team อีก ${myAll.length-myOwned.length} project</div>`:''}
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:14px;color:var(--ci-navy);">✅ Tasks</h3><button class="btn btn-sm" onclick="switchProfTab('tasks')">ดูทั้งหมด →</button></div>
+      <div style="display:flex;gap:16px;margin-bottom:12px;">
+        <div class="prof-stat"><div class="prof-stat-val" style="color:var(--warning);">${openTasks.length}</div><div class="prof-stat-lbl">ค้างอยู่</div></div>
+        <div class="prof-stat"><div class="prof-stat-val" style="color:var(--success);">${doneTasks.length}</div><div class="prof-stat-lbl">เสร็จ</div></div>
+      </div>
+      ${openTasks.slice(0,4).map(t=>{const od=t.date&&new Date(t.date)<today;return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;">⏳</span><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(t.title)}</div>${t.date?`<div style="font-size:11px;color:${od?'var(--danger)':'var(--text-muted)'};">${od?'⚠ เกิน ':''}${fmtDate(t.date)}</div>`:''}</div></div>`;}).join('')}
+      ${openTasks.length>4?`<div style="font-size:11px;color:var(--text-muted);margin-top:6px;">+ อีก ${openTasks.length-4} รายการ</div>`:''}
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 12px;font-size:14px;color:var(--ci-navy);">📅 Deadline ใน 14 วัน</h3>
+      ${upcoming.length?upcoming.map(p=>{const dl=Math.ceil((p.dl-today)/86400000);const uc=dl<=3?'var(--danger)':dl<=7?'var(--warning)':'var(--text-muted)';return`<div style="padding:7px 0;border-bottom:1px solid var(--border);"><div style="font-size:13px;font-weight:600;">${escHtml(p.name)}</div><div style="font-size:11px;color:${uc};">${fmtDate(p.dl.toISOString().slice(0,10))} · เหลือ ${dl} วัน</div></div>`;}).join(''):`<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">✨ ไม่มี deadline ใกล้ถึง</div>`}
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:14px;color:var(--ci-navy);">🎯 KPI Snapshot</h3><button class="btn btn-sm" onclick="switchProfTab('kpis')">ดูทั้งหมด →</button></div>
+      ${kpiHtml}
+    </div>
+  </div>`;
+}
+
+// ── My Tasks Board ─────────────────────────────────
+let _editingMyTask = null;
+function buildMyTaskBoard(container) {
+  const nick = myNick();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const all = (DB.tasks||[]).filter(t=>t.assignee===nick||(!t.assignee&&SESSION?.role==='admin'));
+  const todo   = all.filter(t=>!t.done&&t.status!=='in-progress');
+  const inProg = all.filter(t=>!t.done&&t.status==='in-progress');
+  const done   = all.filter(t=>t.done);
+  const card = t=>{
+    const od=t.date&&new Date(t.date)<today&&!t.done, sn=t.date&&!od&&(new Date(t.date)-today)<3*86400000;
+    const proj=(DB.projects||[]).find(p=>p.id===t.projectId||p.code===t.projectId);
+    return `<div class="mt-card" onclick="openMyTaskModal('${t.id}')">
+      <div class="mt-card-title">${escHtml(t.title||'—')}</div>
+      <div class="mt-card-meta">
+        ${proj?`<span>📁 ${escHtml(proj.name||proj.code)}</span>`:''}
+        ${t.date?`<span class="mt-card-due${od?' overdue':sn?' soon':''}">📅 ${fmtDate(t.date)}</span>`:''}
+        ${t.priority?`<span>${t.priority==='high'?'🔴':t.priority==='medium'?'🟡':'🔵'} ${t.priority}</span>`:''}
+      </div>
+    </div>`;
+  };
+  container.innerHTML = `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <h2 style="margin:0;">✅ My Tasks</h2>
+      <button class="btn btn-primary btn-sm" onclick="openMyTaskModal(null)">+ New Task</button>
+    </div>
+    <div class="mt-board">
+      <div class="mt-col"><div class="mt-col-head">📋 To Do <span style="background:var(--border);border-radius:10px;padding:1px 6px;margin-left:4px;">${todo.length}</span></div>${todo.map(card).join('')||'<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">ว่าง 🎉</div>'}</div>
+      <div class="mt-col"><div class="mt-col-head">⚡ กำลังทำ <span style="background:var(--highlight-bg);border-radius:10px;padding:1px 6px;margin-left:4px;color:#8A6F00;">${inProg.length}</span></div>${inProg.map(card).join('')||'<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">ยังไม่มี</div>'}</div>
+      <div class="mt-col"><div class="mt-col-head">✅ เสร็จแล้ว <span style="background:var(--success-bg);border-radius:10px;padding:1px 6px;margin-left:4px;color:var(--success);">${done.length}</span></div>${done.slice(0,8).map(card).join('')}${done.length>8?`<div style="font-size:11px;color:var(--text-muted);margin-top:6px;">+ อีก ${done.length-8} รายการ</div>`:''}</div>
+    </div>
+  </div>`;
+}
+
+function openMyTaskModal(id) {
+  _editingMyTask = id;
+  const t = id?(DB.tasks||[]).find(x=>x.id===id):null;
+  const nick = myNick();
+  const projOpts = activeProjects().map(p=>`<option value="${p.id||p.code}" ${t?.projectId===(p.id||p.code)?'selected':''}>${escHtml(p.name||p.code)}</option>`).join('');
+  document.getElementById('my-task-modal')?.remove();
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal show" id="my-task-modal" style="z-index:1100;">
+    <div class="modal-box" style="max-width:480px;">
+      <div class="modal-head"><h2>${t?'Edit Task':'New Task'}</h2><button class="modal-close" onclick="document.getElementById('my-task-modal').remove();">&times;</button></div>
+      <div class="form-grid" style="padding:16px;">
+        <div class="form-field full"><label>Task Title *</label><input id="mtf-title" value="${escHtml(t?.title||'')}" placeholder="ชื่อ task"></div>
+        <div class="form-field full"><label>Project</label><select id="mtf-project"><option value="">— ไม่ระบุ —</option>${projOpts}</select></div>
+        <div class="form-field"><label>Due Date</label><input type="date" id="mtf-date" value="${t?.date||''}"></div>
+        <div class="form-field"><label>Priority</label><select id="mtf-priority"><option value="" ${!t?.priority?'selected':''}>Normal</option><option value="high" ${t?.priority==='high'?'selected':''}>🔴 High</option><option value="medium" ${t?.priority==='medium'?'selected':''}>🟡 Medium</option><option value="low" ${t?.priority==='low'?'selected':''}>🔵 Low</option></select></div>
+        <div class="form-field"><label>Status</label><select id="mtf-status"><option value="" ${!t?.status?'selected':''}>📋 To Do</option><option value="in-progress" ${t?.status==='in-progress'?'selected':''}>⚡ กำลังทำ</option></select></div>
+        <div class="form-field"><label>เสร็จแล้ว?</label><label style="display:flex;align-items:center;gap:8px;margin-top:6px;cursor:pointer;"><input type="checkbox" id="mtf-done" ${t?.done?'checked':''}> ทำเสร็จแล้ว ✅</label></div>
+        <div class="form-field full"><label>Note</label><textarea id="mtf-note" style="min-height:60px;resize:vertical;">${escHtml(t?.note||'')}</textarea></div>
+      </div>
+      <div class="modal-actions">
+        ${t?`<button class="btn btn-danger" style="margin-right:auto;" onclick="deleteMyTask('${t.id}')">🗑 ลบ</button>`:''}
+        <button class="btn" onclick="document.getElementById('my-task-modal').remove();">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveMyTask()">บันทึก</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+function saveMyTask() {
+  const title = document.getElementById('mtf-title')?.value.trim();
+  if (!title) { alert('กรุณากรอก Task Title'); return; }
+  const nick = myNick();
+  if (!DB.tasks) DB.tasks = [];
+  const id = _editingMyTask||('mt_'+Date.now());
+  let t = DB.tasks.find(x=>x.id===id);
+  if (!t) { t={id,assignee:nick,createdAt:new Date().toISOString()}; DB.tasks.push(t); }
+  t.title     = title;
+  t.projectId = document.getElementById('mtf-project')?.value||'';
+  t.date      = document.getElementById('mtf-date')?.value||'';
+  t.priority  = document.getElementById('mtf-priority')?.value||'';
+  t.status    = document.getElementById('mtf-status')?.value||'';
+  t.note      = document.getElementById('mtf-note')?.value||'';
+  t.done      = document.getElementById('mtf-done')?.checked||false;
+  t.updatedAt = new Date().toISOString();
+  t.assignee  = t.assignee||nick;
+  logActivity(nick,'task',t.done?'completed':(_editingMyTask?'updated':'created'),t.projectId||'',t.title);
+  saveDB(true);
+  document.getElementById('my-task-modal')?.remove();
+  renderProfContent();
+}
+
+function deleteMyTask(id) {
+  if (!confirm('ลบ task นี้?')) return;
+  DB.tasks=(DB.tasks||[]).filter(t=>t.id!==id);
+  saveDB(true);
+  document.getElementById('my-task-modal')?.remove();
+  renderProfContent();
+}
+
+// ── My KPIs ───────────────────────────────────────
+function buildMyKPIs() {
+  const nick = myNick();
+  const kpis = (DB.kpis||[]).filter(k=>k.personNick===nick);
+  const KSL={achieved:'✅ Achieved','on-track':'🔵 On Track','at-risk':'⚠️ At Risk',missed:'❌ Missed'};
+  const rows = kpis.length ? kpis.map(k=>{
+    const pct=k.target>0?Math.min(100,Math.round((k.actual/k.target)*100)):0;
+    const c=k.status==='achieved'?'#1B7A4B':k.status==='on-track'?'#427DDA':k.status==='at-risk'?'#D4603A':'#B83230';
+    return `<tr><td style="font-weight:600;">${escHtml(k.title)}</td><td style="color:var(--text-muted);font-size:12px;">${k.period||'—'}</td><td style="text-align:center;">${k.target} ${k.unit||''}</td><td style="text-align:center;font-weight:700;color:${c};">${k.actual} ${k.unit||''}</td><td><div class="kpi-progress" style="width:80px;"><div class="kpi-progress-fill" style="width:${pct}%;background:${c};"></div></div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${pct}%</div></td><td><span class="kpi-status ${k.status||'on-track'}">${KSL[k.status]||k.status}</span></td><td><button class="btn btn-sm" onclick="openKpiModal('${k.id}')">✏️</button></td></tr>`;
+  }).join('') : `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-muted);">ยังไม่มี KPI</td></tr>`;
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;"><h2 style="margin:0;">🎯 My KPIs</h2><button class="btn btn-primary btn-sm" onclick="openKpiModal(null)">+ Add KPI</button></div><div style="overflow-x:auto;"><table class="kpi-table"><thead><tr><th>KPI</th><th>Period</th><th style="text-align:center;">Target</th><th style="text-align:center;">Actual</th><th>Progress</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+let _editingKpiId = null;
+function openKpiModal(id) {
+  _editingKpiId = id;
+  const k = id?(DB.kpis||[]).find(x=>x.id===id):null;
+  document.getElementById('kpi-modal')?.remove();
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal show" id="kpi-modal" style="z-index:1100;">
+    <div class="modal-box" style="max-width:460px;">
+      <div class="modal-head"><h2>${k?'Edit KPI':'Add KPI'}</h2><button class="modal-close" onclick="document.getElementById('kpi-modal').remove();">&times;</button></div>
+      <div class="form-grid" style="padding:16px;">
+        <div class="form-field full"><label>KPI Title *</label><input id="kf-title" value="${escHtml(k?.title||'')}" placeholder="เช่น Projects Delivered On Time"></div>
+        <div class="form-field"><label>Period</label><input id="kf-period" value="${k?.period||'Q2 2026'}" placeholder="Q1 2026"></div>
+        <div class="form-field"><label>Unit</label><input id="kf-unit" value="${k?.unit||''}" placeholder="projects / %"></div>
+        <div class="form-field"><label>Target</label><input type="number" id="kf-target" value="${k?.target||''}"></div>
+        <div class="form-field"><label>Actual</label><input type="number" id="kf-actual" value="${k?.actual||''}"></div>
+        <div class="form-field full"><label>Status</label><select id="kf-status"><option value="on-track" ${k?.status==='on-track'?'selected':''}>🔵 On Track</option><option value="at-risk" ${k?.status==='at-risk'?'selected':''}>⚠️ At Risk</option><option value="achieved" ${k?.status==='achieved'?'selected':''}>✅ Achieved</option><option value="missed" ${k?.status==='missed'?'selected':''}>❌ Missed</option></select></div>
+        <div class="form-field full"><label>Note</label><textarea id="kf-note" style="min-height:50px;">${escHtml(k?.note||'')}</textarea></div>
+      </div>
+      <div class="modal-actions">
+        ${k?`<button class="btn btn-danger" style="margin-right:auto;" onclick="deleteKpi('${k.id}')">🗑 ลบ</button>`:''}
+        <button class="btn" onclick="document.getElementById('kpi-modal').remove();">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveKpi()">บันทึก</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+function saveKpi() {
+  const title=document.getElementById('kf-title')?.value.trim();
+  if (!title) { alert('กรุณากรอก KPI Title'); return; }
+  const nick=myNick();
+  if (!DB.kpis) DB.kpis=[];
+  const id=_editingKpiId||('kpi_'+Date.now());
+  let k=DB.kpis.find(x=>x.id===id);
+  if (!k) { k={id,personNick:nick}; DB.kpis.push(k); }
+  k.title=title; k.period=document.getElementById('kf-period')?.value||''; k.unit=document.getElementById('kf-unit')?.value||''; k.target=parseFloat(document.getElementById('kf-target')?.value)||0; k.actual=parseFloat(document.getElementById('kf-actual')?.value)||0; k.status=document.getElementById('kf-status')?.value||'on-track'; k.note=document.getElementById('kf-note')?.value||'';
+  saveDB(true); document.getElementById('kpi-modal')?.remove(); renderProfContent();
+}
+
+function deleteKpi(id) { if(!confirm('ลบ KPI นี้?'))return; DB.kpis=(DB.kpis||[]).filter(k=>k.id!==id); saveDB(true); document.getElementById('kpi-modal')?.remove(); renderProfContent(); }
+
+// ── My Calendar ───────────────────────────────────
+function buildMyCalendar(container) {
+  const nick=myNick();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const todayStr=today.toISOString().slice(0,10);
+  const myPrj=activeProjects().filter(p=>[p.owner,p.support,...(p.teamMembers||[])].includes(nick));
+  const evMap={};
+  const addEv=(ds,ev)=>{ if(!ds)return; if(!evMap[ds])evMap[ds]=[]; evMap[ds].push(ev); };
+  myPrj.forEach(p=>{ if(p.deadline)addEv(p.deadline,{title:escHtml(p.name||p.code),color:'#427DDA',type:'project'}); if(p.startDate)addEv(p.startDate,{title:'▶ '+escHtml(p.name||p.code),color:'#1B7A4B',type:'project'}); });
+  (DB.personalEvents||[]).filter(e=>e.personNick===nick).forEach(e=>addEv(e.date,{title:escHtml(e.title),color:e.color||'#D4603A',type:'personal',id:e.id}));
+  (DB.tasks||[]).filter(t=>t.assignee===nick&&t.date&&!t.done).forEach(t=>addEv(t.date,{title:'✅ '+escHtml(t.title),color:'#7C3AED',type:'task'}));
+  const MTH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const DOWS=['อา','จ','อ','พ','พฤ','ศ','ส'];
+  const yr=_myCalYear,mo=_myCalMonth;
+  const first=new Date(yr,mo,1).getDay(), daysInMo=new Date(yr,mo+1,0).getDate();
+  let cells='';
+  for(let i=0;i<first;i++) cells+=`<div class="pcal-day other-month"></div>`;
+  for(let d=1;d<=daysInMo;d++){
+    const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isT=ds===todayStr, evs=evMap[ds]||[];
+    const evh=evs.slice(0,2).map(e=>`<div class="pcal-evt" style="background:${e.color};" title="${e.title}">${e.title.slice(0,10)}</div>`).join('');
+    cells+=`<div class="pcal-day${isT?' today':''}" onclick="addPersonalEvent('${ds}')"><div class="pcal-day-num">${d}</div>${evh}${evs.length>2?`<div style="font-size:8px;color:var(--text-muted);">+${evs.length-2}</div>`:''}</div>`;
+  }
+  const upcoming=Object.entries(evMap).filter(([ds])=>ds>=todayStr).sort(([a],[b])=>a.localeCompare(b)).slice(0,8).flatMap(([ds,evs])=>evs.map(e=>({...e,ds})));
+  const upHtml=upcoming.length?upcoming.map(e=>`<div class="pcal-up-item" style="border-left-color:${e.color};"><div class="pcal-up-date">${fmtDate(e.ds)}</div><div class="pcal-up-title">${e.title}</div></div>`).join(''):`<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">ไม่มีกำหนดการ</div>`;
+  const pEvCount=(DB.personalEvents||[]).filter(e=>e.personNick===nick).length;
+  container.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;"><h2 style="margin:0;">📅 My Calendar</h2><button class="btn btn-primary btn-sm" onclick="addPersonalEvent('${todayStr}')">+ Add Event</button></div><div class="pcal-wrap"><div class="pcal-main"><div class="pcal-header"><button class="pcal-nav" onclick="myCalPrev()">‹</button><div class="pcal-title">${MTH[mo]} ${yr+543}</div><button class="pcal-nav" onclick="myCalNext()">›</button></div><div class="pcal-grid">${DOWS.map(d=>`<div class="pcal-dow">${d}</div>`).join('')}${cells}</div></div><div class="pcal-sidebar"><div style="font-size:12px;font-weight:700;color:var(--ci-navy);margin-bottom:10px;">กำหนดการข้างหน้า</div><div class="pcal-upcoming">${upHtml}</div>${pEvCount?`<div style="margin-top:12px;font-size:11px;color:var(--text-muted);">📌 Personal: ${pEvCount} events</div>`:''}</div></div></div>`;
+}
+function myCalPrev(){_myCalMonth--;if(_myCalMonth<0){_myCalMonth=11;_myCalYear--;}renderProfContent();}
+function myCalNext(){_myCalMonth++;if(_myCalMonth>11){_myCalMonth=0;_myCalYear++;}renderProfContent();}
+
+function addPersonalEvent(date) {
+  const nick=myNick();
+  document.getElementById('pev-modal')?.remove();
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal show" id="pev-modal" style="z-index:1100;">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-head"><h2>📅 เพิ่ม Personal Event</h2><button class="modal-close" onclick="document.getElementById('pev-modal').remove();">&times;</button></div>
+      <div class="form-grid" style="padding:16px;">
+        <div class="form-field full"><label>Event Title *</label><input id="pef-title" placeholder="ชื่อ event"></div>
+        <div class="form-field full"><label>Date</label><input type="date" id="pef-date" value="${date||''}"></div>
+        <div class="form-field full"><label>Color</label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;" id="pef-color-swatches">${['#427DDA','#D4603A','#1B7A4B','#7C3AED','#B45309','#0E7490','#BE185D'].map((c,i)=>`<div style="width:24px;height:24px;border-radius:50%;background:${c};cursor:pointer;border:${i===0?'2px solid var(--ci-navy)':'2px solid transparent'};" onclick="selectPevColor('${c}',this)"></div>`).join('')}<input type="hidden" id="pef-color" value="#427DDA"></div></div>
+        <div class="form-field full"><label>Note</label><textarea id="pef-note" style="min-height:50px;resize:vertical;"></textarea></div>
+      </div>
+      <div class="modal-actions"><button class="btn" onclick="document.getElementById('pev-modal').remove();">ยกเลิก</button><button class="btn btn-primary" onclick="savePersonalEvent()">บันทึก</button></div>
+    </div>
+  </div>`);
+}
+function selectPevColor(c,el){document.getElementById('pef-color').value=c;el.parentNode.querySelectorAll('div[style*="border-radius:50%"]').forEach(d=>d.style.borderColor='transparent');el.style.borderColor='var(--ci-navy)';}
+function savePersonalEvent(){
+  const title=document.getElementById('pef-title')?.value.trim();
+  if(!title){alert('กรุณากรอกชื่อ event');return;}
+  if(!DB.personalEvents)DB.personalEvents=[];
+  const nick=myNick();
+  DB.personalEvents.push({id:'pev_'+Date.now(),personNick:nick,title,date:document.getElementById('pef-date')?.value||'',color:document.getElementById('pef-color')?.value||'#427DDA',note:document.getElementById('pef-note')?.value||'',createdAt:new Date().toISOString()});
+  logActivity(nick,'calendar','added','',title);
+  saveDB(true); document.getElementById('pev-modal')?.remove(); renderProfContent();
+}
+
+// ── Activity Log ──────────────────────────────────
+function buildMyActivity() {
+  const nick=myNick();
+  const logs=(DB.activityLog||[]).filter(a=>a.personNick===nick).slice(0,40);
+  const TI={task:'✅',project:'📁',kpi:'🎯',calendar:'📅',note:'📝'}, TC={task:'#1B7A4B',project:'#427DDA',kpi:'#7C3AED',calendar:'#D4603A',note:'#B45309'}, AL={created:'สร้าง',updated:'แก้ไข',completed:'เสร็จสิ้น',added:'เพิ่ม',deleted:'ลบ'};
+  if(!logs.length)return`<div class="card"><div class="prof-empty"><div class="prof-empty-icon">📋</div><div class="prof-empty-text">ยังไม่มี activity — เริ่มทำงานได้เลย!</div></div></div>`;
+  return`<div class="card"><h2 style="margin:0 0 14px;">📋 Activity Log</h2><div class="act-feed">${logs.map(a=>`<div class="act-item"><div class="act-icon" style="background:${(TC[a.type]||'#888')}22;">${TI[a.type]||'📌'}</div><div class="act-body"><div class="act-title">${AL[a.action]||a.action} — ${escHtml(a.detail||'')}</div>${a.projectId?`<div class="act-detail">📁 ${a.projectId}</div>`:''}<div class="act-time">${timeAgo(a.ts)}</div></div></div>`).join('')}</div></div>`;
+}
+
+// ── Team sections (Lead only) ──────────────────────
+function buildTeamOverview() {
+  const team=getMyDeptTeam(), m=getMyMember();
+  if(!team.length)return`<div class="card"><div class="prof-empty"><div class="prof-empty-icon">👥</div><div class="prof-empty-text">ไม่พบข้อมูลทีม</div></div></div>`;
+  const matrix=personMonthMatrix(), currMo=new Date().getMonth();
+  const cards=team.map(tm=>{
+    const nick=tm.nickname||tm.name, load=(matrix[nick]||[])[currMo]||0;
+    const lc=load>=7?'var(--danger)':load>=5?'var(--warning)':load>=3?'var(--text)':'var(--success)';
+    const tc=(DB.tasks||[]).filter(t=>t.assignee===nick&&!t.done).length;
+    const col=avatarColor(nick);
+    return`<div class="tmc"><div class="tmc-avatar" style="background:${col};">${nick.slice(0,2).toUpperCase()}</div><div style="flex:1;min-width:0;"><div class="tmc-name">${tm.name}</div><div class="tmc-role">${tm.role||'—'}</div><div class="tmc-load" style="color:${lc};">📊 ${load} proj · ✅ ${tc} tasks</div></div></div>`;
+  }).join('');
+  const total=team.reduce((s,tm)=>s+((matrix[tm.nickname||tm.name]||[])[currMo]||0),0);
+  const avg=team.length?(total/team.length).toFixed(1):0;
+  const overloaded=team.filter(tm=>((matrix[tm.nickname||tm.name]||[])[currMo]||0)>=7).length;
+  return`<div style="display:flex;flex-direction:column;gap:16px;"><div class="card"><h2 style="margin:0 0 14px;">👥 Team Overview — ${m?.dept||'ทีม'}</h2><div style="display:flex;gap:24px;margin-bottom:14px;flex-wrap:wrap;"><div class="prof-stat"><div class="prof-stat-val">${team.length}</div><div class="prof-stat-lbl">สมาชิก</div></div><div class="prof-stat"><div class="prof-stat-val">${avg}</div><div class="prof-stat-lbl">ภาระเฉลี่ย</div></div><div class="prof-stat"><div class="prof-stat-val" style="color:${overloaded>0?'var(--danger)':'var(--success)'};">${overloaded}</div><div class="prof-stat-lbl">Overloaded</div></div></div><div class="team-overview-grid">${cards}</div></div></div>`;
+}
+
+function buildTeamTaskBoard(container) {
+  const team=getMyDeptTeam(), nicks=team.map(m=>m.nickname||m.name);
+  const today=new Date(); today.setHours(0,0,0,0);
+  const all=(DB.tasks||[]).filter(t=>nicks.includes(t.assignee));
+  const todo=all.filter(t=>!t.done&&t.status!=='in-progress'), inProg=all.filter(t=>!t.done&&t.status==='in-progress'), done=all.filter(t=>t.done);
+  const card=t=>{
+    const od=t.date&&new Date(t.date)<today&&!t.done, col=avatarColor(t.assignee||'?');
+    return`<div class="mt-card" onclick="openMyTaskModal('${t.id}')"><div class="mt-card-title">${escHtml(t.title||'—')}</div><div class="mt-card-meta"><span><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:${col};font-size:8px;color:#fff;font-weight:700;">${(t.assignee||'?').slice(0,1).toUpperCase()}</span> ${escHtml(t.assignee||'—')}</span>${t.date?`<span class="mt-card-due${od?' overdue':''}">📅 ${fmtDate(t.date)}</span>`:''}</div></div>`;
+  };
+  container.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h2 style="margin:0;">📋 Team Tasks</h2><span style="font-size:12px;color:var(--text-muted);">${all.length} รายการ</span></div><div class="mt-board"><div class="mt-col"><div class="mt-col-head">📋 To Do <span style="background:var(--border);border-radius:10px;padding:1px 6px;margin-left:4px;">${todo.length}</span></div>${todo.map(card).join('')||'<div style="font-size:12px;color:var(--text-muted);">ว่าง 🎉</div>'}</div><div class="mt-col"><div class="mt-col-head">⚡ กำลังทำ <span style="background:var(--highlight-bg);border-radius:10px;padding:1px 6px;margin-left:4px;color:#8A6F00;">${inProg.length}</span></div>${inProg.map(card).join('')||'<div style="font-size:12px;color:var(--text-muted);">ยังไม่มี</div>'}</div><div class="mt-col"><div class="mt-col-head">✅ เสร็จ <span style="background:var(--success-bg);border-radius:10px;padding:1px 6px;margin-left:4px;color:var(--success);">${done.length}</span></div>${done.slice(0,6).map(card).join('')}</div></div></div>`;
+}
+
+function buildTeamKPIs() {
+  const team=getMyDeptTeam(), nicks=team.map(m=>m.nickname||m.name);
+  const kpis=(DB.kpis||[]).filter(k=>nicks.includes(k.personNick));
+  if(!kpis.length)return`<div class="card"><div class="prof-empty"><div class="prof-empty-icon">🎯</div><div class="prof-empty-text">ยังไม่มี KPI สำหรับทีม</div></div></div>`;
+  const rows=kpis.map(k=>{
+    const pct=k.target>0?Math.min(100,Math.round((k.actual/k.target)*100)):0;
+    const c=k.status==='achieved'?'#1B7A4B':k.status==='on-track'?'#427DDA':k.status==='at-risk'?'#D4603A':'#B83230';
+    const sl={achieved:'✅','on-track':'🔵','at-risk':'⚠️',missed:'❌'}[k.status]||'';
+    const mc=avatarColor(k.personNick||'?');
+    return`<tr><td><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:${mc};font-size:9px;color:#fff;font-weight:700;margin-right:5px;">${(k.personNick||'?').slice(0,1).toUpperCase()}</span>${k.personNick}</td><td style="font-weight:600;">${escHtml(k.title)}</td><td style="color:var(--text-muted);font-size:12px;">${k.period||'—'}</td><td style="text-align:center;">${k.target} ${k.unit||''}</td><td style="text-align:center;font-weight:700;color:${c};">${k.actual} ${k.unit||''}</td><td><div class="kpi-progress" style="width:70px;"><div class="kpi-progress-fill" style="width:${pct}%;background:${c};"></div></div></td><td><span class="kpi-status ${k.status||'on-track'}">${sl} ${pct}%</span></td></tr>`;
+  }).join('');
+  return`<div class="card"><h2 style="margin:0 0 14px;">🎯 Team KPIs</h2><div style="overflow-x:auto;"><table class="kpi-table"><thead><tr><th>สมาชิก</th><th>KPI</th><th>Period</th><th style="text-align:center;">Target</th><th style="text-align:center;">Actual</th><th>Progress</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function buildTeamCalendar(container) {
+  const team=getMyDeptTeam(), nicks=team.map(m=>m.nickname||m.name);
+  const today=new Date(); today.setHours(0,0,0,0); const todayStr=today.toISOString().slice(0,10);
+  const evMap={};
+  const addEv=(ds,ev)=>{if(!ds)return;if(!evMap[ds])evMap[ds]=[];evMap[ds].push(ev);};
+  activeProjects().filter(p=>nicks.some(n=>[p.owner,p.support,...(p.teamMembers||[])].includes(n))).forEach(p=>{if(p.deadline)addEv(p.deadline,{title:escHtml((p.name||p.code)+' ('+p.owner+')'),color:'#427DDA'});if(p.startDate)addEv(p.startDate,{title:'▶ '+escHtml(p.name||p.code),color:'#1B7A4B'});});
+  (DB.tasks||[]).filter(t=>nicks.includes(t.assignee)&&t.date&&!t.done).forEach(t=>addEv(t.date,{title:`✅ ${t.assignee}: ${escHtml(t.title)}`,color:'#7C3AED'}));
+  const MTH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const DOWS=['อา','จ','อ','พ','พฤ','ศ','ส'];
+  const yr=_teamCalYear,mo=_teamCalMonth,first=new Date(yr,mo,1).getDay(),dim=new Date(yr,mo+1,0).getDate();
+  let cells='';
+  for(let i=0;i<first;i++)cells+=`<div class="pcal-day other-month"></div>`;
+  for(let d=1;d<=dim;d++){const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,isT=ds===todayStr,evs=evMap[ds]||[],evh=evs.slice(0,2).map(e=>`<div class="pcal-evt" style="background:${e.color};" title="${e.title}">${e.title.slice(0,10)}</div>`).join('');cells+=`<div class="pcal-day${isT?' today':''}"><div class="pcal-day-num">${d}</div>${evh}${evs.length>2?`<div style="font-size:8px;color:var(--text-muted);">+${evs.length-2}</div>`:''}</div>`;}
+  const up=Object.entries(evMap).filter(([ds])=>ds>=todayStr).sort(([a],[b])=>a.localeCompare(b)).slice(0,6).flatMap(([ds,evs])=>evs.map(e=>({...e,ds})));
+  const upH=up.length?up.map(e=>`<div class="pcal-up-item" style="border-left-color:${e.color};"><div class="pcal-up-date">${fmtDate(e.ds)}</div><div class="pcal-up-title">${e.title}</div></div>`).join(''):`<div style="color:var(--text-muted);font-size:12px;">ไม่มีกำหนดการ</div>`;
+  container.innerHTML=`<div class="card"><h2 style="margin:0 0 14px;">📅 Team Calendar</h2><div class="pcal-wrap"><div class="pcal-main"><div class="pcal-header"><button class="pcal-nav" onclick="_teamCalMonth--;if(_teamCalMonth<0){_teamCalMonth=11;_teamCalYear--;}renderProfContent();">‹</button><div class="pcal-title">${MTH[mo]} ${yr+543}</div><button class="pcal-nav" onclick="_teamCalMonth++;if(_teamCalMonth>11){_teamCalMonth=0;_teamCalYear++;}renderProfContent();">›</button></div><div class="pcal-grid">${DOWS.map(d=>`<div class="pcal-dow">${d}</div>`).join('')}${cells}</div></div><div class="pcal-sidebar"><div style="font-size:12px;font-weight:700;color:var(--ci-navy);margin-bottom:10px;">กำหนดการทีม</div><div class="pcal-upcoming">${upH}</div></div></div></div>`;
+}
+
+function buildTeamActivity() {
+  const team=getMyDeptTeam(), nicks=team.map(m=>m.nickname||m.name);
+  const logs=(DB.activityLog||[]).filter(a=>nicks.includes(a.personNick)).slice(0,40);
+  const TI={task:'✅',project:'📁',kpi:'🎯',calendar:'📅',note:'📝'}, TC={task:'#1B7A4B',project:'#427DDA',kpi:'#7C3AED',calendar:'#D4603A',note:'#B45309'}, AL={created:'สร้าง',updated:'แก้ไข',completed:'เสร็จสิ้น',added:'เพิ่ม',deleted:'ลบ'};
+  if(!logs.length)return`<div class="card"><div class="prof-empty"><div class="prof-empty-icon">📈</div><div class="prof-empty-text">ยังไม่มี activity ของทีม</div></div></div>`;
+  return`<div class="card"><h2 style="margin:0 0 14px;">📈 Team Activity</h2><div class="act-feed">${logs.map(a=>{const mc=avatarColor(a.personNick||'?');return`<div class="act-item"><div class="act-icon" style="background:${(TC[a.type]||'#888')}22;">${TI[a.type]||'📌'}</div><div class="act-body"><div class="act-title"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${mc};font-size:8px;color:#fff;font-weight:700;margin-right:4px;">${(a.personNick||'?').slice(0,1).toUpperCase()}</span><b>${escHtml(a.personNick)}</b> ${AL[a.action]||a.action} — ${escHtml(a.detail||'')}</div><div class="act-time">${timeAgo(a.ts)}</div></div></div>`;}).join('')}</div></div>`;
+}
+
 // ========== INIT ==========
 (async function init() {
   loadDB();
@@ -6784,6 +7390,7 @@ const ALL_TABS = [
   { key:'finance',   label:'Finance' },
   { key:'training',  label:'Training' },
   { key:'capacity',  label:'Capacity' },
+  { key:'profile',   label:'My Profile' },
 ];
 
 // ── SHA-256 hash ─────────────────────────────────────────
@@ -6962,6 +7569,13 @@ function openUserModal(userId) {
   document.getElementById('um-pw-note').textContent = user ? '(เว้นว่างถ้าไม่เปลี่ยน)' : '(ต้องกรอก) *';
   document.getElementById('um-role').value = user?.role || 'member';
   document.getElementById('um-force-reset').checked = user ? !!user.forceReset : true;
+  // Populate linked nick dropdown
+  const lnSelect = document.getElementById('um-linked-nick');
+  if (lnSelect) {
+    const activeNicks = (DB.team||[]).filter(m=>(m.status||'active')==='active').map(m=>m.nickname||m.name).sort();
+    lnSelect.innerHTML = '<option value="">— ไม่ระบุ (Admin-only) —</option>' + activeNicks.map(n=>`<option value="${n}" ${user?.linkedNick===n?'selected':''}>${n}</option>`).join('');
+  }
+  document.getElementById('um-is-lead').checked = user?.isLead || false;
   document.getElementById('um-delete').style.display = user ? '' : 'none';
   document.getElementById('um-error').style.display = 'none';
   const currentTabs = user?.tabs || ALL_TABS.map(t => t.key);
@@ -6994,17 +7608,19 @@ async function saveUserModal() {
   if (!DB.users) DB.users = [];
   const dup = DB.users.find(u => u.username === username && u.id !== _editingUserId);
   if (dup) { err.textContent = `Username "${username}" ถูกใช้แล้ว`; err.style.display = ''; return; }
+  const linkedNick = document.getElementById('um-linked-nick')?.value || '';
+  const isLead = document.getElementById('um-is-lead')?.checked || false;
   const tabs = role === 'admin' ? ALL_TABS.map(t => t.key)
     : [...document.querySelectorAll('#um-perm-grid input[type=checkbox]:checked')].map(cb => cb.value);
   if (_editingUserId) {
     const user = DB.users.find(u => u.id === _editingUserId);
     if (user) {
-      user.name = name; user.role = role; user.tabs = tabs; user.forceReset = forceReset;
+      user.name = name; user.role = role; user.tabs = tabs; user.forceReset = forceReset; user.linkedNick = linkedNick; user.isLead = isLead;
       if (password) user.passwordHash = await hashPassword(password);
       if (SESSION && user.id === SESSION.userId) { SESSION.name = name; SESSION.role = role; saveSession(SESSION); updateTopbarUser(); }
     }
   } else {
-    DB.users.push({ id: 'u_' + Date.now(), username, name, passwordHash: await hashPassword(password), role, tabs, forceReset });
+    DB.users.push({ id: 'u_' + Date.now(), username, name, passwordHash: await hashPassword(password), role, tabs, forceReset, linkedNick, isLead });
   }
   saveDB(true);
   renderUsers();
@@ -7101,6 +7717,7 @@ function deleteUser() {
 
   // Render users when admin tab is opened
   document.querySelector('[data-panel="admin"]')?.addEventListener('click', renderUsers);
+  document.querySelector('[data-panel="profile"]')?.addEventListener('click', initProfile);
 })();
 </script>
 </body>
