@@ -4,8 +4,7 @@
 *.json
 patch_dashboard.py
 
-# API server — มี repo แยกอยู่แล้ว
-api-server/
+# api-server รวมอยู่ใน repo นี้แล้ว
 
 # macOS
 .DS_Store

@@ -1,0 +1,17 @@
+# Render.com deployment config
+# วาง repo นี้บน GitHub แล้ว import ที่ render.com
+services:
+  - type: web
+    name: platform-dashboard-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGO_URI
+        sync: false   # กรอกเองใน Render dashboard (ไม่ commit ลง repo)
+      - key: DB_NAME
+        value: project_dashboard
+      - key: COLLECTION
+        value: projects_db
+      - key: API_SECRET
+        sync: false   # กรอกเองใน Render dashboard
