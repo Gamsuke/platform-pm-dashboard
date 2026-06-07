@@ -2754,7 +2754,14 @@ details ul { padding-left: 18px; }
       </div>
 
       <!-- Copyright -->
-      <div class="auth-copy">© 2026 Platform ONE · platform.co.th</div>
+      <div class="auth-copy" style="display:flex;align-items:center;justify-content:center;gap:12px;">
+        <span>© 2026 Platform ONE · platform.co.th</span>
+        <span id="auth-reset-trigger" onclick="document.getElementById('auth-reset-zone').style.display=document.getElementById('auth-reset-zone').style.display==='none'?'block':'none'" style="cursor:pointer;opacity:0.3;font-size:10px;user-select:none;" title="Emergency Reset">🔧</span>
+      </div>
+      <div id="auth-reset-zone" style="display:none;margin-top:12px;padding:12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:rgba(255,180,180,0.8);margin-bottom:8px;">Emergency: รีเซ็ต Admin password เป็น 1234</div>
+        <button onclick="(async()=>{const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('1234'));const hash=Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');const key='pm_dashboard_db_v2';let db=JSON.parse(localStorage.getItem(key)||'{}');if(!db.users)db.users=[];const a=db.users.find(u=>u.role==='admin');if(a){a.passwordHash=hash;a.forceReset=false;localStorage.setItem(key,JSON.stringify(db));alert('Reset สำเร็จ! Password = 1234');}else{alert('ไมเจอ Admin ในเครื่องนี้ รอ 10 วิ แล้วลองใหม่');}})();" style="font-size:11px;padding:6px 16px;background:rgba(239,68,68,0.3);color:#FCA5A5;border:1px solid rgba(239,68,68,0.4);border-radius:6px;cursor:pointer;">Reset Admin Password</button>
+      </div>
 
     </div><!-- end auth-form -->
   </div><!-- end auth-box -->
@@ -13071,10 +13078,10 @@ async function doLogin() {
   const password = document.getElementById('auth-password').value;
   const errEl = document.getElementById('auth-error');
   errEl.style.display = 'none';
-  if (!username || !password) { errEl.textContent = 'กรุณากรอก Username และ Password'; errEl.style.display = ''; return; }
+  if (!username || !password) { errEl.textContent = 'กรุณากรอก Username และ Password'; errEl.style.display = 'block'; return; }
   const hash = await hashPassword(password);
   const user = (DB.users || []).find(u => u.username === username && u.passwordHash === hash);
-  if (!user) { errEl.textContent = 'Username หรือ Password ไม่ถูกต้อง'; errEl.style.display = ''; return; }
+  if (!user) { errEl.textContent = 'Username หรือ Password ไม่ถูกต้อง'; errEl.style.display = 'block'; return; }
   saveSession({ userId: user.id, username: user.username, name: user.name || user.username, role: user.role, forceReset: user.forceReset });
   showApp();
   if (user.forceReset) openChangePassword(true);
