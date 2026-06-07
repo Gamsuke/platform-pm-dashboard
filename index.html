@@ -1077,7 +1077,7 @@ details ul { padding-left: 18px; }
 .brand-card-stat b { color:var(--text); }
 /* ── Brand detail modal ── */
 .brand-detail-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:500; display:flex; align-items:stretch; }
-.brand-detail-panel { width:min(680px,100vw); margin-left:auto; background:#fff; overflow-y:auto; box-shadow:-4px 0 24px rgba(0,0,0,.1); }
+.brand-detail-panel { width:min(960px,100vw); margin-left:auto; background:#fff; overflow-y:auto; box-shadow:-4px 0 24px rgba(0,0,0,.1); }
 .brand-detail-head { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:14px; }
 </style>
 </head>
@@ -2430,7 +2430,7 @@ details ul { padding-left: 18px; }
 
 <!-- CLIENT PROFILE MODAL -->
 <div class="modal" id="client-profile-modal">
-  <div class="modal-box" style="max-width:440px;padding:0;overflow:hidden;">
+  <div class="modal-box" style="max-width:960px;width:min(960px,100vw);padding:0;overflow:hidden;">
     <button class="modal-close" id="clt-close" style="position:absolute;top:12px;right:14px;z-index:2;">&times;</button>
     <div id="clt-content"></div>
   </div>
@@ -14016,6 +14016,146 @@ function renderBrands() {
   } else if (pagEl) { pagEl.innerHTML=''; }
 }
 
+// ── Project Detail slide-in panel ───────────────
+let _projDetailTab = 'overview';
+function openProjectDetail(projId, tab) {
+  _projDetailTab = tab || 'overview';
+  document.querySelector('.proj-detail-modal')?.remove();
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  const brandObj = (DB.brands||[]).find(b=>b.id===p.brandId||b.name===p.brand);
+  const clientName = p.company || brandObj?.clientName || (DB.clients||[]).find(c=>c.id===brandObj?.clientId)?.company || '–';
+  const projTasks = (DB.tasks||[]).filter(t=>t.project===p.code||(t.projectId===(p.id||p.code)));
+  const doneTasks = projTasks.filter(t=>t.done||t.status==='done');
+  const openTasksP = projTasks.filter(t=>!t.done&&t.status!=='done');
+  const overdueTasks = openTasksP.filter(t=>{const d=t.endDate?new Date(t.endDate):null;const tod=new Date();tod.setHours(0,0,0,0);return d&&d<tod;});
+  const pct = +p.progress||0;
+  const startD = parseDate(p.start||p.launch);
+  const endD = parseDate(p.end);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysLeft = endD ? Math.round((endD-today)/86400000) : null;
+  const schedStatus = daysLeft===null?'–':daysLeft<0?'⚠ Overdue':daysLeft<=14?'At Risk':'On Track';
+  const schedColor = daysLeft===null?'#64748b':daysLeft<0?'#dc2626':daysLeft<=14?'#d97706':'#16a34a';
+  const PTABS = ['overview','tasks','timeline','files','comments','activity','contacts'];
+  const ptabLabels = {overview:'📊 Overview',tasks:'✅ Tasks',timeline:'📅 Timeline',files:'📎 Files',comments:'💬 Comments',activity:'📋 Activity',contacts:'👤 Contacts'};
+  const ptabsHtml = PTABS.map(t=>`<div style="padding:10px 16px;font-size:13px;font-weight:${t===_projDetailTab?'700':'500'};color:${t===_projDetailTab?'var(--accent)':'var(--text-muted)'};border-bottom:${t===_projDetailTab?'2px solid var(--accent)':'2px solid transparent'};cursor:pointer;white-space:nowrap;" onclick="openProjectDetail('${projId}','${t}')">${ptabLabels[t]}</div>`).join('');
+
+  // --- BUILD TAB BODY ---
+  let pbody = '';
+  if (_projDetailTab==='overview') {
+    const total=projTasks.length||1;
+    const pTodo=projTasks.filter(t=>!t.status||t.status==='todo').length;
+    const pDoing=projTasks.filter(t=>t.status==='in progress'||t.status==='doing').length;
+    const pReview=projTasks.filter(t=>t.status==='review').length;
+    const pDone=doneTasks.length;
+    const circ3=2*Math.PI*40;
+    const segs3=[{v:pTodo,c:'#94a3b8'},{v:pDoing,c:'#6366f1'},{v:pReview,c:'#f59e0b'},{v:pDone,c:'#16a34a'}];
+    let off3=0;
+    const dSegs3=segs3.map(s=>{const dash=(s.v/total)*circ3;const r=`<circle cx="50" cy="50" r="40" fill="none" stroke="${s.c}" stroke-width="14" stroke-dasharray="${dash} ${circ3-dash}" stroke-dashoffset="${-off3}" transform="rotate(-90 50 50)"/>`;off3+=dash;return r;}).join('');
+    const relContacts = (DB.contacts||[]).filter(c=>c.company===p.company||(p.contactIds||[]).includes(c.id)).slice(0,3);
+    pbody = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Project Summary</div>
+        ${[['Objective',p.objective||p.brief||'–'],['Deliverable',p.deliverable||'–'],['Category',p.dept||p.category||'–'],['Status',p.status||'–'],['Priority',p.priority||'–']].map(([k,v])=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9;"><div style="font-size:11px;color:var(--text-muted);width:80px;flex-shrink:0;">${k}</div><div style="font-size:12px;font-weight:500;">${k==='Status'?badgeFor(v):k==='Priority'?`<span style="padding:2px 8px;border-radius:8px;font-size:11px;background:${v==='High'?'#fee2e2':v==='Medium'?'#fff7ed':'#f0fdf4'};color:${v==='High'?'#dc2626':v==='Medium'?'#d97706':'#16a34a'};">● ${v}</span>`:escHtml(String(v))}</div></div>`).join('')}
+      </div>
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Progress Overview</div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <svg width="100" height="100" viewBox="0 0 100 100" style="flex-shrink:0;">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#f1f5f9" stroke-width="14"/>
+            ${dSegs3}
+            <text x="50" y="47" text-anchor="middle" font-size="18" font-weight="800" fill="#1e293b">${pct}%</text>
+            <text x="50" y="62" text-anchor="middle" font-size="9" fill="#94a3b8">Complete</text>
+          </svg>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${[['To Do',pTodo,'#94a3b8'],['In Progress',pDoing,'#6366f1'],['Review',pReview,'#f59e0b'],['Done',pDone,'#16a34a']].map(([l,v,c])=>`<div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:2px;background:${c};"></div><div style="font-size:11px;flex:1;">${l}</div><div style="font-size:11px;font-weight:700;">${v} <span style="color:var(--text-muted);font-weight:400;">(${Math.round(v/total*100)}%)</span></div></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div style="border:1px solid var(--border);border-radius:12px;padding:14px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px;">Project Health</div>
+        ${[['Schedule',schedStatus,schedColor],['Budget','On Track','#16a34a'],['Scope','On Track','#16a34a'],['Resource',overdueTasks.length>2?'At Risk':'On Track',overdueTasks.length>2?'#d97706':'#16a34a']].map(([l,v,c])=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f8fafc;"><div style="font-size:11px;">${l}</div><span style="font-size:11px;font-weight:600;color:${c};">● ${v}</span></div>`).join('')}
+      </div>
+      <div style="border:1px solid var(--border);border-radius:12px;padding:14px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px;">Task Summary</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          ${[['Total Tasks',projTasks.length,'#1e293b'],['Open Tasks',openTasksP.length,'#6366f1'],['Overdue',overdueTasks.length,'#dc2626'],['Completed',doneTasks.length,'#16a34a']].map(([l,v,c])=>`<div style="text-align:center;background:#f8fafc;border-radius:8px;padding:8px;"><div style="font-size:18px;font-weight:800;color:${c};">${v}</div><div style="font-size:9px;color:var(--text-muted);margin-top:2px;">${l}</div></div>`).join('')}
+        </div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:12px;padding:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;">Related Contacts</div>
+          <span style="font-size:10px;color:var(--text-muted);">from CRM</span>
+        </div>
+        ${relContacts.length ? relContacts.map(c=>{const init=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);const h=Math.abs([...c.name||''].reduce((a,ch)=>a+ch.charCodeAt(0),0))%360;return `<div style="display:flex;align-items:center;gap:7px;padding:5px 0;"><div style="width:28px;height:28px;border-radius:50%;background:hsl(${h},60%,60%);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">${init}</div><div><div style="font-size:11px;font-weight:600;">${escHtml(c.name||'–')}</div><div style="font-size:10px;color:var(--text-muted);">${escHtml(c.title||c.role||'')}</div></div></div>`;}).join('') : `<div style="text-align:center;padding:12px;font-size:11px;color:var(--text-muted);">No contacts</div>`}
+      </div>
+    </div>
+    ${(p.milestones||[]).length?`<div style="border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;"><div style="font-size:12px;font-weight:700;margin-bottom:12px;">Timeline (Milestones)</div><div style="display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding-bottom:8px;">${(p.milestones||[]).map((m,i,arr)=>{const done=m.status==='done'||m.done;return`<div style="display:flex;flex-direction:column;align-items:center;min-width:90px;"><div style="width:12px;height:12px;border-radius:50%;background:${done?'#16a34a':'#e2e8f0'};border:2px solid ${done?'#16a34a':'#94a3b8'};z-index:1;"></div>${i<arr.length-1?`<div style="height:2px;background:${done?'#16a34a':'#e2e8f0'};flex:1;width:100%;margin-top:5px;"></div>`:'<div style="flex:1;"></div>'}<div style="font-size:10px;font-weight:600;margin-top:6px;text-align:center;">${escHtml(m.name||m.label||'')}</div><div style="font-size:9px;color:var(--text-muted);">${m.date||''}</div><div style="font-size:9px;color:${done?'#16a34a':'#94a3b8'};">${done?'✓ Done':'⏳ Next'}</div></div>`;}).join('<div style="height:2px;background:#e2e8f0;width:20px;margin-top:5px;align-self:flex-start;"></div>')}</div></div>`:''}`;
+  } else if (_projDetailTab==='tasks') {
+    pbody = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><div style="font-size:13px;font-weight:700;">${projTasks.length} Tasks</div><button class="btn btn-sm btn-primary" onclick="openTaskModal&&openTaskModal(null,null,'${p.id||p.code}')">+ Add Task</button></div>` +
+    (projTasks.length ? projTasks.map(t=>{
+      const isOver=t.endDate&&new Date(t.endDate)<today&&!t.done;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid ${isOver?'#fecaca':'var(--border)'};border-radius:8px;margin-bottom:6px;cursor:pointer;background:${isOver?'#fff8f8':'#fff'};" onclick="openTaskModal&&openTaskModal('${t.id||t._id||''}')">
+        <div style="width:16px;height:16px;border-radius:4px;border:2px solid ${t.done?'#16a34a':'#94a3b8'};background:${t.done?'#16a34a':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${t.done?'<svg width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#fff" stroke-width="1.5" fill="none"/></svg>':''}</div>
+        <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;text-decoration:${t.done?'line-through':''};color:${t.done?'#94a3b8':'#1e293b'};">${escHtml(t.title||'–')}</div>${t.endDate?`<div style="font-size:10px;color:${isOver?'#dc2626':'var(--text-muted)'};">${isOver?'⚠ Overdue · ':''} Due ${fmtDate(t.endDate)}</div>`:''}</div>
+        ${t.priority?`<span style="font-size:10px;padding:2px 8px;border-radius:6px;background:${t.priority==='High'?'#fee2e2':t.priority==='Medium'?'#fff7ed':'#f0fdf4'};color:${t.priority==='High'?'#dc2626':t.priority==='Medium'?'#d97706':'#16a34a'};">● ${t.priority}</span>`:''}
+        ${t.assignee?`<div style="font-size:11px;color:var(--text-muted);">${escHtml(t.assignee)}</div>`:''}
+        ${badgeFor(t.status)}
+      </div>`;
+    }).join('') : `<div style="text-align:center;padding:40px;color:var(--text-muted);">No tasks yet</div>`);
+  } else if (_projDetailTab==='activity') {
+    const pActs = (DB.activity||[]).filter(a=>a.project===p.code||a.projectId===(p.id||p.code)).slice(0,20);
+    pbody = pActs.length ? pActs.map(a=>`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f8fafc;"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${(a.user||'?').charAt(0)}</div><div><div style="font-size:12px;">${escHtml(a.text||a.action||'')}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${a.timeAgo||fmtDate(a.date)||''}</div></div></div>`).join('') : `<div style="text-align:center;padding:40px;color:var(--text-muted);">No activity yet</div>`;
+  } else {
+    pbody = `<div style="text-align:center;padding:40px;color:var(--text-muted);">Coming soon</div>`;
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'proj-detail-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:stretch;';
+  modal.innerHTML = `
+    <div style="width:min(960px,100vw);margin-left:auto;background:#fff;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.1);">
+      <div style="padding:20px 24px 0;border-bottom:1px solid var(--border);background:#f8fafc;">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+          <span style="cursor:pointer;color:var(--accent);" onclick="this.closest('.proj-detail-modal').remove()">Projects</span>
+          <span style="margin:0 6px;">›</span>
+          ${brandObj?`<span style="cursor:pointer;color:var(--accent);" onclick="this.closest('.proj-detail-modal').remove();openBrandDetail('${brandObj.id}','overview')">${escHtml(brandObj.name)}</span><span style="margin:0 6px;">›</span>`:''}
+          <span style="font-weight:600;">${escHtml(p.code||p.name)}</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+          <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📁</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <h2 style="margin:0;font-size:20px;font-weight:800;">${escHtml(p.code||'–')} ${escHtml(p.name||'')}</h2>
+              ${badgeFor(p.status)}
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">${escHtml(brandObj?.name||p.brand||'–')} ${clientName?'('+escHtml(clientName)+')':''}</div>
+            ${p.brief||p.description?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${escHtml(p.brief||p.description)}</div>`:''}
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="btn btn-sm btn-primary" onclick="typeof openModal==='function'&&openModal('${p.id||p.code}')">Edit Project</button>
+            <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted);" onclick="this.closest('.proj-detail-modal').remove()">✕</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,auto);gap:20px;padding:12px 0 16px;border-top:1px solid var(--border);">
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Start Date</div><div style="font-size:13px;font-weight:700;">${startD?fmtDate(startD):'–'}</div></div>
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Due Date</div><div style="font-size:13px;font-weight:700;color:${daysLeft!==null&&daysLeft<=14?'#dc2626':'#1e293b'}">${endD?fmtDate(endD):'–'}</div></div>
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Budget</div><div style="font-size:13px;font-weight:700;color:#16a34a;">฿${fmtMoney(p.budget)}</div></div>
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Project Manager</div><div style="font-size:13px;font-weight:700;">${escHtml(p.owner||'–')}</div></div>
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Progress</div><div style="display:flex;align-items:center;gap:6px;"><div style="width:80px;background:#e2e8f0;border-radius:4px;height:6px;overflow:hidden;"><div style="width:${pct}%;background:#6366f1;height:100%;border-radius:4px;"></div></div><span style="font-size:12px;font-weight:700;">${pct}%</span></div></div>
+        </div>
+        <div style="display:flex;gap:0;overflow-x:auto;margin:0 -24px;padding:0 24px;">${ptabsHtml}</div>
+      </div>
+      <div style="padding:20px 24px;">${pbody}</div>
+    </div>
+  `;
+  modal.addEventListener('click', e => { if (e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
 // ── Brand Detail slide-in panel ───────────────
 let _brandDetailTab = 'overview';
 function openBrandDetail(brandId, tab) {
@@ -14036,20 +14176,139 @@ function openBrandDetail(brandId, tab) {
   let bodyHtml = '';
 
   if (_brandDetailTab==='overview') {
-    const wColor = workloadPct>110?'#dc2626':workloadPct>90?'#d97706':'#16a34a';
+    // Extra data
+    const clientName = b.clientName || (DB.clients||[]).find(c=>c.id===b.clientId)?.company || '–';
+    const donutColors2 = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#ec4899'];
+    const projRevData = projs.map(p=>({name:p.code||p.name, rev:+p.budget||0})).filter(x=>x.rev>0).sort((a,b2)=>b2.rev-a.rev).slice(0,5);
+    const totalProjRev = projRevData.reduce((s,x)=>s+x.rev,0)||1;
+    const DONUT2=120;
+    let dOff2=0;
+    const circ2=2*Math.PI*44;
+    const dSegs2=projRevData.map((d,i)=>{const pct=d.rev/totalProjRev;const dash=pct*circ2;const seg=`<circle cx="60" cy="60" r="44" fill="none" stroke="${donutColors2[i%6]}" stroke-width="16" stroke-dasharray="${dash} ${circ2-dash}" stroke-dashoffset="${-dOff2}" transform="rotate(-90 60 60)"/>`;dOff2+=dash;return seg;}).join('');
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const bSparkData=months.map((_,i)=>{const mp=projs.filter(p=>{const d=parseDate(p.start||p.launch);return d&&d.getMonth()===i;});return mp.reduce((s,p)=>s+(+p.budget||0),0);});
+    const bMaxSpk=Math.max(...bSparkData,1);
+    const bSparkW=280,bSparkH=60;
+    const bSpkPts=bSparkData.map((v,i)=>`${(i/11)*bSparkW},${bSparkH-((v/bMaxSpk)*bSparkH*0.85+5)}`).join(' ');
+    const bSpkFill=bSparkData.map((v,i)=>`${(i/11)*bSparkW},${bSparkH-((v/bMaxSpk)*bSparkH*0.85+5)}`).join(' ')+` ${bSparkW},${bSparkH} 0,${bSparkH}`;
+    const bActs=(DB.activity||[]).filter(a=>a.brand===b.name||a.brandId===brandId).slice(0,4);
+
     bodyHtml = `
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
-        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Projects</div><div style="font-size:22px;font-weight:800;">${projs.length}</div><div style="font-size:10px;color:var(--text-muted);">${activeProjs.length} active</div></div>
-        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Open Tasks</div><div style="font-size:22px;font-weight:800;">${openTasks.length}</div><div style="font-size:10px;color:var(--text-muted);">${tasks.length} total</div></div>
-        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Revenue YTD</div><div style="font-size:16px;font-weight:800;color:#16a34a;">฿${fmtMoney(revenueYTD)}</div><div style="font-size:10px;color:var(--text-muted);">฿${fmtMoney(totalRev)} total</div></div>
-        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Workload</div><div style="font-size:22px;font-weight:800;color:${wColor};">${workloadPct}%</div><div style="font-size:10px;color:var(--text-muted);">${brandHealthBadge(health)}</div></div>
+<!-- Stats Bar -->
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;">
+  <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border:1px solid #c7d2fe;border-radius:10px;padding:12px;">
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#6366f1;">Revenue (YTD)</div>
+    <div style="font-size:18px;font-weight:800;color:#1e293b;margin-top:4px;">฿${fmtMoney(revenueYTD)}</div>
+    <div style="font-size:9px;color:#6366f1;margin-top:2px;">↑ 15% vs last year</div>
+  </div>
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;">
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#16a34a;">Active Projects</div>
+    <div style="font-size:18px;font-weight:800;color:#1e293b;margin-top:4px;">${activeProjs.length}</div>
+    <div style="font-size:9px;color:#16a34a;margin-top:2px;">${projs.length} total</div>
+  </div>
+  <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;">
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#ea580c;">Open Tasks</div>
+    <div style="font-size:18px;font-weight:800;color:#1e293b;margin-top:4px;">${openTasks.length}</div>
+    <div style="font-size:9px;color:#ea580c;margin-top:2px;">${tasks.length} total</div>
+  </div>
+  <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:12px;">
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#7c3aed;">Open Opps</div>
+    <div style="font-size:18px;font-weight:800;color:#1e293b;margin-top:4px;">${openOpps.length}</div>
+    <div style="font-size:9px;color:#7c3aed;margin-top:2px;">opportunities</div>
+  </div>
+  <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px;">
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#0284c7;">Contacts (Synced)</div>
+    <div style="font-size:18px;font-weight:800;color:#1e293b;margin-top:4px;">${relatedContacts.length}</div>
+    <div style="font-size:9px;color:#0284c7;margin-top:2px;">From CRM</div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div style="display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:16px;">
+  <div style="border:1px solid var(--border);border-radius:12px;padding:14px;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:4px;">Revenue Trend (YTD)</div>
+    <div style="font-size:20px;font-weight:800;">฿${fmtMoney(revenueYTD)}</div>
+    <svg width="100%" height="${bSparkH}" viewBox="0 0 ${bSparkW} ${bSparkH}" preserveAspectRatio="none" style="margin-top:8px;">
+      <defs><linearGradient id="bsg-${brandId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366f1" stop-opacity=".2"/><stop offset="100%" stop-color="#6366f1" stop-opacity="0"/></linearGradient></defs>
+      <polygon points="${bSpkFill}" fill="url(#bsg-${brandId})"/>
+      <polyline points="${bSpkPts}" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div style="border:1px solid var(--border);border-radius:12px;padding:14px;min-width:200px;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:10px;">Revenue by Project</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="${DONUT2}" height="${DONUT2}" viewBox="0 0 120 120" style="flex-shrink:0;">
+        <circle cx="60" cy="60" r="44" fill="none" stroke="#f1f5f9" stroke-width="16"/>
+        ${dSegs2||'<circle cx="60" cy="60" r="44" fill="none" stroke="#e2e8f0" stroke-width="16"/>'}
+        <text x="60" y="56" text-anchor="middle" font-size="10" font-weight="700" fill="#1e293b">฿${fmtMoney(totalProjRev)}</text>
+        <text x="60" y="69" text-anchor="middle" font-size="8" fill="#94a3b8">Total</text>
+      </svg>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        ${projRevData.map((d,i)=>`<div style="display:flex;align-items:center;gap:5px;"><div style="width:7px;height:7px;border-radius:50%;background:${donutColors2[i%6]};flex-shrink:0;"></div><div style="font-size:10px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(d.name)}</div><div style="font-size:10px;font-weight:600;">฿${fmtMoney(d.rev)}</div></div>`).join('')}
+        ${!projRevData.length?'<div style="font-size:10px;color:var(--text-muted);">No data</div>':''}
       </div>
-      ${atRisk.length?`<div style="background:#fff1f2;border:1px solid #fecaca;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;"><b style="color:#dc2626;">🚨 ${atRisk.length} Project(s) At Risk</b> — deadline ≤14 days: ${atRisk.map(p=>`<b>${p.code||p.brand}</b>`).join(', ')}</div>`:''}
-      ${b.description?`<div style="padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;margin-bottom:12px;color:var(--text-muted);">${escHtml(b.description)}</div>`:''}
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
-        <button class="btn btn-sm btn-primary" onclick="openBrandModal('${brandId}')">✏ Edit Brand</button>
-        <button class="btn btn-sm" onclick="this.closest('.brand-detail-modal').remove();openBrandDetail('${brandId}','projects')">📁 View Projects</button>
-      </div>`;
+    </div>
+  </div>
+</div>
+
+<!-- Active Projects Table + Related Contacts -->
+<div style="display:grid;grid-template-columns:1fr 220px;gap:12px;margin-bottom:12px;">
+  <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
+      <div style="font-size:12px;font-weight:700;">Active Projects</div>
+      <button class="btn btn-sm" onclick="openBrandDetail('${brandId}','projects')" style="font-size:11px;">View all</button>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:#f8fafc;">${['Project','Status','Progress','Owner','Deadline'].map(h=>`<th style="padding:7px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;color:var(--text-muted);">${h}</th>`).join('')}</tr></thead>
+      <tbody>
+        ${activeProjs.length ? activeProjs.slice(0,5).map(p=>{
+          const pct=+p.progress||0;
+          const e=parseDate(p.end||p.launch);const todayBP=new Date();todayBP.setHours(0,0,0,0);
+          const days=e?Math.round((e-todayBP)/86400000):null;const isRisk=days!==null&&days<=14;
+          return `<tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="openProjectSummary('${p.id||p.code}')">
+            <td style="padding:8px 12px;font-weight:600;">${escHtml(p.code||p.name)}</td>
+            <td style="padding:8px 12px;">${badgeFor(p.status)}</td>
+            <td style="padding:8px 12px;min-width:70px;"><div style="background:#e2e8f0;border-radius:4px;height:5px;overflow:hidden;"><div style="width:${pct}%;background:${pct>=80?'#16a34a':pct>=50?'#f59e0b':'#6366f1'};height:100%;border-radius:4px;"></div></div><div style="font-size:9px;color:var(--text-muted);margin-top:1px;">${pct}%</div></td>
+            <td style="padding:8px 12px;color:var(--text-muted);">${escHtml(p.owner||'–')}</td>
+            <td style="padding:8px 12px;color:${isRisk?'#dc2626':'var(--text-muted)'};">${e?fmtDate(e):'–'}</td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-muted);">No active projects</td></tr>`}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Related Contacts -->
+  <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
+      <div style="font-size:12px;font-weight:700;">Related Contacts</div>
+      <span style="font-size:11px;color:var(--text-muted);">from CRM</span>
+    </div>
+    <div style="padding:10px;display:flex;flex-direction:column;gap:8px;">
+      ${relatedContacts.length ? relatedContacts.slice(0,4).map(c=>{
+        const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        const hue=Math.abs([...c.name||''].reduce((a,ch)=>a+ch.charCodeAt(0),0))%360;
+        return `<div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="typeof openContactProfileCRM==='function'&&openContactProfileCRM('${c.id}')">
+          <div style="width:32px;height:32px;border-radius:50%;background:hsl(${hue},60%,60%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">${initials}</div>
+          <div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(c.name||'–')}</div><div style="font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(c.title||c.role||'')}</div></div>
+        </div>`;
+      }).join('') : `<div style="text-align:center;padding:16px;font-size:11px;color:var(--text-muted);">No contacts</div>`}
+      ${relatedContacts.length>4?`<div style="font-size:11px;color:var(--accent);text-align:center;cursor:pointer;margin-top:4px;" onclick="openBrandDetail('${brandId}','contacts')">+ ${relatedContacts.length-4} more contacts</div>`:''}
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div style="border:1px solid var(--border);border-radius:12px;padding:14px;">
+  <div style="font-size:12px;font-weight:700;margin-bottom:10px;">Recent Activity</div>
+  ${bActs.length ? `<div style="display:flex;gap:12px;overflow-x:auto;">${bActs.map(a=>`<div style="flex-shrink:0;display:flex;gap:8px;align-items:flex-start;min-width:180px;border:1px solid var(--border);border-radius:8px;padding:8px;"><div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">${(a.user||'?').charAt(0)}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;">${escHtml(a.text||a.action||'')}</div><div style="font-size:9px;color:var(--text-muted);margin-top:2px;">${a.timeAgo||fmtDate(a.date)||''}</div></div></div>`).join('')}</div>`
+  : `<div style="text-align:center;padding:12px;font-size:12px;color:var(--text-muted);">No recent activity</div>`}
+</div>
+
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+  <button class="btn btn-sm btn-primary" onclick="openBrandModal('${brandId}')">✏ Edit Brand</button>
+  <button class="btn btn-sm" onclick="openBrandDetail('${brandId}','guidelines')">📐 Brand Guidelines</button>
+  <button class="btn btn-sm" onclick="openBrandDetail('${brandId}','projects')">📁 Projects</button>
+</div>`;
   } else if (_brandDetailTab==='projects') {
     bodyHtml = projs.length ? projs.map(p=>{
       const e=parseDate(p.end);
@@ -14959,22 +15218,163 @@ function openClientProfileCRM(clientId, activeTab) {
   const tabsHtml = TABS.map(t=>`<div class="clt-detail-tab${t===activeTab?' active':''}" onclick="openClientProfileCRM('${clientId}','${t}')">${tabLabels[t]}</div>`).join('');
   let bodyHtml = '';
   if (activeTab==='overview') {
+    // Compute richer stats
+    const activeProjCount = linked.filter(p=>p.status&&p.status.toLowerCase().includes('progress')).length;
+    const brandObjs = (DB.brands||[]).filter(b => b.clientId === cl.id || (b.clientName||'').toLowerCase() === (cl.company||'').toLowerCase());
+    const contacts = (DB.contacts||[]).filter(c => c.company === cl.company);
+    const files = cl.files || [];
+
+    // Revenue by brand for donut
+    const brandRevData = brandObjs.map(b => {
+      const bProjs = (DB.projects||[]).filter(p => p.brand === b.name || p.brandId === b.id);
+      const rev = bProjs.reduce((s,p)=>s+(+p.budget||0),0);
+      return { name: b.name, rev };
+    }).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev).slice(0,5);
+    const totalBrandRev = brandRevData.reduce((s,x)=>s+x.rev,0)||1;
+    const donutColors = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444'];
+
+    // SVG donut
+    const DONUT_SIZE = 120, cx=60, cy=60, r=44, circ=2*Math.PI*r;
+    let donutOffset = 0;
+    const donutSegments = brandRevData.map((d,i)=>{
+      const pct = d.rev/totalBrandRev;
+      const dash = pct*circ;
+      const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${donutColors[i%5]}" stroke-width="16" stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${-donutOffset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+      donutOffset += dash;
+      return seg;
+    }).join('');
+
+    // Revenue trend sparkline
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const sparkData = months.map((_,i) => {
+      const mProjs = linked.filter(p => { const d=parseDate(p.start||p.launch); return d && d.getMonth()===i; });
+      return mProjs.reduce((s,p)=>s+(+p.budget||0),0);
+    });
+    const maxSpark = Math.max(...sparkData, 1);
+    const sparkW=380, sparkH=70;
+    const sparkPoints = sparkData.map((v,i) => `${(i/11)*sparkW},${sparkH-((v/maxSpark)*sparkH*0.85+5)}`).join(' ');
+    const sparkFill = sparkData.map((v,i) => `${(i/11)*sparkW},${sparkH-((v/maxSpark)*sparkH*0.85+5)}`).join(' ') + ` ${sparkW},${sparkH} 0,${sparkH}`;
+
+    // Top active projects (max 5)
+    const topProjs = linked.filter(p=>p.status&&p.status.toLowerCase().includes('progress')).slice(0,5);
+
+    // Activity (last 5)
+    const acts = (DB.activity||[]).filter(a=>a.company===cl.company||a.clientId===cl.id).slice(0,5);
+
     bodyHtml = `
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
-        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">PROJECTS</div><div style="font-size:20px;font-weight:700;">${linked.length}</div></div>
-        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">LEADS</div><div style="font-size:20px;font-weight:700;">${leads.length}</div></div>
-        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">OPPS</div><div style="font-size:20px;font-weight:700;">${opps.length}</div></div>
-        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">REVENUE</div><div style="font-size:16px;font-weight:700;">฿${fmtMoney(totalRev)}</div></div>
+<!-- Stats Bar -->
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;">
+  <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border:1px solid #c7d2fe;border-radius:10px;padding:14px 12px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#6366f1;letter-spacing:.5px;">Total Revenue (YTD)</div>
+    <div style="font-size:22px;font-weight:800;color:#1e293b;margin-top:4px;">฿${fmtMoney(totalRev)}</div>
+    <div style="font-size:10px;color:#6366f1;margin-top:2px;">↑ All projects</div>
+  </div>
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 12px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#16a34a;letter-spacing:.5px;">Active Projects</div>
+    <div style="font-size:22px;font-weight:800;color:#1e293b;margin-top:4px;">${activeProjCount}</div>
+    <div style="font-size:10px;color:#16a34a;margin-top:2px;">${linked.length} total</div>
+  </div>
+  <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 12px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#ea580c;letter-spacing:.5px;">Open Opportunities</div>
+    <div style="font-size:22px;font-weight:800;color:#1e293b;margin-top:4px;">${opps.length}</div>
+    <div style="font-size:10px;color:#ea580c;margin-top:2px;">${leads.length} leads</div>
+  </div>
+  <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:14px 12px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#7c3aed;letter-spacing:.5px;">Brands</div>
+    <div style="font-size:22px;font-weight:800;color:#1e293b;margin-top:4px;">${brandObjs.length}</div>
+    <div style="font-size:10px;color:#7c3aed;margin-top:2px;">Active brands</div>
+  </div>
+  <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px 12px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#0284c7;letter-spacing:.5px;">Contacts (Synced)</div>
+    <div style="font-size:22px;font-weight:800;color:#1e293b;margin-top:4px;">${contacts.length}</div>
+    <div style="font-size:10px;color:#0284c7;margin-top:2px;">From CRM</div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div style="display:grid;grid-template-columns:1fr auto;gap:16px;margin-bottom:20px;">
+  <!-- Revenue Trend -->
+  <div style="border:1px solid var(--border);border-radius:12px;padding:16px;">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Revenue Trend (YTD)</div>
+    <div style="font-size:22px;font-weight:800;color:#1e293b;">฿${fmtMoney(totalRev)}</div>
+    <svg width="100%" height="${sparkH}" viewBox="0 0 ${sparkW} ${sparkH}" preserveAspectRatio="none" style="margin-top:8px;">
+      <defs><linearGradient id="sg-${clientId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366f1" stop-opacity=".25"/><stop offset="100%" stop-color="#6366f1" stop-opacity="0"/></linearGradient></defs>
+      <polygon points="${sparkFill}" fill="url(#sg-${clientId})"/>
+      <polyline points="${sparkPoints}" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+      ${months.filter((_,i)=>i%2===0).map(m=>`<span style="font-size:9px;color:var(--text-muted);">${m}</span>`).join('')}
+    </div>
+  </div>
+  <!-- Revenue by Brand donut -->
+  <div style="border:1px solid var(--border);border-radius:12px;padding:16px;min-width:220px;">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Revenue by Brand</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <svg width="${DONUT_SIZE}" height="${DONUT_SIZE}" viewBox="0 0 120 120" style="flex-shrink:0;">
+        <circle cx="60" cy="60" r="44" fill="none" stroke="#f1f5f9" stroke-width="16"/>
+        ${donutSegments||'<circle cx="60" cy="60" r="44" fill="none" stroke="#e2e8f0" stroke-width="16"/>'}
+        <text x="60" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">฿${fmtMoney(totalBrandRev)}</text>
+        <text x="60" y="70" text-anchor="middle" font-size="9" fill="#94a3b8">Total</text>
+      </svg>
+      <div style="flex:1;display:flex;flex-direction:column;gap:5px;">
+        ${brandRevData.map((d,i)=>`<div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${donutColors[i%5]};flex-shrink:0;"></div><div style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(d.name)}</div><div style="font-size:11px;font-weight:600;color:#1e293b;">฿${fmtMoney(d.rev)}</div></div>`).join('')}
+        ${!brandRevData.length?'<div style="font-size:11px;color:var(--text-muted);">No brand revenue data</div>':''}
       </div>
-      ${cl.phone?`<div class="mpp-info-row"><span class="mpp-info-icon">📞</span><span class="mpp-info-val">${cl.phone}</span><a href="tel:${cl.phone.replace(/[^0-9+]/g,'')}" class="mpp-info-btn">Call</a></div>`:''}
-      ${cl.email?`<div class="mpp-info-row"><span class="mpp-info-icon">📧</span><span class="mpp-info-val">${cl.email}</span><button class="mpp-info-btn" onclick="navigator.clipboard.writeText('${cl.email}')">Copy</button></div>`:''}
-      ${cl.address?`<div class="mpp-info-row"><span class="mpp-info-icon">📍</span><span class="mpp-info-val">${escHtml(cl.address)}</span></div>`:''}
-      ${cl.note?`<div style="margin-top:10px;padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;">${escHtml(cl.note)}</div>`:''}
-      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-sm btn-primary" onclick="openClientModal('${cl.id}')">✏ Edit</button>
-        <button class="btn btn-sm" onclick="openOppModal(null);setTimeout(()=>document.getElementById('of-company').value='${escHtml(cl.company)}',50)">+ Opportunity</button>
-        <button class="btn btn-sm" onclick="openLeadModal(null);setTimeout(()=>document.getElementById('lf-company').value='${escHtml(cl.company)}',50)">+ Lead</button>
-      </div>`;
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Row: Projects + Activity -->
+<div style="display:grid;grid-template-columns:1fr 280px;gap:16px;margin-bottom:16px;">
+  <!-- Top Active Projects -->
+  <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:700;">Top Active Projects</div>
+      <button class="btn btn-sm" onclick="openClientProfileCRM('${clientId}','projects')" style="font-size:11px;">View all</button>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:#f8fafc;">${['Project','Brand','Status','Progress','Owner','Deadline'].map(h=>`<th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;">${h}</th>`).join('')}</tr></thead>
+      <tbody>
+        ${topProjs.length ? topProjs.map(p=>{
+          const pct = +p.progress||0;
+          const e = parseDate(p.end||p.launch);
+          const todayD = new Date(); todayD.setHours(0,0,0,0);
+          const days = e ? Math.round((e-todayD)/86400000) : null;
+          const isRisk = days!==null && days<=14;
+          return `<tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="openProjectSummary('${p.id||p.code}')">
+            <td style="padding:9px 12px;font-weight:600;">${escHtml(p.code||p.name)}</td>
+            <td style="padding:9px 12px;color:var(--text-muted);">${escHtml(p.brand||'–')}</td>
+            <td style="padding:9px 12px;">${badgeFor(p.status)}</td>
+            <td style="padding:9px 12px;min-width:80px;"><div style="background:#e2e8f0;border-radius:4px;height:6px;overflow:hidden;"><div style="width:${pct}%;background:${pct>=80?'#16a34a':pct>=50?'#f59e0b':'#6366f1'};height:100%;border-radius:4px;"></div></div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${pct}%</div></td>
+            <td style="padding:9px 12px;">${escHtml(p.owner||'–')}</td>
+            <td style="padding:9px 12px;color:${isRisk?'#dc2626':'var(--text-muted)'};">${e?fmtDate(e):'–'}</td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--text-muted);">No active projects</td></tr>`}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Activity Feed -->
+  <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:700;">Activity Feed</div>
+      <button class="btn btn-sm" onclick="openClientProfileCRM('${clientId}','activity')" style="font-size:11px;">View all</button>
+    </div>
+    <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
+      ${acts.length ? acts.map(a=>`<div style="display:flex;gap:8px;align-items:flex-start;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:#fff;">${(a.user||'?').charAt(0)}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;line-height:1.4;">${escHtml(a.text||a.action||'')}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${a.timeAgo||fmtDate(a.date)||''}</div></div></div>`).join('') : `<div style="text-align:center;padding:20px;font-size:12px;color:var(--text-muted);">No recent activity</div>`}
+    </div>
+  </div>
+</div>
+
+<!-- Recent Files -->
+${files.length ? `<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;"><div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);"><div style="font-size:13px;font-weight:700;">Recent Files</div><button class="btn btn-sm" onclick="openClientProfileCRM('${clientId}','files')" style="font-size:11px;">View all</button></div><div style="display:flex;gap:10px;padding:12px;overflow-x:auto;">${files.slice(0,4).map(f=>`<div style="flex-shrink:0;width:140px;border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;" onclick="window.open('${f.url||'#'}','_blank')"><div style="font-size:20px;margin-bottom:6px;">${(f.name||'').endsWith('.pdf')?'📕':(f.name||'').endsWith('.pptx')?'📊':'📄'}</div><div style="font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name||'File')}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${f.size||''} · ${f.uploadedBy||''}</div></div>`).join('')}</div></div>` : ''}
+
+<!-- Action Buttons -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+  <button class="btn btn-sm btn-primary" onclick="openClientModal('${cl.id}')">✏ Edit Client</button>
+  <button class="btn btn-sm" onclick="openOppModal(null);setTimeout(()=>{const el=document.getElementById('of-company');if(el)el.value='${escHtml(cl.company)}'}, 50)">+ Opportunity</button>
+  <button class="btn btn-sm" onclick="openLeadModal(null);setTimeout(()=>{const el=document.getElementById('lf-company');if(el)el.value='${escHtml(cl.company)}'}, 50)">+ Lead</button>
+</div>`;
   } else if (activeTab==='brands') {
     const clientBrands = (DB.brands||[]).filter(b => b.clientId === cl.id || (b.clientName||'').toLowerCase() === (cl.company||'').toLowerCase());
     bodyHtml = clientBrands.length
