@@ -14388,7 +14388,7 @@ function openBrandDetail(brandId, tab) {
           const pct=+p.progress||0;
           const e=parseDate(p.end||p.launch);const todayBP=new Date();todayBP.setHours(0,0,0,0);
           const days=e?Math.round((e-todayBP)/86400000):null;const isRisk=days!==null&&days<=14;
-          return `<tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="openProjectSummary('${p.id||p.code}')">
+          return `<tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="navigateTo('project','${p.id||p.code}')">
             <td style="padding:8px 12px;font-weight:600;">${escHtml(p.code||p.name)}</td>
             <td style="padding:8px 12px;">${badgeFor(p.status)}</td>
             <td style="padding:8px 12px;min-width:70px;"><div style="background:#e2e8f0;border-radius:4px;height:5px;overflow:hidden;"><div style="width:${pct}%;background:${pct>=80?'#16a34a':pct>=50?'#f59e0b':'#6366f1'};height:100%;border-radius:4px;"></div></div><div style="font-size:9px;color:var(--text-muted);margin-top:1px;">${pct}%</div></td>
@@ -16196,7 +16196,7 @@ function openClientProfileCRM(clientId, activeTab) {
           const todayD = new Date(); todayD.setHours(0,0,0,0);
           const days = e ? Math.round((e-todayD)/86400000) : null;
           const isRisk = days!==null && days<=14;
-          return `<tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="openProjectSummary('${p.id||p.code}')">
+          return `<tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="navigateTo('project','${p.id||p.code}')">
             <td style="padding:9px 12px;font-weight:600;">${escHtml(p.code||p.name)}</td>
             <td style="padding:9px 12px;color:var(--text-muted);">${escHtml(p.brand||'–')}</td>
             <td style="padding:9px 12px;">${badgeFor(p.status)}</td>
