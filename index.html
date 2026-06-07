@@ -1234,7 +1234,7 @@ details ul { padding-left: 18px; }
 
       <!-- PROJECTS -->
       <div class="nav-section-label">PROJECTS</div>
-      <button class="tab" data-panel="project-board">📁 Project Board</button>
+      <button class="tab" data-panel="projects-unified">📁 Projects</button>
       <button class="tab" data-panel="kanban">⬜ Kanban</button>
       <button class="tab" data-panel="timeline">📅 Timeline</button>
       <button class="tab" data-panel="tasks-hub">✅ Tasks</button>
@@ -1249,10 +1249,10 @@ details ul { padding-left: 18px; }
       <!-- MANAGEMENT -->
       <div class="nav-section-label">MANAGEMENT</div>
       <button class="tab" data-panel="brands">📦 Brands</button>
-      <button class="tab" data-panel="projects">📋 Projects</button>
+      <button class="tab" data-panel="projects-unified" data-panel-alias="mgmt-projects">📋 Projects</button>
       <button class="tab" data-panel="tasks-hub" data-panel-alias="tasks-mgmt">✅ Tasks</button>
       <button class="tab" data-panel="workload">⚡ Resources</button>
-      <button class="tab" data-panel="activity-log">📊 Reports</button>
+      <button class="tab" data-panel="reports">📊 Reports</button>
 
       <!-- TEAM -->
       <div class="nav-section-label">TEAM</div>
@@ -1276,6 +1276,8 @@ details ul { padding-left: 18px; }
       <div class="nav-section-label">PERSONAL</div>
       <button class="tab" data-panel="profile">👤 My Profile</button>
       <button class="tab" data-panel="my-team">👥 My Team</button>
+      <div style="height:1px;background:rgba(255,255,255,0.1);margin:6px 14px;"></div>
+      <button class="tab" data-panel="activity-log">📋 Activity Log</button>
       <div style="height:1px;background:rgba(255,255,255,0.1);margin:6px 14px;"></div>
       <button class="tab" data-panel="admin" style="display:none;">🔐 Admin</button>
     </nav>
@@ -1839,6 +1841,38 @@ details ul { padding-left: 18px; }
       <button class="btn btn-sm" onclick="loadMoreActivity()">Load more</button>
     </div>
   </div>
+</div>
+
+<div class="panel" id="projects-unified">
+  <div style="padding:20px 24px 0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <div>
+        <h2 style="margin:0;font-size:20px;font-weight:800;">📁 Projects</h2>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--text-muted);">All projects across all brands</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;">
+          <button id="pu-view-board" onclick="setPuView('board')" style="padding:7px 14px;border:none;background:#6366f1;color:#fff;cursor:pointer;font-size:12px;font-weight:600;">⊞ Board</button>
+          <button id="pu-view-list" onclick="setPuView('list')" style="padding:7px 14px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:600;">☰ List</button>
+        </div>
+        <button class="btn btn-primary" onclick="openModal(null)">+ New Project</button>
+      </div>
+    </div>
+    <div class="filter-bar" style="margin-bottom:16px;">
+      <input id="pu-search" placeholder="Search projects…" oninput="renderProjectsUnified()" style="min-width:180px;">
+      <select id="pu-status" onchange="renderProjectsUnified()">
+        <option value="">All Status</option>
+        <option>In Progress</option><option>Planning</option><option>Completed</option><option>On Hold</option><option>At Risk</option>
+      </select>
+      <select id="pu-brand" onchange="renderProjectsUnified()">
+        <option value="">All Brands</option>
+      </select>
+      <select id="pu-pm" onchange="renderProjectsUnified()">
+        <option value="">All PMs</option>
+      </select>
+    </div>
+  </div>
+  <div id="pu-content" style="padding:0 24px 24px;"></div>
 </div>
 
 <!-- PROJECT BOARD PANEL -->
@@ -5280,6 +5314,8 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.panel === 'overview') renderOverview();
     if (t.dataset.panel === 'brands') renderBrands();
     if (t.dataset.panel === 'opportunities') renderOpportunities();
+    if (t.dataset.panel === 'projects-unified') renderProjectsUnified();
+    if (t.dataset.panel === 'reports') renderReportsList();
   });
 });
 
@@ -15558,8 +15594,8 @@ function buildProjectDetailPage(projId, tab) {
   const schedColor = daysLeft === null ? '#64748b' : daysLeft < 0 ? '#dc2626' : daysLeft <= 14 ? '#d97706' : '#16a34a';
   const schedStatus = daysLeft === null ? '–' : daysLeft < 0 ? '⚠ Overdue' : daysLeft <= 14 ? 'At Risk' : 'On Track';
 
-  const TABS = ['overview','tasks','timeline','files','comments','activity','contacts'];
-  const tabLabels = { overview:'📊 Overview', tasks:'✅ Tasks', timeline:'📅 Timeline', files:'📎 Files', comments:'💬 Comments', activity:'📋 Activity', contacts:'👤 Contacts' };
+  const TABS = ['overview','tasks','kol','timeline','files','comments','activity','contacts'];
+  const tabLabels = { overview:'📊 Overview', tasks:'✅ Tasks', kol:'🌟 KOL & Media', timeline:'📅 Timeline', files:'📎 Files', comments:'💬 Comments', activity:'📋 Activity', contacts:'👤 Contacts' };
   const tabsHtml = TABS.map(t => `<div class="dv-tab${t === tab ? ' active' : ''}" onclick="navigateTo('project','${projId}','${t}')">${tabLabels[t]}</div>`).join('');
 
   let body = '';
@@ -15621,6 +15657,83 @@ function buildProjectDetailPage(projId, tab) {
           </tr>`;
         }).join('') : `<tr><td colspan="6" style="padding:40px;text-align:center;color:#94a3b8;">No tasks yet — click "+ Add Task"</td></tr>`}</tbody>
       </table>
+    </div>`;
+  } else if (tab === 'kol') {
+    const kols = p.kols || [];
+    const mediaBuy = p.mediaBuy || [];
+    body = `
+    <!-- KOL Performance -->
+    <div class="dv-section" style="margin-bottom:16px;">
+      <div class="dv-section-head">
+        <span>🌟 KOL Performance</span>
+        <button class="btn btn-sm btn-primary" onclick="openKolEditor('${projId}')">+ Add KOL</button>
+      </div>
+      ${kols.length ? `<table class="dv-table">
+        <thead><tr>
+          <th>KOL / Influencer</th><th>Category</th><th>Platform</th>
+          <th>Posts</th><th>Reach</th><th>Engagement</th><th>ER%</th><th>Cost</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${kols.map((k,i)=>{
+            const er = k.reach&&k.engagement ? (k.engagement/k.reach*100).toFixed(1)+'%' : k.er||'–';
+            const statusColor = k.status==='Published'?'#16a34a':k.status==='In Progress'?'#6366f1':k.status==='Pending'?'#f59e0b':'#94a3b8';
+            return `<tr>
+              <td style="font-weight:600;">${escHtml(k.name||'–')}</td>
+              <td><span style="font-size:10px;padding:2px 8px;border-radius:6px;background:#f0f4ff;color:#6366f1;">${escHtml(k.category||'–')}</span></td>
+              <td style="font-size:11px;">${escHtml(k.platform||'–')}</td>
+              <td style="text-align:center;">${k.posts||'–'}</td>
+              <td>${k.reach?Number(k.reach).toLocaleString():'–'}</td>
+              <td>${k.engagement?Number(k.engagement).toLocaleString():'–'}</td>
+              <td style="font-weight:600;color:#6366f1;">${er}</td>
+              <td style="color:#16a34a;font-weight:600;">${k.cost?'฿'+fmtMoney(k.cost):'–'}</td>
+              <td><span style="font-size:11px;font-weight:600;color:${statusColor};">● ${k.status||'Draft'}</span></td>
+              <td><button class="btn btn-sm" onclick="openKolEditor('${projId}',${i})" style="font-size:10px;">✏</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>` : `<div style="text-align:center;padding:30px;color:#94a3b8;"><div style="font-size:32px;margin-bottom:8px;">🌟</div><p style="font-size:13px;">No KOLs added yet</p><button class="btn btn-sm btn-primary" onclick="openKolEditor('${projId}')">+ Add KOL</button></div>`}
+      ${kols.length ? `<div style="padding:12px 16px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        ${[
+          ['Total KOLs', kols.length+''],
+          ['Total Reach', Number(kols.reduce((s,k)=>s+(+k.reach||0),0)).toLocaleString()],
+          ['Total Engagement', Number(kols.reduce((s,k)=>s+(+k.engagement||0),0)).toLocaleString()],
+          ['Total Cost', '฿'+fmtMoney(kols.reduce((s,k)=>s+(+k.cost||0),0))],
+        ].map(([l,v])=>`<div style="text-align:center;background:#f8fafc;border-radius:8px;padding:10px;"><div style="font-size:16px;font-weight:800;color:#1e293b;">${v}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px;">${l}</div></div>`).join('')}
+      </div>` : ''}
+    </div>
+
+    <!-- Media Buy KPIs -->
+    <div class="dv-section">
+      <div class="dv-section-head">
+        <span>📺 Media Buy & KPIs</span>
+        <button class="btn btn-sm btn-primary" onclick="openMediaEditor('${projId}')">+ Add Media</button>
+      </div>
+      ${mediaBuy.length ? `<table class="dv-table">
+        <thead><tr>
+          <th>Channel</th><th>Format</th><th>Budget</th><th>Reach</th><th>Impression</th><th>CPM</th><th>CTR%</th><th>Result</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${mediaBuy.map((m,i)=>`<tr>
+            <td style="font-weight:600;">${escHtml(m.channel||'–')}</td>
+            <td style="font-size:11px;color:#64748b;">${escHtml(m.format||'–')}</td>
+            <td style="color:#16a34a;font-weight:600;">${m.budget?'฿'+fmtMoney(m.budget):'–'}</td>
+            <td>${m.reach?Number(m.reach).toLocaleString():'–'}</td>
+            <td>${m.impression?Number(m.impression).toLocaleString():'–'}</td>
+            <td>${m.cpm?'฿'+m.cpm:'–'}</td>
+            <td style="font-weight:600;color:#6366f1;">${m.ctr?m.ctr+'%':'–'}</td>
+            <td style="font-size:11px;">${escHtml(m.result||'–')}</td>
+            <td><button class="btn btn-sm" onclick="openMediaEditor('${projId}',${i})" style="font-size:10px;">✏</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : `<div style="text-align:center;padding:30px;color:#94a3b8;"><div style="font-size:32px;margin-bottom:8px;">📺</div><p style="font-size:13px;">No media plan added yet</p><button class="btn btn-sm btn-primary" onclick="openMediaEditor('${projId}')">+ Add Media</button></div>`}
+      ${mediaBuy.length ? `<div style="padding:12px 16px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        ${[
+          ['Total Budget', '฿'+fmtMoney(mediaBuy.reduce((s,m)=>s+(+m.budget||0),0))],
+          ['Total Reach', Number(mediaBuy.reduce((s,m)=>s+(+m.reach||0),0)).toLocaleString()],
+          ['Total Impression', Number(mediaBuy.reduce((s,m)=>s+(+m.impression||0),0)).toLocaleString()],
+          ['Channels', [...new Set(mediaBuy.map(m=>m.channel).filter(Boolean))].length+''],
+        ].map(([l,v])=>`<div style="text-align:center;background:#f8fafc;border-radius:8px;padding:10px;"><div style="font-size:16px;font-weight:800;color:#1e293b;">${v}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px;">${l}</div></div>`).join('')}
+      </div>` : ''}
     </div>`;
   } else if (tab === 'activity') {
     const pActs = (DB.activity || []).filter(a => a.project === p.code || a.projectId === (p.id || p.code)).slice(0, 30);
@@ -15796,6 +15909,658 @@ function toggleSidebarCollapse() {
   if (mainArea) mainArea.style.marginLeft = isCollapsed ? '56px' : '';
   if (detailView) detailView.style.left = isCollapsed ? '56px' : '220px';
   try { localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0'); } catch(e) {}
+}
+
+// ═══════════════════════════════
+// PROJECTS UNIFIED VIEW
+// ═══════════════════════════════
+let _puView = 'board'; // 'board' or 'list'
+
+function setPuView(view) {
+  _puView = view;
+  const btnBoard = document.getElementById('pu-view-board');
+  const btnList = document.getElementById('pu-view-list');
+  if (btnBoard) { btnBoard.style.background = view==='board'?'#6366f1':'transparent'; btnBoard.style.color = view==='board'?'#fff':'var(--text-muted)'; }
+  if (btnList) { btnList.style.background = view==='list'?'#6366f1':'transparent'; btnList.style.color = view==='list'?'#fff':'var(--text-muted)'; }
+  renderProjectsUnified();
+}
+
+function renderProjectsUnified() {
+  const container = document.getElementById('pu-content');
+  if (!container) return;
+  const search = (document.getElementById('pu-search')?.value||'').toLowerCase();
+  const statusF = document.getElementById('pu-status')?.value||'';
+  const brandF = document.getElementById('pu-brand')?.value||'';
+  const pmF = document.getElementById('pu-pm')?.value||'';
+
+  // Populate brand/pm filters
+  const brandSel = document.getElementById('pu-brand');
+  const pmSel = document.getElementById('pu-pm');
+  if (brandSel && brandSel.options.length<=1) {
+    const brands = [...new Set((DB.projects||[]).map(p=>p.brand).filter(Boolean))].sort();
+    brands.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; brandSel.appendChild(o); });
+  }
+  if (pmSel && pmSel.options.length<=1) {
+    const pms = [...new Set((DB.projects||[]).map(p=>p.owner).filter(Boolean))].sort();
+    pms.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; pmSel.appendChild(o); });
+  }
+
+  let projs = (DB.projects||[]).filter(p => {
+    if (search && !((p.name||'')+(p.code||'')+(p.brand||'')).toLowerCase().includes(search)) return false;
+    if (statusF && (p.status||'') !== statusF) return false;
+    if (brandF && (p.brand||'') !== brandF) return false;
+    if (pmF && (p.owner||'') !== pmF) return false;
+    return true;
+  });
+
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  if (_puView === 'board') {
+    // Group by status
+    const groups = {'In Progress':[],'Planning':[],'On Hold':[],'At Risk':[],'Completed':[],'Other':[]};
+    projs.forEach(p => {
+      const s = p.status||'Other';
+      if (groups[s]) groups[s].push(p); else groups['Other'].push(p);
+    });
+    const groupColors = {'In Progress':'#6366f1','Planning':'#f59e0b','On Hold':'#94a3b8','At Risk':'#ef4444','Completed':'#16a34a','Other':'#64748b'};
+    container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
+      ${Object.entries(groups).filter(([,items])=>items.length>0).map(([status,items])=>`
+        <div style="background:#f8fafc;border-radius:12px;padding:14px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${groupColors[status]};"></div>
+            <span style="font-size:12px;font-weight:700;color:#1e293b;">${status}</span>
+            <span style="margin-left:auto;font-size:11px;color:#94a3b8;">${items.length}</span>
+          </div>
+          ${items.map(p=>{
+            const pct=+p.progress||0;
+            const endD=parseDate(p.end||p.launch);
+            const isRisk=endD&&Math.round((endD-today)/86400000)<=14&&status!=='Completed';
+            const ownerInit=(p.owner||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+            const ownerHue=Math.abs([...(p.owner||'')].reduce((a,c)=>a+c.charCodeAt(0),0))%360;
+            return `<div style="background:#fff;border:1px solid ${isRisk?'#fecaca':'var(--border)'};border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow=''" onclick="navigateTo('project','${p.id||p.code}')">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:12px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.name||p.code||'–')}</div>
+                  <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${escHtml(p.code||'')} · ${escHtml(p.brand||'')}</div>
+                </div>
+                <button onclick="event.stopPropagation();openModal('${p.id||p.code}')" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:0 0 0 6px;">⋯</button>
+              </div>
+              <div style="background:#f1f5f9;border-radius:4px;height:5px;overflow:hidden;margin-bottom:6px;"><div style="width:${pct}%;background:${groupColors[status]};height:100%;border-radius:4px;"></div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <div style="width:20px;height:20px;border-radius:50%;background:hsl(${ownerHue},60%,60%);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;">${ownerInit}</div>
+                  <span style="font-size:10px;color:#64748b;">${escHtml(p.owner||'–')}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:10px;color:#94a3b8;">฿${fmtMoney(p.budget)}</span>
+                  ${isRisk?'<span style="font-size:9px;color:#dc2626;font-weight:700;">⚠ RISK</span>':''}
+                  <span style="font-size:10px;font-weight:600;color:${groupColors[status]};">${pct}%</span>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      `).join('')}
+    </div>`;
+  } else {
+    // List view — table
+    container.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;color:#64748b;">${projs.length} projects</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:#f8fafc;">
+          ${['Project','Code','Brand','Status','Progress','PM','Start','Due','Budget','Tasks'].map(h=>`<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;white-space:nowrap;">${h}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${projs.map(p=>{
+            const pct=+p.progress||0;
+            const startD=parseDate(p.start||p.launch);
+            const endD=parseDate(p.end);
+            const isRisk=endD&&Math.round((endD-today)/86400000)<=14;
+            const isDone=p.status?.toLowerCase().includes('complet');
+            const tasks=(DB.tasks||[]).filter(t=>t.project===p.code||t.projectId===(p.id||p.code));
+            const done=tasks.filter(t=>t.done||t.status==='done').length;
+            const ownerInit=(p.owner||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+            const ownerHue=Math.abs([...(p.owner||'')].reduce((a,c)=>a+c.charCodeAt(0),0))%360;
+            const barC=isDone?'#16a34a':pct>=70?'#6366f1':pct>=40?'#f59e0b':'#ef4444';
+            return `<tr style="border-top:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''" onclick="navigateTo('project','${p.id||p.code}')">
+              <td style="padding:10px 14px;font-weight:600;">${escHtml(p.name||p.code||'–')}</td>
+              <td style="padding:10px 14px;font-family:monospace;font-size:11px;color:#64748b;">${escHtml(p.code||'–')}</td>
+              <td style="padding:10px 14px;color:#64748b;">${escHtml(p.brand||'–')}</td>
+              <td style="padding:10px 14px;">${badgeFor(p.status)}</td>
+              <td style="padding:10px 14px;min-width:100px;">
+                <div style="background:#f1f5f9;border-radius:3px;height:5px;overflow:hidden;margin-bottom:2px;"><div style="width:${pct}%;background:${barC};height:100%;border-radius:3px;"></div></div>
+                <span style="font-size:10px;color:#64748b;">${pct}%</span>
+              </td>
+              <td style="padding:10px 14px;">
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:hsl(${ownerHue},60%,60%);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0;">${ownerInit}</div>
+                  <span style="font-size:11px;">${escHtml(p.owner||'–')}</span>
+                </div>
+              </td>
+              <td style="padding:10px 14px;font-size:11px;color:#64748b;">${startD?fmtDate(startD):'–'}</td>
+              <td style="padding:10px 14px;font-size:11px;color:${isRisk&&!isDone?'#dc2626':'#64748b'};font-weight:${isRisk&&!isDone?'700':'400'};">${endD?fmtDate(endD):'–'}</td>
+              <td style="padding:10px 14px;font-size:11px;font-weight:600;color:#16a34a;">฿${fmtMoney(p.budget)}</td>
+              <td style="padding:10px 14px;font-size:11px;color:#64748b;">${done}/${tasks.length}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }
+}
+
+// ═══════════════════════════════
+// KOL & MEDIA EDITORS
+// ═══════════════════════════════
+function openKolEditor(projId, editIdx) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  if (!p.kols) p.kols = [];
+  const k = editIdx !== undefined ? p.kols[editIdx] : {};
+  document.querySelector('.kol-editor-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'kol-editor-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:14px;padding:24px;width:min(560px,100%);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <h3 style="margin:0;font-size:16px;">${editIdx!==undefined?'Edit':'Add'} KOL</h3>
+      <button onclick="this.closest('.kol-editor-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="grid-column:1/-1;"><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">KOL Name *</label><input id="ke-name" value="${escHtml(k.name||'')}" placeholder="ชื่อ KOL / Influencer" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Category</label>
+        <select id="ke-category" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;">
+          ${['Lifestyle','Beauty','Food','Health','Tech','Fashion','Travel','Fitness','Mom & Baby','Entertainment','Gaming','Business','Other'].map(c=>`<option${(k.category||'')==c?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Platform</label>
+        <select id="ke-platform" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;">
+          ${['Instagram','TikTok','Facebook','YouTube','Twitter/X','Lemon8','Pantip','Blog','Other'].map(c=>`<option${(k.platform||'')==c?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Posts / Pieces</label><input id="ke-posts" type="number" value="${k.posts||''}" placeholder="0" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Followers / Reach</label><input id="ke-reach" type="number" value="${k.reach||''}" placeholder="0" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Total Engagement</label><input id="ke-engagement" type="number" value="${k.engagement||''}" placeholder="0" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Fee / Cost (฿)</label><input id="ke-cost" type="number" value="${k.cost||''}" placeholder="0" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Status</label>
+        <select id="ke-status" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;">
+          ${['Draft','Pending','In Progress','Published','Cancelled'].map(c=>`<option${(k.status||'')==c?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div style="grid-column:1/-1;"><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Notes</label><textarea id="ke-notes" rows="2" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(k.notes||'')}</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      ${editIdx!==undefined?`<button class="btn btn-danger" onclick="deleteKol('${projId}',${editIdx},this)">🗑 Delete</button>`:''}
+      <button class="btn" onclick="this.closest('.kol-editor-modal').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveKol('${projId}',${editIdx!==undefined?editIdx:'null'},this)">💾 Save</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function saveKol(projId, editIdx, btn) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  if (!p.kols) p.kols = [];
+  const v = id => document.getElementById(id)?.value?.trim()||'';
+  const kol = { name:v('ke-name'), category:v('ke-category'), platform:v('ke-platform'), posts:v('ke-posts'), reach:v('ke-reach'), engagement:v('ke-engagement'), cost:v('ke-cost'), status:v('ke-status'), notes:v('ke-notes') };
+  if (editIdx !== null && editIdx !== undefined && editIdx !== 'null') p.kols[editIdx] = kol;
+  else p.kols.push(kol);
+  saveDB();
+  btn?.closest('.kol-editor-modal')?.remove();
+  renderDetailView(parseHash());
+}
+
+function deleteKol(projId, idx, btn) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p||!p.kols) return;
+  if (!confirm('Delete this KOL?')) return;
+  p.kols.splice(idx,1);
+  saveDB();
+  btn?.closest('.kol-editor-modal')?.remove();
+  renderDetailView(parseHash());
+}
+
+function openMediaEditor(projId, editIdx) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  if (!p.mediaBuy) p.mediaBuy = [];
+  const m = editIdx !== undefined ? p.mediaBuy[editIdx] : {};
+  document.querySelector('.media-editor-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'media-editor-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:14px;padding:24px;width:min(560px,100%);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <h3 style="margin:0;font-size:16px;">${editIdx!==undefined?'Edit':'Add'} Media Buy</h3>
+      <button onclick="this.closest('.media-editor-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Channel *</label>
+        <select id="me-channel" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;">
+          ${['Facebook Ads','Instagram Ads','TikTok Ads','YouTube Ads','Google Display','Google Search','LINE Ads','Twitter Ads','Programmatic','TV','Radio','OOH/Billboard','Print','Other'].map(c=>`<option${(m.channel||'')==c?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Format</label><input id="me-format" value="${escHtml(m.format||'')}" placeholder="Video 15s, Banner, Stories..." style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Budget (฿)</label><input id="me-budget" type="number" value="${m.budget||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Reach (People)</label><input id="me-reach" type="number" value="${m.reach||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Impression</label><input id="me-impression" type="number" value="${m.impression||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">CPM (฿)</label><input id="me-cpm" type="number" value="${m.cpm||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">CTR (%)</label><input id="me-ctr" type="number" step="0.01" value="${m.ctr||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Result / Note</label><input id="me-result" value="${escHtml(m.result||'')}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      ${editIdx!==undefined?`<button class="btn btn-danger" onclick="deleteMedia('${projId}',${editIdx},this)">🗑 Delete</button>`:''}
+      <button class="btn" onclick="this.closest('.media-editor-modal').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMedia('${projId}',${editIdx!==undefined?editIdx:'null'},this)">💾 Save</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function saveMedia(projId, editIdx, btn) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  if (!p.mediaBuy) p.mediaBuy = [];
+  const v = id => document.getElementById(id)?.value?.trim()||'';
+  const media = { channel:v('me-channel'), format:v('me-format'), budget:v('me-budget'), reach:v('me-reach'), impression:v('me-impression'), cpm:v('me-cpm'), ctr:v('me-ctr'), result:v('me-result') };
+  if (editIdx !== null && editIdx !== undefined && editIdx !== 'null') p.mediaBuy[editIdx] = media;
+  else p.mediaBuy.push(media);
+  saveDB();
+  btn?.closest('.media-editor-modal')?.remove();
+  renderDetailView(parseHash());
+}
+
+function deleteMedia(projId, idx, btn) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p||!p.mediaBuy) return;
+  if (!confirm('Delete this media entry?')) return;
+  p.mediaBuy.splice(idx,1);
+  saveDB();
+  btn?.closest('.media-editor-modal')?.remove();
+  renderDetailView(parseHash());
+}
+
+// ═══════════════════════════════
+// REPORTS
+// ═══════════════════════════════
+const KPI_TEMPLATES = {
+  awareness: [
+    { metric:'Reach', unit:'persons', description:'Unique people reached' },
+    { metric:'Impression', unit:'times', description:'Total ad/content impressions' },
+    { metric:'Frequency', unit:'times/person', description:'Avg times seen per person' },
+    { metric:'Brand Awareness Lift', unit:'%', description:'Pre vs post awareness survey' },
+    { metric:'Share of Voice', unit:'%', description:'Brand mentions vs competitors' },
+  ],
+  engagement: [
+    { metric:'Total Engagement', unit:'actions', description:'Likes + Comments + Shares + Saves' },
+    { metric:'Engagement Rate', unit:'%', description:'Engagement / Reach × 100' },
+    { metric:'Video Views', unit:'views', description:'Total video views' },
+    { metric:'View Rate', unit:'%', description:'Views / Impression × 100' },
+    { metric:'Comments', unit:'comments', description:'Total comments received' },
+    { metric:'Shares / Saves', unit:'times', description:'Content saved or shared' },
+  ],
+  traffic: [
+    { metric:'Clicks', unit:'clicks', description:'Total link clicks' },
+    { metric:'CTR', unit:'%', description:'Click-through rate' },
+    { metric:'Website Sessions', unit:'sessions', description:'Traffic from campaign' },
+    { metric:'Bounce Rate', unit:'%', description:'Single-page visit rate' },
+    { metric:'Avg Session Duration', unit:'min:sec', description:'Time spent on site' },
+  ],
+  conversion: [
+    { metric:'Leads Generated', unit:'leads', description:'Form fills / sign-ups' },
+    { metric:'Conversion Rate', unit:'%', description:'Conversions / Clicks × 100' },
+    { metric:'Sales Volume', unit:'units', description:'Products sold during campaign' },
+    { metric:'Revenue', unit:'฿', description:'Revenue attributed to campaign' },
+    { metric:'ROAS', unit:'x', description:'Revenue / Ad Spend' },
+    { metric:'Cost per Lead (CPL)', unit:'฿', description:'Total spend / Leads' },
+  ],
+  kol: [
+    { metric:'Total KOL Posts', unit:'posts', description:'Published content pieces' },
+    { metric:'Total KOL Reach', unit:'persons', description:'Combined KOL audience reached' },
+    { metric:'Avg Engagement Rate', unit:'%', description:'Average ER across all KOLs' },
+    { metric:'Total KOL Impressions', unit:'times', description:'Total content impressions' },
+    { metric:'Cost per Engagement (CPE)', unit:'฿', description:'KOL spend / Total engagement' },
+    { metric:'Seeding Pieces', unit:'pieces', description:'Product seeding content' },
+  ],
+};
+
+function renderReportsList() {
+  if (!document.getElementById('reports')?.classList.contains('active')) return;
+  if (!DB.reports) DB.reports = [];
+  const search = (document.getElementById('rpt-search')?.value||'').toLowerCase();
+  const statusF = document.getElementById('rpt-status-filter')?.value||'';
+  let rpts = DB.reports.filter(r => {
+    if (search && !((r.title||'')+(r.projectCode||'')+(r.brand||'')+(r.client||'')).toLowerCase().includes(search)) return false;
+    if (statusF && r.status !== statusF) return false;
+    return true;
+  });
+
+  // KPI row
+  const kpiEl = document.getElementById('rpt-kpi-row');
+  if (kpiEl) {
+    const finalCount = DB.reports.filter(r=>r.status==='Final'||r.status==='Sent to Client').length;
+    const draftCount = DB.reports.filter(r=>r.status==='Draft'||r.status==='Review').length;
+    const brands = [...new Set(DB.reports.map(r=>r.brand).filter(Boolean))].length;
+    kpiEl.innerHTML = [
+      ['📊','Total Reports', DB.reports.length, 'All campaigns','#e0e7ff','#6366f1'],
+      ['✅','Final / Sent', finalCount, 'Ready to share','#f0fdf4','#16a34a'],
+      ['📝','In Progress', draftCount, 'Draft & Review','#fff7ed','#d97706'],
+      ['📦','Brands Covered', brands, 'Unique brands','#faf5ff','#7c3aed'],
+    ].map(([ic,l,v,s,bg,col])=>`<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:flex-start;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:9px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${ic}</div>
+      <div><div style="font-size:10px;color:#64748b;font-weight:700;">${l}</div><div style="font-size:22px;font-weight:800;color:#1e293b;">${v}</div><div style="font-size:10px;color:${col};">${s}</div></div>
+    </div>`).join('');
+  }
+
+  const container = document.getElementById('rpt-list-container');
+  if (!container) return;
+  if (!rpts.length) {
+    container.innerHTML = `<div style="text-align:center;padding:60px;background:#fff;border:1px solid var(--border);border-radius:12px;color:#94a3b8;">
+      <div style="font-size:48px;margin-bottom:12px;">📊</div>
+      <p style="font-size:16px;font-weight:600;color:#1e293b;margin-bottom:6px;">No reports yet</p>
+      <p style="font-size:13px;margin-bottom:16px;">Create your first post-campaign report</p>
+      <button class="btn btn-primary" onclick="openReportEditor(null)">+ Create Report</button>
+    </div>`;
+    return;
+  }
+  const statusColors = { Draft:'#f59e0b', Review:'#6366f1', Final:'#16a34a', 'Sent to Client':'#0284c7' };
+  container.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:#f8fafc;">
+        ${['Report Title','Project','Brand / Client','Period','KPIs','Status','Created',''].map(h=>`<th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;white-space:nowrap;">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${rpts.map(r=>`<tr style="border-top:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''" onclick="openReportEditor('${r.id}')">
+          <td style="padding:12px 14px;font-weight:700;">${escHtml(r.title||'Untitled Report')}</td>
+          <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:#64748b;">${escHtml(r.projectCode||'–')}</td>
+          <td style="padding:12px 14px;"><div style="font-size:12px;font-weight:600;">${escHtml(r.brand||'–')}</div><div style="font-size:10px;color:#94a3b8;">${escHtml(r.client||'')}</div></td>
+          <td style="padding:12px 14px;font-size:11px;color:#64748b;">${r.period?.start||''}${r.period?.end?' – '+r.period.end:''}</td>
+          <td style="padding:12px 14px;text-align:center;"><span style="font-size:12px;font-weight:700;color:#6366f1;">${(r.kpis||[]).length}</span></td>
+          <td style="padding:12px 14px;"><span style="font-size:11px;font-weight:700;color:${statusColors[r.status]||'#94a3b8'};">● ${r.status||'Draft'}</span></td>
+          <td style="padding:12px 14px;font-size:11px;color:#94a3b8;">${r.createdAt?fmtDate(r.createdAt):'–'}</td>
+          <td style="padding:12px 14px;"><div style="display:flex;gap:4px;"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openReportEditor('${r.id}')" style="font-size:10px;">✏ Edit</button><button class="btn btn-sm" onclick="event.stopPropagation();printReport('${r.id}')" style="font-size:10px;">🖨 Print</button></div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function openReportEditor(reportId) {
+  if (!DB.reports) DB.reports = [];
+  let r = reportId ? DB.reports.find(x=>x.id===reportId) : null;
+  if (!r) {
+    r = { id:'rpt_'+Date.now(), title:'', projectCode:'', brand:'', client:'', period:{start:'',end:''}, status:'Draft', createdAt:new Date().toISOString().slice(0,10), kpis:[], deliverables:[], kols:[], mediaBuy:[], achievements:'', keyLearnings:'', wayForward:'', internalNotes:'' };
+  }
+
+  // Build KPI rows HTML
+  const kpiRowsHtml = (r.kpis||[]).map((k,i)=>`
+    <tr id="kpi-row-${i}">
+      <td style="padding:6px 8px;"><select onchange="updateKpiField(${i},'category',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:11px;">
+        ${['awareness','engagement','traffic','conversion','kol'].map(cat=>`<option value="${cat}"${k.category===cat?' selected':''}>${cat.charAt(0).toUpperCase()+cat.slice(1)}</option>`).join('')}
+      </select></td>
+      <td style="padding:6px 8px;"><input value="${escHtml(k.metric||'')}" oninput="updateKpiField(${i},'metric',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="KPI name"></td>
+      <td style="padding:6px 8px;"><input value="${escHtml(k.unit||'')}" oninput="updateKpiField(${i},'unit',this.value)" style="width:80px;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="unit"></td>
+      <td style="padding:6px 8px;"><input value="${escHtml(k.target||'')}" oninput="updateKpiField(${i},'target',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="Target"></td>
+      <td style="padding:6px 8px;"><input value="${escHtml(k.actual||'')}" oninput="updateKpiField(${i},'actual',this.value);calcKpiAchievement(${i})" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="Actual"></td>
+      <td style="padding:6px 8px;text-align:center;" id="kpi-ach-${i}">
+        ${k.target&&k.actual ? (() => { const pct=Math.round(parseFloat(k.actual)/parseFloat(k.target)*100); return `<span style="font-weight:700;color:${pct>=100?'#16a34a':pct>=80?'#f59e0b':'#dc2626'};">${pct}%</span>`; })() : '–'}
+      </td>
+      <td style="padding:6px 8px;"><button onclick="removeKpiRow(${i})" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:14px;">×</button></td>
+    </tr>`).join('');
+
+  document.querySelector('.report-editor-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'report-editor-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:stretch;overflow:hidden;';
+  modal.innerHTML = `
+  <div style="width:min(900px,100vw);margin-left:auto;background:#fff;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- Header -->
+    <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;">
+      <div style="flex:1;">
+        <input id="re-title" value="${escHtml(r.title||'')}" placeholder="Report Title..." style="font-size:20px;font-weight:800;border:none;outline:none;width:100%;color:#1e293b;">
+        <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Post-Campaign Report</div>
+      </div>
+      <select id="re-status" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;background:#fff;">
+        ${['Draft','Review','Final','Sent to Client'].map(s=>`<option${r.status===s?' selected':''}>${s}</option>`).join('')}
+      </select>
+      <button class="btn btn-primary" onclick="saveReport('${r.id}')">💾 Save</button>
+      <button class="btn" onclick="printReport('${r.id}')">🖨 Print</button>
+      <button onclick="this.closest('.report-editor-modal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;">×</button>
+    </div>
+    <!-- Body -->
+    <div style="flex:1;overflow-y:auto;padding:24px;">
+      <!-- Section 1: Campaign Info -->
+      <div style="background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:#6366f1;margin-bottom:12px;">📋 1. Campaign Overview</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">Project Code</label>
+            <select id="re-project" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:7px;font-size:12px;" onchange="autoFillReportProject(this.value)">
+              <option value="">— Select Project —</option>
+              ${(DB.projects||[]).map(p=>`<option value="${p.id||p.code}"${(r.projectCode===p.code||r.projectId===(p.id||p.code))?' selected':''}>${escHtml(p.code||p.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">Brand</label><input id="re-brand" value="${escHtml(r.brand||'')}" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:7px;font-size:12px;"></div>
+          <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">Client</label><input id="re-client" value="${escHtml(r.client||'')}" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:7px;font-size:12px;"></div>
+          <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">Campaign Period Start</label><input id="re-period-start" type="date" value="${r.period?.start||''}" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:7px;font-size:12px;"></div>
+          <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">Campaign Period End</label><input id="re-period-end" type="date" value="${r.period?.end||''}" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:7px;font-size:12px;"></div>
+          <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">Total Budget (฿)</label><input id="re-budget" type="number" value="${r.budget||''}" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:7px;font-size:12px;"></div>
+        </div>
+        <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">Campaign Objective</label><textarea id="re-objective" rows="2" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(r.objective||'')}</textarea></div>
+      </div>
+
+      <!-- Section 2: KPI Results -->
+      <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:13px;font-weight:700;color:#6366f1;">📈 2. Campaign Results (KPIs)</div>
+          <div style="display:flex;gap:6px;">
+            <select id="kpi-template-select" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;">
+              <option value="">+ Add from template</option>
+              ${Object.entries(KPI_TEMPLATES).map(([cat,kpis])=>kpis.map(k=>`<option value="${cat}|${k.metric}|${k.unit}">${cat.charAt(0).toUpperCase()+cat.slice(1)} — ${k.metric}</option>`).join('')).join('')}
+            </select>
+            <button class="btn btn-sm" onclick="addKpiFromTemplate()">Add</button>
+            <button class="btn btn-sm btn-primary" onclick="addKpiRow()">+ Custom KPI</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#f8fafc;">
+              <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;width:110px;">Category</th>
+              <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">KPI Metric</th>
+              <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;width:80px;">Unit</th>
+              <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;width:110px;">Target</th>
+              <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;width:110px;">Actual</th>
+              <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;width:70px;">Achieve%</th>
+              <th style="width:30px;"></th>
+            </tr></thead>
+            <tbody id="kpi-table-body">
+              ${kpiRowsHtml || '<tr><td colspan="7" style="padding:20px;text-align:center;color:#94a3b8;font-size:12px;">No KPIs yet — add from template or create custom</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 3: Achievements -->
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:#6366f1;margin-bottom:10px;">🏆 3. Campaign Achievements</div>
+        <textarea id="re-achievements" rows="4" placeholder="สิ่งที่ campaign ทำได้สำเร็จ เกินเป้า หรือโดดเด่น..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(r.achievements||'')}</textarea>
+      </div>
+
+      <!-- Section 4: Key Learnings -->
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:#6366f1;margin-bottom:10px;">💡 4. Key Learnings</div>
+        <textarea id="re-learnings" rows="4" placeholder="สิ่งที่เรียนรู้จาก campaign นี้ อะไรได้ผล อะไรไม่ได้ผล..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(r.keyLearnings||'')}</textarea>
+      </div>
+
+      <!-- Section 5: Way Forward -->
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:#6366f1;margin-bottom:10px;">🚀 5. Way Forward & Recommendations</div>
+        <textarea id="re-wayforward" rows="4" placeholder="ข้อเสนอแนะสำหรับ campaign ครั้งต่อไป, strategy ที่ควรทำต่อ..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(r.wayForward||'')}</textarea>
+      </div>
+
+      <!-- Section 6: Internal Notes -->
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#fffbeb;">
+        <div style="font-size:13px;font-weight:700;color:#d97706;margin-bottom:6px;">🔒 6. Internal Notes <span style="font-size:10px;font-weight:400;color:#94a3b8;">(ไม่แสดงตอน print ส่งลูกค้า)</span></div>
+        <textarea id="re-internal" rows="3" placeholder="บันทึกภายใน ปัญหา ข้อสังเกต..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(r.internalNotes||'')}</textarea>
+      </div>
+    </div>
+  </div>`;
+
+  // Store current report in editor state
+  window._editingReport = r;
+  document.body.appendChild(modal);
+}
+
+function updateKpiField(idx, field, value) {
+  if (window._editingReport?.kpis?.[idx]) {
+    window._editingReport.kpis[idx][field] = value;
+  }
+}
+
+function calcKpiAchievement(idx) {
+  const k = window._editingReport?.kpis?.[idx];
+  const achEl = document.getElementById('kpi-ach-' + idx);
+  if (!k || !achEl) return;
+  k.actual = document.getElementById('kpi-row-' + idx)?.querySelector('input:nth-of-type(2)')?.value || k.actual;
+  if (k.target && k.actual) {
+    const pct = Math.round(parseFloat(k.actual) / parseFloat(k.target) * 100);
+    achEl.innerHTML = `<span style="font-weight:700;color:${pct>=100?'#16a34a':pct>=80?'#f59e0b':'#dc2626'};">${pct}%</span>`;
+  }
+}
+
+function addKpiRow() {
+  if (!window._editingReport) return;
+  if (!window._editingReport.kpis) window._editingReport.kpis = [];
+  const idx = window._editingReport.kpis.length;
+  window._editingReport.kpis.push({ category:'awareness', metric:'', unit:'', target:'', actual:'' });
+  const tbody = document.getElementById('kpi-table-body');
+  if (!tbody) return;
+  if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+  const tr = document.createElement('tr');
+  tr.id = 'kpi-row-' + idx;
+  tr.innerHTML = `
+    <td style="padding:6px 8px;"><select onchange="updateKpiField(${idx},'category',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:11px;">
+      ${['awareness','engagement','traffic','conversion','kol'].map(c=>`<option value="${c}">${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
+    </select></td>
+    <td style="padding:6px 8px;"><input oninput="updateKpiField(${idx},'metric',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="KPI name"></td>
+    <td style="padding:6px 8px;"><input oninput="updateKpiField(${idx},'unit',this.value)" style="width:80px;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="unit"></td>
+    <td style="padding:6px 8px;"><input oninput="updateKpiField(${idx},'target',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="Target"></td>
+    <td style="padding:6px 8px;"><input oninput="updateKpiField(${idx},'actual',this.value);calcKpiAchievement(${idx})" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="Actual"></td>
+    <td style="padding:6px 8px;text-align:center;" id="kpi-ach-${idx}">–</td>
+    <td style="padding:6px 8px;"><button onclick="removeKpiRow(${idx})" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:14px;">×</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function addKpiFromTemplate() {
+  const sel = document.getElementById('kpi-template-select');
+  if (!sel || !sel.value) return;
+  const [category, metric, unit] = sel.value.split('|');
+  if (!window._editingReport) return;
+  if (!window._editingReport.kpis) window._editingReport.kpis = [];
+  const idx = window._editingReport.kpis.length;
+  window._editingReport.kpis.push({ category, metric, unit, target:'', actual:'' });
+  const tbody = document.getElementById('kpi-table-body');
+  if (!tbody) return;
+  if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+  const tr = document.createElement('tr');
+  tr.id = 'kpi-row-' + idx;
+  tr.innerHTML = `
+    <td style="padding:6px 8px;"><span style="font-size:10px;padding:3px 8px;border-radius:6px;background:#f0f4ff;color:#6366f1;font-weight:600;">${category}</span></td>
+    <td style="padding:6px 8px;font-weight:600;font-size:12px;">${escHtml(metric)}</td>
+    <td style="padding:6px 8px;"><input value="${escHtml(unit)}" oninput="updateKpiField(${idx},'unit',this.value)" style="width:80px;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;"></td>
+    <td style="padding:6px 8px;"><input oninput="updateKpiField(${idx},'target',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="Target"></td>
+    <td style="padding:6px 8px;"><input oninput="updateKpiField(${idx},'actual',this.value);calcKpiAchievement(${idx})" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="Actual"></td>
+    <td style="padding:6px 8px;text-align:center;" id="kpi-ach-${idx}">–</td>
+    <td style="padding:6px 8px;"><button onclick="removeKpiRow(${idx})" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:14px;">×</button></td>`;
+  tbody.appendChild(tr);
+  sel.value = '';
+}
+
+function removeKpiRow(idx) {
+  if (!window._editingReport?.kpis) return;
+  window._editingReport.kpis.splice(idx, 1);
+  document.getElementById('kpi-row-' + idx)?.remove();
+}
+
+function autoFillReportProject(projId) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  const brandEl = document.getElementById('re-brand');
+  const clientEl = document.getElementById('re-client');
+  const budgetEl = document.getElementById('re-budget');
+  if (brandEl) brandEl.value = p.brand||'';
+  if (clientEl) clientEl.value = p.company||'';
+  if (budgetEl) budgetEl.value = p.budget||'';
+  if (window._editingReport) {
+    window._editingReport.projectCode = p.code;
+    window._editingReport.projectId = p.id||p.code;
+  }
+}
+
+function saveReport(reportId) {
+  if (!DB.reports) DB.reports = [];
+  const r = window._editingReport;
+  if (!r) return;
+  const v = id => document.getElementById(id)?.value?.trim()||'';
+  r.title = v('re-title');
+  r.brand = v('re-brand');
+  r.client = v('re-client');
+  r.budget = v('re-budget');
+  r.objective = v('re-objective');
+  r.achievements = v('re-achievements');
+  r.keyLearnings = v('re-learnings');
+  r.wayForward = v('re-wayforward');
+  r.internalNotes = v('re-internal');
+  r.period = { start: v('re-period-start'), end: v('re-period-end') };
+  r.status = document.getElementById('re-status')?.value || 'Draft';
+  // kpis already updated in-place via updateKpiField
+  const existing = DB.reports.findIndex(x=>x.id===r.id);
+  if (existing>=0) DB.reports[existing] = r;
+  else DB.reports.push(r);
+  saveDB();
+  document.querySelector('.report-editor-modal')?.remove();
+  renderReportsList();
+}
+
+function printReport(reportId) {
+  const r = (DB.reports||[]).find(x=>x.id===reportId) || window._editingReport;
+  if (!r) return;
+  const statusColors = { Draft:'#f59e0b', Review:'#6366f1', Final:'#16a34a', 'Sent to Client':'#0284c7' };
+  const kpiHtml = (r.kpis||[]).length ? `<table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;">
+    <thead><tr style="background:#f0f4ff;"><th style="padding:8px;text-align:left;border:1px solid #e2e8f0;">Category</th><th style="padding:8px;text-align:left;border:1px solid #e2e8f0;">KPI</th><th style="padding:8px;text-align:center;border:1px solid #e2e8f0;">Unit</th><th style="padding:8px;text-align:center;border:1px solid #e2e8f0;">Target</th><th style="padding:8px;text-align:center;border:1px solid #e2e8f0;">Actual</th><th style="padding:8px;text-align:center;border:1px solid #e2e8f0;">Achievement</th></tr></thead>
+    <tbody>${(r.kpis||[]).map(k=>{ const pct=k.target&&k.actual?Math.round(parseFloat(k.actual)/parseFloat(k.target)*100):null; return `<tr><td style="padding:8px;border:1px solid #e2e8f0;"><span style="background:#f0f4ff;color:#6366f1;padding:2px 8px;border-radius:4px;font-size:11px;">${k.category||''}</span></td><td style="padding:8px;border:1px solid #e2e8f0;font-weight:600;">${escHtml(k.metric||'')}</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;color:#64748b;">${escHtml(k.unit||'')}</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;">${escHtml(k.target||'–')}</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:600;">${escHtml(k.actual||'–')}</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;color:${pct===null?'#94a3b8':pct>=100?'#16a34a':pct>=80?'#f59e0b':'#dc2626'};">${pct!==null?pct+'%':'–'}</td></tr>`; }).join('')}</tbody>
+  </table>` : '<p style="color:#94a3b8;font-style:italic;">No KPIs recorded</p>';
+  const printWin = window.open('','_blank','width=900,height=700');
+  if (!printWin) return;
+  printWin.document.write(`<!DOCTYPE html><html><head><title>${escHtml(r.title||'Campaign Report')}</title>
+  <style>body{font-family:-apple-system,sans-serif;color:#1e293b;padding:40px;max-width:800px;margin:0 auto;}h1{font-size:28px;font-weight:800;margin:0;}h2{font-size:16px;font-weight:700;color:#6366f1;border-bottom:2px solid #e0e7ff;padding-bottom:6px;margin:24px 0 12px;}.meta{display:flex;gap:20px;margin:12px 0 20px;font-size:13px;color:#64748b;}.badge{display:inline-block;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;}.section{margin-bottom:24px;}.note-box{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:12px;margin-top:8px;}@media print{.no-print{display:none;}}</style>
+  </head><body>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Post-Campaign Report</div>
+      <h1>${escHtml(r.title||'Untitled Report')}</h1>
+    </div>
+    <span class="badge" style="background:${statusColors[r.status]||'#94a3b8'}22;color:${statusColors[r.status]||'#94a3b8'};">● ${r.status||'Draft'}</span>
+  </div>
+  <div class="meta">
+    <span>📦 <b>${escHtml(r.brand||'–')}</b></span>
+    <span>🏢 ${escHtml(r.client||'–')}</span>
+    <span>📁 ${escHtml(r.projectCode||'–')}</span>
+    <span>📅 ${r.period?.start||''} – ${r.period?.end||''}</span>
+    ${r.budget?`<span>💰 ฿${Number(r.budget).toLocaleString()}</span>`:''}
+  </div>
+  ${r.objective?`<div class="section"><h2>📋 Campaign Objective</h2><p style="font-size:13px;line-height:1.7;">${escHtml(r.objective)}</p></div>`:''}
+  <div class="section"><h2>📈 Campaign Results (KPIs)</h2>${kpiHtml}</div>
+  ${r.achievements?`<div class="section"><h2>🏆 Campaign Achievements</h2><p style="font-size:13px;line-height:1.7;white-space:pre-wrap;">${escHtml(r.achievements)}</p></div>`:''}
+  ${r.keyLearnings?`<div class="section"><h2>💡 Key Learnings</h2><p style="font-size:13px;line-height:1.7;white-space:pre-wrap;">${escHtml(r.keyLearnings)}</p></div>`:''}
+  ${r.wayForward?`<div class="section"><h2>🚀 Way Forward & Recommendations</h2><p style="font-size:13px;line-height:1.7;white-space:pre-wrap;">${escHtml(r.wayForward)}</p></div>`:''}
+  <div style="margin-top:40px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;display:flex;justify-content:space-between;">
+    <span>Generated by Platform ONE PM Dashboard</span>
+    <span>${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</span>
+  </div>
+  <script>window.onload=()=>window.print();<\/script>
+  </body></html>`);
+  printWin.document.close();
 }
 
 (async function initAuth() {
@@ -16763,6 +17528,29 @@ ${files.length ? `<div style="border:1px solid var(--border);border-radius:12px;
       <button class="btn btn-danger" id="bf-delete" style="display:none;margin-right:auto;" onclick="deleteBrand()">🗑 Delete</button>
       <button class="btn btn-primary" onclick="saveBrand()">บันทึก</button>
     </div>
+  </div>
+</div>
+
+<div class="panel" id="reports">
+  <div style="padding:20px 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="margin:0;font-size:20px;font-weight:800;">📊 Campaign Reports</h2>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--text-muted);">Post-campaign results, KOL performance, achievements & key learnings</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input id="rpt-search" placeholder="Search reports…" oninput="renderReportsList()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;">
+        <select id="rpt-status-filter" onchange="renderReportsList()" style="padding:8px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:#fff;">
+          <option value="">All Status</option>
+          <option>Draft</option><option>Review</option><option>Final</option><option>Sent to Client</option>
+        </select>
+        <button class="btn btn-primary" onclick="openReportEditor(null)">+ New Report</button>
+      </div>
+    </div>
+    <!-- Summary cards -->
+    <div id="rpt-kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;"></div>
+    <!-- Reports table -->
+    <div id="rpt-list-container"></div>
   </div>
 </div>
 
