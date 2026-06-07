@@ -1079,9 +1079,132 @@ details ul { padding-left: 18px; }
 .brand-detail-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:500; display:flex; align-items:stretch; }
 .brand-detail-panel { width:min(960px,100vw); margin-left:auto; background:#fff; overflow-y:auto; box-shadow:-4px 0 24px rgba(0,0,0,.1); }
 .brand-detail-head { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:14px; }
+
+/* ─── Hash Router / Detail View ─── */
+#detail-view {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #f8fafc;
+  z-index: 200;
+  overflow-y: auto;
+  font-family: inherit;
+}
+#detail-view.active { display: block; }
+
+.dv-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  background: var(--sidebar-bg, #1e293b);
+  display: flex;
+  flex-direction: column;
+  z-index: 210;
+  overflow-y: auto;
+}
+.dv-body {
+  margin-left: 220px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.dv-header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 205;
+}
+.dv-breadcrumb {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 12px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dv-breadcrumb a {
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+.dv-breadcrumb a:hover { text-decoration: underline; }
+.dv-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0 0;
+}
+.dv-title-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.dv-tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  margin: 12px -28px 0;
+  padding: 0 28px;
+  border-bottom: none;
+}
+.dv-tab {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.dv-tab:hover { color: var(--text); }
+.dv-tab.active { font-weight: 700; color: var(--accent); border-bottom-color: var(--accent); }
+.dv-stats {
+  display: grid;
+  gap: 12px;
+  padding: 20px 28px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border);
+}
+.dv-stat-card {
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.dv-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.dv-stat-value { font-size: 22px; font-weight: 800; color: #1e293b; margin-top: 4px; }
+.dv-stat-sub { font-size: 10px; margin-top: 2px; }
+.dv-content { padding: 24px 28px; flex: 1; }
+
+.dv-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  margin-bottom: 16px;
+}
+.dv-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+}
+.dv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.dv-table th { padding: 8px 14px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); background: #f8fafc; }
+.dv-table td { padding: 10px 14px; border-top: 1px solid var(--border); }
+.dv-table tr:hover td { background: #f8fafc; cursor: pointer; }
 </style>
 </head>
 <body>
+<div id="detail-view"></div>
 <div class="app-layout">
 
   <!-- LEFT SIDEBAR -->
@@ -10173,7 +10296,7 @@ function renderClientCard(c) {
   const sparkColor = isInactive ? '#9aa3b8' : (health==='at-risk'?'#dc2626': health==='attention'?'#d97706':'#2563eb');
   const workColor  = s.workloadPct > 110 ? '#dc2626' : s.workloadPct > 95 ? '#d97706' : '#16a34a';
 
-  return `<div class="client-card" onclick="openClientProfileCRM('${c.id}','overview')">
+  return `<div class="client-card" onclick="navigateTo('client','${c.id}')">
     <button class="client-card-menu" onclick="event.stopPropagation();openClientModal('${c.id}')">⋯</button>
     <div class="client-card-head">
       <div class="client-logo" style="background:${logoColor};">${initials}</div>
@@ -10219,7 +10342,7 @@ function renderClientCard(c) {
         <div class="client-footer-val">${clientHealthBadge(health, isInactive)}</div>
       </div>
     </div>
-    <a class="client-view-link" onclick="event.stopPropagation();openClientProfileCRM('${c.id}','overview')">View Details →</a>
+    <a class="client-view-link" onclick="event.stopPropagation();navigateTo('client','${c.id}')">View Details →</a>
   </div>`;
 }
 
@@ -10237,7 +10360,7 @@ function renderClientsTable(clients) {
         const s=getClientStats(c.company,c.id);
         const h=isInactive?'inactive':s.health;
         const wCol=s.workloadPct>110?'#dc2626':s.workloadPct>95?'#d97706':'#16a34a';
-        return `<tr style="cursor:pointer;" onclick="openClientProfileCRM('${c.id}','overview')">
+        return `<tr style="cursor:pointer;" onclick="navigateTo('client','${c.id}')">
           <td><b style="color:var(--accent);">${escHtml(c.company||'–')}</b></td>
           <td style="font-size:11px;">${escHtml(c.industry||c.position||'–')}</td>
           <td><span class="client-status-badge ${isInactive?'client-status-inactive':'client-status-active'}">${isInactive?'Inactive':'Active'}</span></td>
@@ -13877,7 +14000,7 @@ function renderBrandCard(b) {
   const workColor = s.workloadPct>110?'#dc2626':s.workloadPct>90?'#d97706':'#16a34a';
   const lastActStr = s.lastAct ? new Date(s.lastAct.ts||0).toLocaleDateString('th-TH',{day:'numeric',month:'short'}) : '–';
 
-  return `<div class="bpf-card" onclick="openBrandDetail('${b.id}')">
+  return `<div class="bpf-card" onclick="navigateTo('brand','${b.id}')">
     <button class="bpf-card-menu" onclick="event.stopPropagation();openBrandModal('${b.id}')">⋯</button>
     <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding-right:24px;">
       <div class="bpf-avatar" style="background:${logoColor};">${initials}</div>
@@ -13919,7 +14042,7 @@ function renderBrandCard(b) {
         <div class="bpf-footer-val" style="font-size:10px;">${lastActStr}</div>
       </div>
     </div>
-    <div class="bpf-view-link" onclick="event.stopPropagation();openBrandDetail('${b.id}')">View Brand →</div>
+    <div class="bpf-view-link" onclick="event.stopPropagation();navigateTo('brand','${b.id}')">View Brand →</div>
   </div>`;
 }
 
@@ -13934,7 +14057,7 @@ function renderBrandsTable(brands) {
     <tbody>${brands.map(b=>{
       const s=getBrandStats(b.id);
       const wc=s.workloadPct>110?'#dc2626':s.workloadPct>90?'#d97706':'#16a34a';
-      return `<tr style="cursor:pointer;" onclick="openBrandDetail('${b.id}')">
+      return `<tr style="cursor:pointer;" onclick="navigateTo('brand','${b.id}')">
         <td><b style="color:var(--accent);">${escHtml(b.name||'–')}</b>${b.description?`<div style="font-size:11px;color:var(--text-muted);">${escHtml(b.description)}</div>`:''}</td>
         <td style="font-size:12px;">${escHtml(b.clientName||'–')}</td>
         <td><span class="bpf-health-badge ${b.status==='inactive'?'bpf-health-inactive':'bpf-health-healthy'}">${b.status==='inactive'?'Inactive':'Active'}</span></td>
@@ -14657,6 +14780,722 @@ function saveBrandGuidelines(brandId, btn) {
   openBrandDetail(brandId, 'guidelines');
 }
 
+// ═══════════════════════════════════════════════
+// HASH ROUTER
+// ═══════════════════════════════════════════════
+
+function navigateTo(view, id, tab) {
+  const hash = tab ? `${view}/${id}/${tab}` : `${view}/${id}`;
+  location.hash = hash;
+}
+
+function navigateBack() {
+  if (history.length > 1) {
+    history.back();
+  } else {
+    location.hash = '';
+  }
+}
+
+function parseHash() {
+  const h = location.hash.replace(/^#\/?/, '');
+  if (!h) return null;
+  const [view, id, tab] = h.split('/');
+  return { view, id, tab };
+}
+
+function renderDetailView(route) {
+  const dv = document.getElementById('detail-view');
+  const al = document.querySelector('.app-layout');
+  if (!dv || !al) return;
+
+  if (!route || !route.view || !route.id) {
+    // Show dashboard
+    dv.classList.remove('active');
+    dv.innerHTML = '';
+    al.style.display = '';
+    return;
+  }
+
+  // Hide dashboard, show detail
+  al.style.display = 'none';
+  dv.classList.add('active');
+
+  // Sidebar HTML (reuse same nav structure)
+  const sidebarHtml = buildDvSidebar();
+
+  switch (route.view) {
+    case 'client':   dv.innerHTML = sidebarHtml + buildClientDetailPage(route.id, route.tab || 'overview'); break;
+    case 'brand':    dv.innerHTML = sidebarHtml + buildBrandDetailPage(route.id, route.tab || 'overview'); break;
+    case 'project':  dv.innerHTML = sidebarHtml + buildProjectDetailPage(route.id, route.tab || 'overview'); break;
+    case 'task':     dv.innerHTML = sidebarHtml + buildTaskDetailPage(route.id, route.tab || 'overview'); break;
+    default:
+      dv.classList.remove('active');
+      al.style.display = '';
+  }
+
+  // Scroll to top
+  dv.scrollTo(0, 0);
+}
+
+function buildDvSidebar() {
+  const user = SESSION ? SESSION.name || SESSION.username || 'User' : 'User';
+  const initials = user.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  const navItems = [
+    { icon: '📊', label: 'Dashboard', hash: '' },
+    { icon: '📁', label: 'Project Board', hash: 'view/board' },
+    { icon: '📋', label: 'Kanban', hash: 'view/kanban' },
+    { icon: '📅', label: 'Timeline', hash: 'view/timeline' },
+    { icon: '✅', label: 'Tasks', hash: 'view/tasks' },
+  ];
+  return `<div class="dv-sidebar">
+    <div style="padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,.1);">
+      <img src="PLATFORM-LOGO-white.png" alt="Platform" style="width:100%;max-width:160px;height:auto;display:block;object-fit:contain;">
+    </div>
+    <nav style="padding:12px 8px;flex:1;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.35);padding:8px 10px 6px;letter-spacing:.8px;">Navigation</div>
+      ${navItems.map(n => `<a href="#${n.hash}" style="display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;font-weight:500;margin-bottom:2px;" onmouseover="this.style.background='rgba(255,255,255,.08)'" onmouseout="this.style.background=''">${n.icon} ${n.label}</a>`).join('')}
+      <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 4px;"></div>
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.35);padding:8px 10px 6px;letter-spacing:.8px;">CRM</div>
+      ${[['🎯','Leads','view/leads'],['🏢','Clients','view/clients'],['👤','Contacts','view/contacts'],['💼','Opportunities','view/opps']].map(([ic,lb,hsh])=>`<a href="#${hsh}" style="display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;font-weight:500;margin-bottom:2px;" onmouseover="this.style.background='rgba(255,255,255,.08)'" onmouseout="this.style.background=''">${ic} ${lb}</a>`).join('')}
+    </nav>
+    <div style="padding:12px;border-top:1px solid rgba(255,255,255,.1);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--ci-yellow,#FDD01F);color:#1e293b;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">${initials}</div>
+        <div><div style="font-size:12px;font-weight:600;color:#fff;">${escHtml(user)}</div><div style="font-size:10px;color:rgba(255,255,255,.5);">${SESSION?.role||''}</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Helper: SVG Donut ──
+function svgDonut(segments, size, cx, cy, r, innerLabel, innerSub) {
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  const COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#ec4899','#8b5cf6'];
+  const paths = segments.map((s, i) => {
+    const dash = (s.pct || 0) * circ;
+    const el = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color || COLORS[i % 7]}" stroke-width="${Math.round(r * 0.35)}" stroke-dasharray="${dash} ${circ - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += dash;
+    return el;
+  });
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="${Math.round(r * 0.35)}"/>
+    ${paths.join('')}
+    ${innerLabel ? `<text x="${cx}" y="${cy - 5}" text-anchor="middle" font-size="${Math.round(r * 0.28)}" font-weight="800" fill="#1e293b">${innerLabel}</text>` : ''}
+    ${innerSub ? `<text x="${cx}" y="${cy + 12}" text-anchor="middle" font-size="${Math.round(r * 0.2)}" fill="#94a3b8">${innerSub}</text>` : ''}
+  </svg>`;
+}
+
+// ── Helper: SVG Sparkline ──
+function svgSparkline(dataArr, w, h, color, gradId) {
+  const max = Math.max(...dataArr, 1);
+  const pts = dataArr.map((v, i) => `${(i / (dataArr.length - 1)) * w},${h - ((v / max) * h * 0.85 + 5)}`).join(' ');
+  const fill = pts + ` ${w},${h} 0,${h}`;
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".2"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <polygon points="${fill}" fill="url(#${gradId})"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+// ── Stat Card ──
+function statCard(label, value, sub, bg, borderColor, textColor) {
+  return `<div class="dv-stat-card" style="background:${bg};border:1px solid ${borderColor};">
+    <div class="dv-stat-label" style="color:${textColor};">${label}</div>
+    <div class="dv-stat-value">${value}</div>
+    <div class="dv-stat-sub" style="color:${textColor};">${sub}</div>
+  </div>`;
+}
+
+// ════════════════════════════════
+// CLIENT DETAIL PAGE
+// ════════════════════════════════
+function buildClientDetailPage(clientId, tab) {
+  const cl = (DB.clients || []).find(x => x.id === clientId);
+  if (!cl) return `<div class="dv-body"><div class="dv-content"><p>Client not found</p></div></div>`;
+
+  const linked = (DB.projects || []).filter(p => p.company === cl.company || (cl.projectIds || []).includes(p.id || p.code));
+  const leads = (DB.leads || []).filter(l => l.company === cl.company);
+  const opps = (DB.opportunities || []).filter(o => o.company === cl.company);
+  const brandObjs = (DB.brands || []).filter(b => b.clientId === cl.id || (b.clientName || '').toLowerCase() === (cl.company || '').toLowerCase());
+  const contacts = (DB.contacts || []).filter(c => c.company === cl.company);
+  const totalRev = linked.reduce((s, p) => s + (+p.budget || 0), 0);
+  const activeProjs = linked.filter(p => p.status && p.status.toLowerCase().includes('progress'));
+  const files = cl.files || [];
+
+  const TABS = ['overview','brands','projects','revenue','activity','contacts','leads','opportunities'];
+  const tabLabels = { overview:'📊 Overview', brands:'📦 Brands', projects:'📁 Projects', revenue:'💰 Revenue', activity:'📋 Activity', contacts:'👤 Contacts', leads:'🎯 Leads', opportunities:'💼 Opportunities' };
+  const tabsHtml = TABS.map(t => `<div class="dv-tab${t === tab ? ' active' : ''}" onclick="navigateTo('client','${clientId}','${t}')">${tabLabels[t]}</div>`).join('');
+
+  // Revenue sparkline data
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const sparkData = months.map((_, i) => linked.filter(p => { const d = parseDate(p.start || p.launch); return d && d.getMonth() === i; }).reduce((s, p) => s + (+p.budget || 0), 0));
+
+  // Donut: revenue by brand
+  const brandRevData = brandObjs.map(b => ({ name: b.name, rev: linked.filter(p => p.brand === b.name || p.brandId === b.id).reduce((s, p) => s + (+p.budget || 0), 0) })).filter(x => x.rev > 0).sort((a, b) => b.rev - a.rev).slice(0, 6);
+  const totalBrandRev = brandRevData.reduce((s, x) => s + x.rev, 0) || 1;
+  const COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#ec4899'];
+  const donutSegs = brandRevData.map((d, i) => ({ pct: d.rev / totalBrandRev, color: COLORS[i % 6] }));
+
+  // Build tab body
+  let body = '';
+  if (tab === 'overview') {
+    const topProjs = activeProjs.slice(0, 6);
+    const acts = (DB.activity || []).filter(a => a.company === cl.company || a.clientId === cl.id).slice(0, 6);
+    body = `
+    <div style="display:grid;grid-template-columns:1fr auto;gap:16px;margin-bottom:20px;">
+      <div class="dv-section" style="padding:18px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:#64748b;">Revenue Trend (YTD)</div>
+        <div style="font-size:28px;font-weight:800;color:#1e293b;">฿${fmtMoney(totalRev)}</div>
+        <div style="margin-top:12px;">${svgSparkline(sparkData, 400, 70, '#6366f1', 'sg-cl-' + clientId)}</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">${months.filter((_, i) => i % 2 === 0).map(m => `<span style="font-size:9px;color:#94a3b8;">${m}</span>`).join('')}</div>
+      </div>
+      <div class="dv-section" style="padding:18px;min-width:240px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:#64748b;">Revenue by Brand</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          ${svgDonut(donutSegs, 110, 55, 55, 38, '฿' + fmtMoney(totalBrandRev), 'Total')}
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${brandRevData.map((d, i) => `<div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:2px;background:${COLORS[i % 6]};flex-shrink:0;"></div><span style="font-size:11px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(d.name)}</span><span style="font-size:11px;font-weight:700;margin-left:auto;padding-left:8px;">฿${fmtMoney(d.rev)}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;margin-bottom:20px;">
+      <div class="dv-section">
+        <div class="dv-section-head">
+          <span>Top Active Projects</span>
+          <button class="btn btn-sm" onclick="navigateTo('client','${clientId}','projects')" style="font-size:11px;">View all</button>
+        </div>
+        <table class="dv-table">
+          <thead><tr><th>Project</th><th>Brand</th><th>Status</th><th>Progress</th><th>Owner</th><th>Deadline</th></tr></thead>
+          <tbody>
+            ${topProjs.length ? topProjs.map(p => {
+              const pct = +p.progress || 0;
+              const e = parseDate(p.end || p.launch);
+              const tod = new Date(); tod.setHours(0,0,0,0);
+              const days = e ? Math.round((e - tod) / 86400000) : null;
+              const risk = days !== null && days <= 14;
+              return `<tr onclick="navigateTo('project','${p.id||p.code}')">
+                <td style="font-weight:600;">${escHtml(p.code || p.name)}</td>
+                <td style="color:#64748b;">${escHtml(p.brand || '–')}</td>
+                <td>${badgeFor(p.status)}</td>
+                <td style="min-width:90px;"><div style="background:#e2e8f0;border-radius:4px;height:6px;overflow:hidden;margin-bottom:2px;"><div style="width:${pct}%;background:${pct>=80?'#16a34a':pct>=50?'#f59e0b':'#6366f1'};height:100%;border-radius:4px;"></div></div><span style="font-size:10px;color:#64748b;">${pct}%</span></td>
+                <td style="color:#64748b;">${escHtml(p.owner || '–')}</td>
+                <td style="color:${risk?'#dc2626':'#64748b'};">${e ? fmtDate(e) : '–'}</td>
+              </tr>`;
+            }).join('') : `<tr><td colspan="6" style="padding:28px;text-align:center;color:#94a3b8;">No active projects</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+      <div class="dv-section" style="display:flex;flex-direction:column;">
+        <div class="dv-section-head">
+          <span>Activity Feed</span>
+          <button class="btn btn-sm" onclick="navigateTo('client','${clientId}','activity')" style="font-size:11px;">View all</button>
+        </div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:10px;flex:1;">
+          ${acts.length ? acts.map(a => {
+            const init = (a.user || '?').charAt(0).toUpperCase();
+            return `<div style="display:flex;gap:10px;"><div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">${init}</div><div><div style="font-size:12px;line-height:1.4;">${escHtml(a.text || a.action || '')}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px;">${a.timeAgo || fmtDate(a.date) || ''}</div></div></div>`;
+          }).join('') : `<div style="text-align:center;padding:30px;color:#94a3b8;font-size:12px;">No recent activity</div>`}
+        </div>
+      </div>
+    </div>
+    ${files.length ? `<div class="dv-section"><div class="dv-section-head"><span>Recent Files</span><button class="btn btn-sm" onclick="navigateTo('client','${clientId}','files')" style="font-size:11px;">View all</button></div><div style="display:flex;gap:10px;padding:14px;overflow-x:auto;">${files.slice(0, 4).map(f => `<div style="flex-shrink:0;width:150px;border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;" onclick="window.open('${f.url||'#'}','_blank')"><div style="font-size:24px;margin-bottom:8px;">${(f.name||'').endsWith('.pdf')?'📕':(f.name||'').endsWith('.pptx')?'📊':'📄'}</div><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name||'File')}</div><div style="font-size:10px;color:#94a3b8;margin-top:3px;">${f.size||''}</div></div>`).join('')}</div></div>` : ''}
+    `;
+  } else if (tab === 'brands') {
+    body = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+      ${brandObjs.length ? brandObjs.map(b => `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;" onclick="navigateTo('brand','${b.id}')">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">${escHtml(b.name)}</div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:10px;">${escHtml(b.category || b.type || '')}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:11px;padding:3px 10px;border-radius:6px;background:#f0f4ff;color:#6366f1;">${(DB.projects||[]).filter(p=>p.brand===b.name||p.brandId===b.id).length} projects</span>
+        </div>
+      </div>`) .join('') : `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#94a3b8;">No brands linked to this client</div>`}
+    </div>`;
+  } else if (tab === 'projects') {
+    body = `<div class="dv-section">
+      <div class="dv-section-head"><span>${linked.length} Projects</span><button class="btn btn-sm btn-primary" onclick="openModal(null)">+ Add Project</button></div>
+      <table class="dv-table">
+        <thead><tr><th>Code</th><th>Brand</th><th>Status</th><th>Progress</th><th>Budget</th><th>Owner</th><th>Deadline</th></tr></thead>
+        <tbody>${linked.length ? linked.map(p => {
+          const pct = +p.progress || 0;
+          const e = parseDate(p.end || p.launch);
+          const tod = new Date(); tod.setHours(0,0,0,0);
+          const risk = e && Math.round((e - tod) / 86400000) <= 14;
+          return `<tr onclick="navigateTo('project','${p.id||p.code}')">
+            <td style="font-weight:700;">${escHtml(p.code || '–')}</td>
+            <td style="color:#64748b;">${escHtml(p.brand || '–')}</td>
+            <td>${badgeFor(p.status)}</td>
+            <td style="min-width:90px;"><div style="background:#e2e8f0;border-radius:4px;height:5px;overflow:hidden;margin-bottom:2px;"><div style="width:${pct}%;background:#6366f1;height:100%;border-radius:4px;"></div></div><span style="font-size:10px;color:#64748b;">${pct}%</span></td>
+            <td style="color:#16a34a;font-weight:600;">฿${fmtMoney(p.budget)}</td>
+            <td>${escHtml(p.owner || '–')}</td>
+            <td style="color:${risk?'#dc2626':'#64748b'};">${e ? fmtDate(e) : '–'}</td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="7" style="padding:40px;text-align:center;color:#94a3b8;">No projects</td></tr>`}</tbody>
+      </table>
+    </div>`;
+  } else {
+    body = `<div style="text-align:center;padding:60px;color:#94a3b8;">Coming soon</div>`;
+  }
+
+  const logoHtml = cl.logo ? `<img src="${cl.logo}" style="width:52px;height:52px;border-radius:10px;object-fit:contain;border:1px solid var(--border);">` : `<div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;">🏢</div>`;
+
+  return `<div class="dv-body">
+    <div class="dv-header">
+      <div class="dv-breadcrumb">
+        <a onclick="location.hash=''">Dashboard</a> › <a onclick="location.hash='view/clients'">Clients</a> › <span>${escHtml(cl.company || '–')}</span>
+      </div>
+      <div class="dv-title-row">
+        ${logoHtml}
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h1 style="margin:0;font-size:24px;font-weight:800;color:#1e293b;">${escHtml(cl.company || '–')}</h1>
+            <span style="font-size:11px;padding:3px 10px;border-radius:8px;background:#f0fdf4;color:#16a34a;font-weight:600;">Client</span>
+          </div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px;">${escHtml(cl.industry || cl.type || '')}</div>
+          ${cl.website ? `<a href="${cl.website}" target="_blank" style="font-size:12px;color:#6366f1;margin-top:2px;display:inline-block;">🔗 ${cl.website}</a>` : ''}
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
+          <button class="btn btn-primary" onclick="openClientModal('${cl.id}')">✏ Edit Client</button>
+          <button class="btn" onclick="navigateBack()">← Back</button>
+        </div>
+      </div>
+      <div class="dv-tabs">${tabsHtml}</div>
+    </div>
+    <div class="dv-stats" style="grid-template-columns:repeat(5,1fr);">
+      ${statCard('Total Revenue (YTD)', '฿' + fmtMoney(totalRev), '↑ All projects', '#f0f4ff', '#c7d2fe', '#6366f1')}
+      ${statCard('Active Projects', String(activeProjs.length), linked.length + ' total', '#f0fdf4', '#bbf7d0', '#16a34a')}
+      ${statCard('Open Opportunities', String(opps.length), leads.length + ' leads', '#fff7ed', '#fed7aa', '#ea580c')}
+      ${statCard('Brands', String(brandObjs.length), 'Active brands', '#faf5ff', '#e9d5ff', '#7c3aed')}
+      ${statCard('Contacts (Synced)', String(contacts.length), 'From CRM', '#f0f9ff', '#bae6fd', '#0284c7')}
+    </div>
+    <div class="dv-content">${body}</div>
+  </div>`;
+}
+
+// ════════════════════════════════
+// BRAND DETAIL PAGE
+// ════════════════════════════════
+function buildBrandDetailPage(brandId, tab) {
+  const b = (DB.brands || []).find(x => x.id === brandId);
+  if (!b) return `<div class="dv-body"><div class="dv-content"><p>Brand not found</p></div></div>`;
+
+  const s = getBrandStats(brandId);
+  const { projs, activeProjs, tasks, openTasks, revenueYTD, totalRev, openOpps, relatedContacts, lastAct } = s;
+  const clientObj = (DB.clients || []).find(c => c.id === b.clientId || c.company === b.clientName);
+  const clientName = clientObj?.company || b.clientName || '–';
+  const COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#ec4899'];
+
+  const TABS = ['overview','projects','tasks','guidelines','revenue','activity','files','contacts'];
+  const tabLabels = { overview:'📊 Overview', projects:'📁 Projects', tasks:'✅ Tasks', guidelines:'📐 Brand Guidelines', revenue:'💰 Revenue', activity:'📋 Activity', files:'📎 Files', contacts:'👤 Contacts' };
+  const tabsHtml = TABS.map(t => `<div class="dv-tab${t === tab ? ' active' : ''}" onclick="navigateTo('brand','${brandId}','${t}')">${tabLabels[t]}</div>`).join('');
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const sparkData = months.map((_, i) => projs.filter(p => { const d = parseDate(p.start || p.launch); return d && d.getMonth() === i; }).reduce((s, p) => s + (+p.budget || 0), 0));
+  const projRevData = projs.map(p => ({ name: p.code || p.name, rev: +p.budget || 0 })).filter(x => x.rev > 0).sort((a, b) => b.rev - a.rev).slice(0, 6);
+  const totalProjRev = projRevData.reduce((s, x) => s + x.rev, 0) || 1;
+  const donutSegs2 = projRevData.map((d, i) => ({ pct: d.rev / totalProjRev, color: COLORS[i % 6] }));
+
+  let body = '';
+  if (tab === 'overview') {
+    const bActs = (DB.activity || []).filter(a => a.brand === b.name || a.brandId === brandId).slice(0, 5);
+    body = `
+    <div style="display:grid;grid-template-columns:1fr auto;gap:16px;margin-bottom:20px;">
+      <div class="dv-section" style="padding:18px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:#64748b;">Revenue Trend (YTD)</div>
+        <div style="font-size:28px;font-weight:800;color:#1e293b;">฿${fmtMoney(revenueYTD)}</div>
+        <div style="margin-top:12px;">${svgSparkline(sparkData, 400, 65, '#6366f1', 'sg-br-' + brandId)}</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">${months.filter((_, i) => i % 2 === 0).map(m => `<span style="font-size:9px;color:#94a3b8;">${m}</span>`).join('')}</div>
+      </div>
+      <div class="dv-section" style="padding:18px;min-width:240px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:#64748b;">Revenue by Project</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          ${svgDonut(donutSegs2, 110, 55, 55, 38, '฿' + fmtMoney(totalProjRev), 'Total')}
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${projRevData.map((d, i) => `<div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:2px;background:${COLORS[i%6]};flex-shrink:0;"></div><span style="font-size:11px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(d.name)}</span><span style="font-size:11px;font-weight:700;margin-left:auto;padding-left:6px;">฿${fmtMoney(d.rev)}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;">
+      <div class="dv-section">
+        <div class="dv-section-head">
+          <span>Active Projects</span>
+          <button class="btn btn-sm" onclick="navigateTo('brand','${brandId}','projects')" style="font-size:11px;">View all</button>
+        </div>
+        <table class="dv-table">
+          <thead><tr><th>Project</th><th>Status</th><th>Progress</th><th>Owner</th><th>Deadline</th></tr></thead>
+          <tbody>${activeProjs.length ? activeProjs.slice(0, 6).map(p => {
+            const pct = +p.progress || 0;
+            const e = parseDate(p.end || p.launch);
+            const tod = new Date(); tod.setHours(0,0,0,0);
+            const risk = e && Math.round((e - tod) / 86400000) <= 14;
+            return `<tr onclick="navigateTo('project','${p.id||p.code}')">
+              <td style="font-weight:600;">${escHtml(p.code || p.name)}</td>
+              <td>${badgeFor(p.status)}</td>
+              <td style="min-width:80px;"><div style="background:#e2e8f0;border-radius:4px;height:5px;overflow:hidden;margin-bottom:2px;"><div style="width:${pct}%;background:${pct>=80?'#16a34a':pct>=50?'#f59e0b':'#6366f1'};height:100%;border-radius:4px;"></div></div><span style="font-size:10px;color:#64748b;">${pct}%</span></td>
+              <td style="color:#64748b;">${escHtml(p.owner || '–')}</td>
+              <td style="color:${risk?'#dc2626':'#64748b'};">${e ? fmtDate(e) : '–'}</td>
+            </tr>`;
+          }).join('') : `<tr><td colspan="5" style="padding:30px;text-align:center;color:#94a3b8;">No active projects</td></tr>`}</tbody>
+        </table>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="dv-section">
+          <div class="dv-section-head"><span>Related Contacts</span><span style="font-size:11px;color:#94a3b8;">from CRM</span></div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
+            ${relatedContacts.length ? relatedContacts.slice(0, 4).map(c => {
+              const init = (c.name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+              const hue = Math.abs([...c.name || ''].reduce((a, ch) => a + ch.charCodeAt(0), 0)) % 360;
+              return `<div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:32px;height:32px;border-radius:50%;background:hsl(${hue},60%,60%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">${init}</div>
+                <div><div style="font-size:12px;font-weight:600;">${escHtml(c.name || '–')}</div><div style="font-size:10px;color:#94a3b8;">${escHtml(c.title || c.role || '')}</div></div>
+              </div>`;
+            }).join('') : `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;">No contacts</div>`}
+            ${relatedContacts.length > 4 ? `<div style="font-size:11px;color:#6366f1;text-align:center;cursor:pointer;" onclick="navigateTo('brand','${brandId}','contacts')">+ ${relatedContacts.length - 4} more contacts</div>` : ''}
+          </div>
+        </div>
+        <div class="dv-section">
+          <div class="dv-section-head"><span>Recent Activity</span></div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+            ${bActs.length ? bActs.map(a => `<div style="font-size:11px;padding:8px;background:#f8fafc;border-radius:7px;">${escHtml(a.text||a.action||'')}<div style="font-size:10px;color:#94a3b8;margin-top:3px;">${a.timeAgo||fmtDate(a.date)||''}</div></div>`).join('') : `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;">No activity</div>`}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  } else if (tab === 'projects') {
+    body = `<div class="dv-section">
+      <div class="dv-section-head"><span>${projs.length} Projects</span><button class="btn btn-sm btn-primary" onclick="openModal(null)">+ Add Project</button></div>
+      <table class="dv-table">
+        <thead><tr><th>Code</th><th>Name</th><th>Status</th><th>Progress</th><th>Budget</th><th>Owner</th><th>Deadline</th></tr></thead>
+        <tbody>${projs.length ? projs.map(p => {
+          const pct = +p.progress || 0;
+          const e = parseDate(p.end || p.launch);
+          const tod = new Date(); tod.setHours(0,0,0,0);
+          const risk = e && Math.round((e - tod) / 86400000) <= 14;
+          return `<tr onclick="navigateTo('project','${p.id||p.code}')">
+            <td style="font-weight:700;">${escHtml(p.code||'–')}</td>
+            <td>${escHtml(p.name||'–')}</td>
+            <td>${badgeFor(p.status)}</td>
+            <td style="min-width:80px;"><div style="background:#e2e8f0;border-radius:4px;height:5px;overflow:hidden;margin-bottom:2px;"><div style="width:${pct}%;background:#6366f1;height:100%;border-radius:4px;"></div></div><span style="font-size:10px;color:#64748b;">${pct}%</span></td>
+            <td style="color:#16a34a;font-weight:600;">฿${fmtMoney(p.budget)}</td>
+            <td>${escHtml(p.owner||'–')}</td>
+            <td style="color:${risk?'#dc2626':'#64748b'};">${e?fmtDate(e):'–'}</td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="7" style="padding:40px;text-align:center;color:#94a3b8;">No projects</td></tr>`}</tbody>
+      </table>
+    </div>`;
+  } else if (tab === 'guidelines') {
+    // Reuse existing guidelines renderer
+    const g = b.guidelines || {};
+    const mandatory = [!!g.brandBook, !!(g.logos && g.logos.length > 0), !!(g.doDont && (g.doDont.approved || g.doDont.restricted)), !!g.brandPositioning, !!g.targetAudience, !!g.toneOfVoice, !!g.approvalContact];
+    const score = Math.round(mandatory.filter(Boolean).length / mandatory.length * 100);
+    const scoreColor = score >= 80 ? '#16a34a' : score >= 50 ? '#d97706' : '#dc2626';
+    body = `<div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border:1px solid #c7d2fe;border-radius:12px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+      <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
+        ${svgDonut([{pct:score/100,color:scoreColor}], 64, 32, 32, 24, String(score)+'%', '')}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:15px;">Brand Setup Completeness</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;">${score >= 80 ? '✅ Brand is well documented' : '⚠️ Missing key brand information'}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;">
+          ${['Brand Book','Logo','Do & Don\'t','Positioning','Target Audience','Tone of Voice','Approval Contact'].map((f, i) => `<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:${mandatory[i]?'#dcfce7':'#fee2e2'};color:${mandatory[i]?'#15803d':'#dc2626'};font-weight:600;">${mandatory[i]?'✓':'+'}${f}</span>`).join('')}
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="openBrandGuidelinesEditor('${brandId}')">✏ Edit Guidelines</button>
+    </div>
+    <p style="text-align:center;color:#94a3b8;font-size:13px;">Fill in guidelines using the Edit button above.</p>`;
+  } else {
+    body = `<div style="text-align:center;padding:60px;color:#94a3b8;">Coming soon</div>`;
+  }
+
+  const logoHtml = b.logo ? `<img src="${b.logo}" style="width:52px;height:52px;border-radius:10px;object-fit:contain;border:1px solid var(--border);">` : `<div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;">📦</div>`;
+
+  return `<div class="dv-body">
+    <div class="dv-header">
+      <div class="dv-breadcrumb">
+        <a onclick="location.hash=''">Dashboard</a> ›
+        ${clientObj ? `<a onclick="navigateTo('client','${clientObj.id}')">${escHtml(clientName)}</a> › ` : ''}
+        <span>${escHtml(b.name || '–')}</span>
+      </div>
+      <div class="dv-title-row">
+        ${logoHtml}
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h1 style="margin:0;font-size:24px;font-weight:800;color:#1e293b;">${escHtml(b.name || '–')}</h1>
+            <span style="font-size:11px;padding:3px 10px;border-radius:8px;background:#f0fdf4;color:#16a34a;font-weight:600;">● Active</span>
+          </div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px;">Brand under ${escHtml(clientName)}</div>
+          ${b.category ? `<div style="font-size:12px;color:#94a3b8;margin-top:1px;">${escHtml(b.category)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
+          <button class="btn btn-primary" onclick="openBrandModal('${brandId}')">✏ Edit Brand</button>
+          <button class="btn" onclick="navigateBack()">← Back</button>
+        </div>
+      </div>
+      <div class="dv-tabs">${tabsHtml}</div>
+    </div>
+    <div class="dv-stats" style="grid-template-columns:repeat(5,1fr);">
+      ${statCard('Revenue (YTD)', '฿' + fmtMoney(revenueYTD), '↑ vs last year', '#f0f4ff', '#c7d2fe', '#6366f1')}
+      ${statCard('Active Projects', String(activeProjs.length), projs.length + ' total', '#f0fdf4', '#bbf7d0', '#16a34a')}
+      ${statCard('Open Tasks', String(openTasks.length), tasks.length + ' total', '#fff7ed', '#fed7aa', '#ea580c')}
+      ${statCard('Open Opportunities', String(openOpps.length), 'opportunities', '#faf5ff', '#e9d5ff', '#7c3aed')}
+      ${statCard('Contacts (Synced)', String(relatedContacts.length), 'From CRM', '#f0f9ff', '#bae6fd', '#0284c7')}
+    </div>
+    <div class="dv-content">${body}</div>
+  </div>`;
+}
+
+// ════════════════════════════════
+// PROJECT DETAIL PAGE
+// ════════════════════════════════
+function buildProjectDetailPage(projId, tab) {
+  const p = (DB.projects || []).find(x => (x.id || x.code) === projId || x.code === projId);
+  if (!p) return `<div class="dv-body"><div class="dv-content"><p>Project not found</p></div></div>`;
+
+  const brandObj = (DB.brands || []).find(b => b.id === p.brandId || b.name === p.brand);
+  const clientObj = (DB.clients || []).find(c => c.id === brandObj?.clientId || c.company === p.company);
+  const projTasks = (DB.tasks || []).filter(t => t.project === p.code || t.projectId === (p.id || p.code));
+  const doneTasks = projTasks.filter(t => t.done || t.status === 'done');
+  const openTasks = projTasks.filter(t => !t.done && t.status !== 'done');
+  const tod = new Date(); tod.setHours(0,0,0,0);
+  const overdueTasks = openTasks.filter(t => { const d = t.endDate ? new Date(t.endDate) : null; return d && d < tod; });
+  const pct = +p.progress || 0;
+  const startD = parseDate(p.start || p.launch);
+  const endD = parseDate(p.end);
+  const daysLeft = endD ? Math.round((endD - tod) / 86400000) : null;
+  const schedColor = daysLeft === null ? '#64748b' : daysLeft < 0 ? '#dc2626' : daysLeft <= 14 ? '#d97706' : '#16a34a';
+  const schedStatus = daysLeft === null ? '–' : daysLeft < 0 ? '⚠ Overdue' : daysLeft <= 14 ? 'At Risk' : 'On Track';
+
+  const TABS = ['overview','tasks','timeline','files','comments','activity','contacts'];
+  const tabLabels = { overview:'📊 Overview', tasks:'✅ Tasks', timeline:'📅 Timeline', files:'📎 Files', comments:'💬 Comments', activity:'📋 Activity', contacts:'👤 Contacts' };
+  const tabsHtml = TABS.map(t => `<div class="dv-tab${t === tab ? ' active' : ''}" onclick="navigateTo('project','${projId}','${t}')">${tabLabels[t]}</div>`).join('');
+
+  let body = '';
+  if (tab === 'overview') {
+    const total = projTasks.length || 1;
+    const pTodo = projTasks.filter(t => !t.status || t.status === 'todo').length;
+    const pDoing = projTasks.filter(t => t.status === 'in progress' || t.status === 'doing').length;
+    const pReview = projTasks.filter(t => t.status === 'review').length;
+    const pDone = doneTasks.length;
+    const donutSegs3 = [{ pct: pTodo/total, color: '#94a3b8' }, { pct: pDoing/total, color: '#6366f1' }, { pct: pReview/total, color: '#f59e0b' }, { pct: pDone/total, color: '#16a34a' }];
+    const relCtx = (DB.contacts || []).filter(c => c.company === p.company || (p.contactIds || []).includes(c.id)).slice(0, 3);
+    body = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="dv-section" style="padding:18px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:#64748b;">Project Summary</div>
+        ${[['Objective', p.objective || p.brief || '–'], ['Deliverable', p.deliverable || '–'], ['Category', p.dept || p.category || '–'], ['Status', p.status || '–'], ['Priority', p.priority || '–']].map(([k, v]) => `<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #f1f5f9;"><div style="font-size:11px;color:#94a3b8;width:85px;flex-shrink:0;font-weight:600;">${k}</div><div style="font-size:12px;">${k==='Status'?badgeFor(v):k==='Priority'&&v!=='–'?`<span style="padding:2px 8px;border-radius:6px;font-size:11px;background:${v==='High'?'#fee2e2':v==='Medium'?'#fff7ed':'#f0fdf4'};color:${v==='High'?'#dc2626':v==='Medium'?'#d97706':'#16a34a'};">● ${v}</span>`:escHtml(String(v))}</div></div>`).join('')}
+      </div>
+      <div class="dv-section" style="padding:18px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:#64748b;">Progress Overview</div>
+        <div style="display:flex;align-items:center;gap:20px;">
+          ${svgDonut(donutSegs3, 110, 55, 55, 38, pct + '%', 'Complete')}
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${[['To Do', pTodo, '#94a3b8'], ['In Progress', pDoing, '#6366f1'], ['Review', pReview, '#f59e0b'], ['Done', pDone, '#16a34a']].map(([l, v, c]) => `<div style="display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:3px;background:${c};"></div><span style="font-size:12px;flex:1;">${l}</span><span style="font-size:12px;font-weight:700;">${v} <span style="color:#94a3b8;font-weight:400;">(${Math.round(v/total*100)}%)</span></span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="dv-section" style="padding:16px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px;color:#64748b;">Project Health</div>
+        ${[['Schedule', schedStatus, schedColor], ['Budget', 'On Track', '#16a34a'], ['Scope', 'On Track', '#16a34a'], ['Resource', overdueTasks.length > 2 ? 'At Risk' : 'On Track', overdueTasks.length > 2 ? '#d97706' : '#16a34a']].map(([l, v, c]) => `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f8fafc;"><span style="font-size:12px;">${l}</span><span style="font-size:12px;font-weight:600;color:${c};">● ${v}</span></div>`).join('')}
+      </div>
+      <div class="dv-section" style="padding:16px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px;color:#64748b;">Task Summary</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          ${[['Total Tasks', projTasks.length, '#1e293b'], ['Open Tasks', openTasks.length, '#6366f1'], ['Overdue', overdueTasks.length, '#dc2626'], ['Completed', doneTasks.length, '#16a34a']].map(([l, v, c]) => `<div style="text-align:center;background:#f8fafc;border-radius:8px;padding:10px;"><div style="font-size:20px;font-weight:800;color:${c};">${v}</div><div style="font-size:9px;color:#94a3b8;margin-top:2px;">${l}</div></div>`).join('')}
+        </div>
+      </div>
+      <div class="dv-section" style="padding:16px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px;color:#64748b;">Related Contacts</div>
+        ${relCtx.length ? relCtx.map(c => { const init = (c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); const hue = Math.abs([...c.name||''].reduce((a,ch)=>a+ch.charCodeAt(0),0))%360; return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;"><div style="width:30px;height:30px;border-radius:50%;background:hsl(${hue},60%,60%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">${init}</div><div><div style="font-size:12px;font-weight:600;">${escHtml(c.name||'–')}</div><div style="font-size:10px;color:#94a3b8;">${escHtml(c.title||c.role||'')}</div></div></div>`; }).join('') : `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;">No contacts linked</div>`}
+        ${relCtx.length > 0 ? `<button class="btn btn-sm" style="margin-top:8px;width:100%;" onclick="navigateTo('project','${projId}','contacts')">+ ${relCtx.length} more contacts</button>` : ''}
+      </div>
+    </div>`;
+  } else if (tab === 'tasks') {
+    body = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><h3 style="margin:0;">${projTasks.length} Tasks</h3><button class="btn btn-primary" onclick="openTaskModal(null,null,'${p.id||p.code}')">+ Add Task</button></div>` +
+    `<div class="dv-section">
+      <table class="dv-table">
+        <thead><tr><th></th><th>Task</th><th>Status</th><th>Priority</th><th>Assignee</th><th>Due Date</th></tr></thead>
+        <tbody>${projTasks.length ? projTasks.map(t => {
+          const isOver = t.endDate && new Date(t.endDate) < tod && !t.done;
+          return `<tr onclick="navigateTo('task','${t.id||t._id||''}')">
+            <td style="width:24px;"><div style="width:16px;height:16px;border-radius:4px;border:2px solid ${t.done?'#16a34a':'#cbd5e1'};background:${t.done?'#16a34a':'transparent'};"></div></td>
+            <td style="font-weight:500;${t.done?'text-decoration:line-through;color:#94a3b8;':''}">${escHtml(t.title||'–')}</td>
+            <td>${badgeFor(t.status||'todo')}</td>
+            <td>${t.priority?`<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:${t.priority==='High'?'#fee2e2':t.priority==='Medium'?'#fff7ed':'#f0fdf4'};color:${t.priority==='High'?'#dc2626':t.priority==='Medium'?'#d97706':'#16a34a'};">● ${t.priority}</span>`:'–'}</td>
+            <td style="color:#64748b;">${escHtml(t.assignee||'–')}</td>
+            <td style="color:${isOver?'#dc2626':'#64748b'};">${isOver?'⚠ ':''} ${t.endDate?fmtDate(t.endDate):'–'}</td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="6" style="padding:40px;text-align:center;color:#94a3b8;">No tasks yet — click "+ Add Task"</td></tr>`}</tbody>
+      </table>
+    </div>`;
+  } else if (tab === 'activity') {
+    const pActs = (DB.activity || []).filter(a => a.project === p.code || a.projectId === (p.id || p.code)).slice(0, 30);
+    body = `<div class="dv-section"><div class="dv-section-head"><span>Activity Log</span></div><div style="padding:16px;display:flex;flex-direction:column;gap:12px;">${pActs.length ? pActs.map(a => `<div style="display:flex;gap:12px;"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">${(a.user||'?').charAt(0)}</div><div><div style="font-size:13px;">${escHtml(a.text||a.action||'')}</div><div style="font-size:11px;color:#94a3b8;margin-top:3px;">${a.timeAgo||fmtDate(a.date)||''}</div></div></div>`).join('') : `<div style="text-align:center;padding:40px;color:#94a3b8;">No activity recorded</div>`}</div></div>`;
+  } else {
+    body = `<div style="text-align:center;padding:60px;color:#94a3b8;"><div style="font-size:40px;margin-bottom:12px;">🚧</div>Coming soon</div>`;
+  }
+
+  return `<div class="dv-body">
+    <div class="dv-header">
+      <div class="dv-breadcrumb">
+        <a onclick="location.hash=''">Dashboard</a> ›
+        ${clientObj ? `<a onclick="navigateTo('client','${clientObj.id}')">${escHtml(clientObj.company)}</a> › ` : ''}
+        ${brandObj ? `<a onclick="navigateTo('brand','${brandObj.id}')">${escHtml(brandObj.name)}</a> › ` : ''}
+        <span>${escHtml(p.code || p.name)}</span>
+      </div>
+      <div class="dv-title-row">
+        <div class="dv-title-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;">📁</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h1 style="margin:0;font-size:22px;font-weight:800;color:#1e293b;">${escHtml(p.code||'–')} ${escHtml(p.name||'')}</h1>
+            ${badgeFor(p.status)}
+          </div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px;">${escHtml(brandObj?.name||p.brand||'–')}${clientObj?' ('+escHtml(clientObj.company)+')':''}</div>
+          ${p.brief||p.description?`<div style="font-size:12px;color:#94a3b8;margin-top:2px;">${escHtml(p.brief||p.description)}</div>`:''}
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
+          <button class="btn btn-primary" onclick="closeProjectSummary&&closeProjectSummary();openModal('${p.id||p.code}')">✏ Edit Project</button>
+          <button class="btn" onclick="navigateBack()">← Back</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,auto);gap:24px;padding:14px 0 0;border-top:1px solid var(--border);margin-top:10px;">
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Start Date</div><div style="font-size:14px;font-weight:700;">${startD?fmtDate(startD):'–'}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Due Date</div><div style="font-size:14px;font-weight:700;color:${daysLeft!==null&&daysLeft<=14?'#dc2626':'#1e293b'}">${endD?fmtDate(endD):'–'}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Budget</div><div style="font-size:14px;font-weight:700;color:#16a34a;">฿${fmtMoney(p.budget)}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Project Manager</div><div style="font-size:14px;font-weight:700;">${escHtml(p.owner||'–')}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Progress</div><div style="display:flex;align-items:center;gap:8px;"><div style="width:90px;background:#e2e8f0;border-radius:4px;height:7px;overflow:hidden;"><div style="width:${pct}%;background:#6366f1;height:100%;border-radius:4px;"></div></div><span style="font-size:13px;font-weight:700;">${pct}%</span></div></div>
+      </div>
+      <div class="dv-tabs">${tabsHtml}</div>
+    </div>
+    <div class="dv-content">${body}</div>
+  </div>`;
+}
+
+// ════════════════════════════════
+// TASK DETAIL PAGE
+// ════════════════════════════════
+function buildTaskDetailPage(taskId, tab) {
+  const t = (DB.tasks || []).find(x => (x.id || x._id) === taskId);
+  if (!t) return `<div class="dv-body"><div class="dv-content"><p style="color:#94a3b8;">Task not found</p></div></div>`;
+
+  const proj = (DB.projects || []).find(p => p.code === t.project || (p.id || p.code) === t.projectId);
+  const brandObj = proj ? (DB.brands || []).find(b => b.name === proj.brand || b.id === proj.brandId) : null;
+  const tod = new Date(); tod.setHours(0,0,0,0);
+  const isOver = t.endDate && new Date(t.endDate) < tod && !t.done;
+  const subtasks = t.subtasks || [];
+  const doneSubs = subtasks.filter(s => s.done).length;
+
+  const TABS = ['overview','subtasks','files','comments','activity','timelog','contacts'];
+  const tabLabels = { overview:'📊 Overview', subtasks:'📋 Subtasks', files:'📎 Files', comments:'💬 Comments', activity:'📋 Activity', timelog:'⏱ Time Log', contacts:'👤 Contacts' };
+  const tabsHtml = TABS.map(tb => `<div class="dv-tab${tb === tab ? ' active' : ''}" onclick="navigateTo('task','${taskId}','${tb}')">${tabLabels[tb]}</div>`).join('');
+
+  let body = '';
+  if (tab === 'overview') {
+    const relCtx = (DB.contacts || []).filter(c => c.company === (proj?.company || '') || (t.contactIds || []).includes(c.id)).slice(0, 3);
+    body = `
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;">
+      <div>
+        <div class="dv-section" style="padding:18px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#64748b;">Task Description</div>
+          <div style="font-size:14px;line-height:1.7;color:#1e293b;">${t.description ? escHtml(t.description) : '<span style="color:#94a3b8;font-style:italic;">No description provided</span>'}</div>
+        </div>
+        ${t.acceptance ? `<div class="dv-section" style="padding:18px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#64748b;">Acceptance Criteria</div>
+          ${t.acceptance.split('\n').filter(Boolean).map(line => `<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;"><div style="width:18px;height:18px;border-radius:4px;background:#dcfce7;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✓</div><span style="font-size:13px;">${escHtml(line)}</span></div>`).join('')}
+        </div>` : ''}
+        ${subtasks.length ? `<div class="dv-section" style="padding:18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:700;color:#64748b;">Subtasks (${subtasks.length})</div>
+            <span style="font-size:12px;color:#16a34a;font-weight:600;">${doneSubs}/${subtasks.length} done</span>
+          </div>
+          ${subtasks.map((s, i) => `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f8fafc;">
+            <div style="width:18px;height:18px;border-radius:4px;border:2px solid ${s.done?'#16a34a':'#cbd5e1'};background:${s.done?'#16a34a':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="toggleSubtask('${taskId}',${i})">${s.done?'<svg width="10" height="10"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#fff" stroke-width="1.5" fill="none"/></svg>':''}</div>
+            <span style="font-size:13px;${s.done?'text-decoration:line-through;color:#94a3b8;':''}">${escHtml(s.title||s.text||'')}</span>
+            ${s.done?`<span style="margin-left:auto;font-size:11px;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#16a34a;">● Done</span>`:''}
+          </div>`).join('')}
+          <button class="btn btn-sm" style="margin-top:10px;width:100%;" onclick="openTaskModal('${taskId}')">✏ Edit / Add Subtask</button>
+        </div>` : `<div class="dv-section" style="padding:18px;text-align:center;color:#94a3b8;"><div style="font-size:28px;margin-bottom:8px;">📋</div><p>No subtasks yet</p><button class="btn btn-sm" onclick="openTaskModal('${taskId}')">+ Edit Task to Add Subtasks</button></div>`}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="dv-section" style="padding:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:#64748b;">Task Information</div>
+          ${[['Status', t.done ? 'Done' : (t.status || 'todo')], ['Priority', t.priority || '–'], ['Assignee', t.assignee || '–'], ['Start Date', t.date || t.startDate ? fmtDate(t.date || t.startDate) : '–'], ['Due Date', t.endDate ? fmtDate(t.endDate) : '–'], ['Estimated Hours', t.estimatedHours ? t.estimatedHours + 'h' : '–'], ['Actual Hours', t.actualHours ? t.actualHours + 'h' : '–']].map(([k, v]) => `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f8fafc;"><span style="font-size:11px;color:#94a3b8;font-weight:600;">${k}</span><span style="font-size:12px;font-weight:600;">${k==='Status'?badgeFor(v):k==='Priority'&&v!=='–'?`<span style="padding:2px 8px;border-radius:6px;font-size:11px;background:${v==='High'?'#fee2e2':v==='Medium'?'#fff7ed':'#f0fdf4'};color:${v==='High'?'#dc2626':v==='Medium'?'#d97706':'#16a34a'};">● ${v}</span>`:escHtml(String(v))}</span></div>`).join('')}
+        </div>
+        <div class="dv-section" style="padding:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:700;color:#64748b;">Related Contacts</div>
+            <span style="font-size:11px;color:#94a3b8;">from CRM</span>
+          </div>
+          ${relCtx.length ? relCtx.map(c => { const init=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); const hue=Math.abs([...c.name||''].reduce((a,ch)=>a+ch.charCodeAt(0),0))%360; return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;"><div style="width:30px;height:30px;border-radius:50%;background:hsl(${hue},60%,60%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">${init}</div><div><div style="font-size:12px;font-weight:600;">${escHtml(c.name||'–')}</div><div style="font-size:10px;color:#94a3b8;">${escHtml(c.title||c.role||'')}</div></div></div>`; }).join('') : `<div style="text-align:center;padding:12px;color:#94a3b8;font-size:12px;">No contacts</div>`}
+        </div>
+      </div>
+    </div>`;
+  } else if (tab === 'subtasks') {
+    body = `<div class="dv-section"><div class="dv-section-head"><span>Subtasks (${subtasks.length})</span><button class="btn btn-sm btn-primary" onclick="openTaskModal('${taskId}')">✏ Edit Task</button></div><div style="padding:16px;">` +
+    (subtasks.length ? subtasks.map((s, i) => `<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid ${s.done?'#bbf7d0':'var(--border)'};border-radius:8px;margin-bottom:6px;background:${s.done?'#f0fdf4':'#fff'};"><div style="width:20px;height:20px;border-radius:5px;border:2px solid ${s.done?'#16a34a':'#cbd5e1'};background:${s.done?'#16a34a':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="toggleSubtask('${taskId}',${i})">${s.done?'<svg width="11" height="11"><polyline points="1.5,5.5 4.5,8 9.5,2.5" stroke="#fff" stroke-width="1.8" fill="none"/></svg>':''}</div><span style="flex:1;font-size:13px;${s.done?'text-decoration:line-through;color:#94a3b8;':''}">${escHtml(s.title||s.text||'')}</span>${s.done?`<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:#f0fdf4;color:#16a34a;font-weight:600;">● Done</span>`:''}  </div>`).join('') : `<div style="text-align:center;padding:40px;color:#94a3b8;">No subtasks yet</div>`) +
+    `</div></div>`;
+  } else {
+    body = `<div style="text-align:center;padding:60px;color:#94a3b8;"><div style="font-size:40px;margin-bottom:12px;">🚧</div>Coming soon</div>`;
+  }
+
+  return `<div class="dv-body">
+    <div class="dv-header">
+      <div class="dv-breadcrumb">
+        <a onclick="location.hash=''">Dashboard</a> ›
+        ${proj ? `<a onclick="navigateTo('project','${proj.id||proj.code}')">Projects › ${escHtml(proj.code||proj.name)}</a> › ` : ''}
+        Tasks › <span>${escHtml(t.title||'–')}</span>
+      </div>
+      <div class="dv-title-row">
+        <div class="dv-title-icon" style="background:${t.done?'linear-gradient(135deg,#16a34a,#22c55e)':'linear-gradient(135deg,#6366f1,#8b5cf6)'};color:#fff;">✅</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h1 style="margin:0;font-size:22px;font-weight:800;color:#1e293b;">${escHtml(t.title||'–')}</h1>
+            ${badgeFor(t.done ? 'Done' : (t.status || 'todo'))}
+            ${isOver ? `<span style="font-size:11px;padding:3px 10px;border-radius:8px;background:#fee2e2;color:#dc2626;font-weight:600;">⚠ Overdue</span>` : ''}
+          </div>
+          ${proj ? `<div style="font-size:12px;color:#64748b;margin-top:3px;">${escHtml(proj.code||proj.name)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
+          <button class="btn btn-primary" onclick="openTaskModal('${taskId}')">✏ Edit Task</button>
+          <button class="btn" onclick="navigateBack()">← Back</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,auto);gap:24px;padding:14px 0 0;border-top:1px solid var(--border);margin-top:10px;">
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Start Date</div><div style="font-size:13px;font-weight:700;">${t.date||t.startDate?fmtDate(t.date||t.startDate):'–'}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Due Date</div><div style="font-size:13px;font-weight:700;color:${isOver?'#dc2626':'#1e293b'}">${t.endDate?fmtDate(t.endDate):'–'}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Assignee</div><div style="font-size:13px;font-weight:700;">${escHtml(t.assignee||'–')}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Priority</div><div style="font-size:13px;font-weight:700;color:${t.priority==='High'?'#dc2626':t.priority==='Medium'?'#d97706':'#16a34a'};">● ${t.priority||'–'}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Estimated Hours</div><div style="font-size:13px;font-weight:700;">${t.estimatedHours?t.estimatedHours+'h':'–'}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:3px;">Actual Hours</div><div style="font-size:13px;font-weight:700;">${t.actualHours?t.actualHours+'h':'–'}</div></div>
+      </div>
+      <div class="dv-tabs">${tabsHtml}</div>
+    </div>
+    <div class="dv-content">${body}</div>
+  </div>`;
+}
+
+// Subtask toggle helper
+function toggleSubtask(taskId, idx) {
+  const t = (DB.tasks || []).find(x => (x.id || x._id) === taskId);
+  if (!t || !t.subtasks || !t.subtasks[idx]) return;
+  t.subtasks[idx].done = !t.subtasks[idx].done;
+  saveDB();
+  const route = parseHash();
+  if (route) renderDetailView(route);
+}
+
+// ── Router init ──
+window.addEventListener('hashchange', () => {
+  renderDetailView(parseHash());
+});
+
 // ── Auth Init ─────────────────────────────────────────────
 (async function initAuth() {
   try {
@@ -14757,6 +15596,22 @@ function saveBrandGuidelines(brandId, btn) {
     if (al) al.style.display = 'none';
     if (af) af.style.display = 'block';
     showLogin();
+  }
+})();
+
+// Initialize router on load
+(function initRouter() {
+  const route = parseHash();
+  if (route && route.view) {
+    // Wait for DB to load before rendering detail view
+    const maxWait = 50;
+    let tries = 0;
+    const tryRender = () => {
+      if (tries++ > maxWait) return;
+      if (!DB || Object.keys(DB).length === 0) { setTimeout(tryRender, 100); return; }
+      renderDetailView(route);
+    };
+    setTimeout(tryRender, 300);
   }
 })();
 
@@ -15381,7 +16236,7 @@ ${files.length ? `<div style="border:1px solid var(--border);border-radius:12px;
       ? clientBrands.map(b=>{
           const projs = getBrandProjects(b.id);
           const rev   = getBrandRevenue(b.id);
-          return `<div class="brand-card" onclick="openBrandDetail('${b.id}')">
+          return `<div class="brand-card" onclick="navigateTo('brand','${b.id}')">
             <div class="brand-card-icon">📦</div>
             <div style="flex:1;">
               <div class="brand-card-name">${escHtml(b.name)}</div>
