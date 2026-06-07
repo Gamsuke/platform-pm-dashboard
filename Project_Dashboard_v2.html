@@ -1084,7 +1084,8 @@ details ul { padding-left: 18px; }
 #detail-view {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0; right: 0; bottom: 0;
+  left: 220px;
   background: #f8fafc;
   z-index: 200;
   overflow-y: auto;
@@ -1105,7 +1106,6 @@ details ul { padding-left: 18px; }
   overflow-y: auto;
 }
 .dv-body {
-  margin-left: 220px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -14806,32 +14806,29 @@ function parseHash() {
 
 function renderDetailView(route) {
   const dv = document.getElementById('detail-view');
-  const al = document.querySelector('.app-layout');
-  if (!dv || !al) return;
+  const ma = document.querySelector('.main-area');
+  if (!dv || !ma) return;
 
   if (!route || !route.view || !route.id) {
-    // Show dashboard
+    // Show dashboard main area
     dv.classList.remove('active');
     dv.innerHTML = '';
-    al.style.display = '';
+    ma.style.display = '';
     return;
   }
 
-  // Hide dashboard, show detail
-  al.style.display = 'none';
+  // Hide only main-area, keep sidebar visible, show detail
+  ma.style.display = 'none';
   dv.classList.add('active');
 
-  // Sidebar HTML (reuse same nav structure)
-  const sidebarHtml = buildDvSidebar();
-
   switch (route.view) {
-    case 'client':   dv.innerHTML = sidebarHtml + buildClientDetailPage(route.id, route.tab || 'overview'); break;
-    case 'brand':    dv.innerHTML = sidebarHtml + buildBrandDetailPage(route.id, route.tab || 'overview'); break;
-    case 'project':  dv.innerHTML = sidebarHtml + buildProjectDetailPage(route.id, route.tab || 'overview'); break;
-    case 'task':     dv.innerHTML = sidebarHtml + buildTaskDetailPage(route.id, route.tab || 'overview'); break;
+    case 'client':   dv.innerHTML = buildClientDetailPage(route.id, route.tab || 'overview'); break;
+    case 'brand':    dv.innerHTML = buildBrandDetailPage(route.id, route.tab || 'overview'); break;
+    case 'project':  dv.innerHTML = buildProjectDetailPage(route.id, route.tab || 'overview'); break;
+    case 'task':     dv.innerHTML = buildTaskDetailPage(route.id, route.tab || 'overview'); break;
     default:
       dv.classList.remove('active');
-      al.style.display = '';
+      ma.style.display = '';
   }
 
   // Scroll to top
