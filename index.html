@@ -2498,8 +2498,8 @@ details ul { padding-left: 18px; }
   <div class="auth-box">
     <!-- Loading state -->
     <div id="auth-loading" style="display:none;"></div>
-    <!-- Login form -->
-    <div id="auth-form" style="display:none;">
+    <!-- Login form — visible by default, JS hides it when app loads -->
+    <div id="auth-form" style="display:block;">
       <div class="auth-logo">
         <div style="font-size:40px;line-height:1;">🏢</div>
         <h2>Platform Group</h2>
@@ -12813,7 +12813,7 @@ function showApp() {
 function showLogin() {
   document.getElementById('auth-overlay').classList.remove('hidden');
   document.getElementById('auth-loading').style.display = 'none';
-  document.getElementById('auth-form').style.display = '';
+  document.getElementById('auth-form').style.display = 'block';
   const un = document.getElementById('auth-username');
   if (un) un.value = '';
   const pw = document.getElementById('auth-password');
@@ -13983,7 +13983,7 @@ function openBrandDetail(brandId, tab) {
 
   // ── 4. แสดง login หรือ app ──
   document.getElementById('auth-loading').style.display = 'none';
-  document.getElementById('auth-form').style.display = '';
+  document.getElementById('auth-form').style.display = 'block';
 
   if (SESSION) { showApp(); if (SESSION.forceReset) openChangePassword(true); }
   else showLogin();
@@ -14019,7 +14019,7 @@ function openBrandDetail(brandId, tab) {
     const al = document.getElementById('auth-loading');
     const af = document.getElementById('auth-form');
     if (al) al.style.display = 'none';
-    if (af) af.style.display = '';
+    if (af) af.style.display = 'block';
     showLogin();
   }
 })();
