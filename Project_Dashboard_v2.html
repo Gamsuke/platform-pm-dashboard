@@ -1201,6 +1201,17 @@ details ul { padding-left: 18px; }
 .dv-table th { padding: 8px 14px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); background: #f8fafc; }
 .dv-table td { padding: 10px 14px; border-top: 1px solid var(--border); }
 .dv-table tr:hover td { background: #f8fafc; cursor: pointer; }
+/* Sidebar collapse */
+.sidebar-collapsed { width: 56px !important; }
+.sidebar-collapsed .nav-section-label { opacity: 0; pointer-events: none; height: 16px; }
+.sidebar-collapsed .tab { justify-content: center; padding: 9px 0; }
+.sidebar-collapsed .tab::after { content: none; }
+.sidebar-collapsed .sidebar-title { display: none; }
+.sidebar-collapsed #sidebar-nav .tab > span:last-child,
+.sidebar-collapsed #sidebar-nav .tab > *:not(:first-child) { display: none; }
+.sidebar-collapsed .sidebar-user-chip .topbar-user-name,
+.sidebar-collapsed .sidebar-user-chip .topbar-role-admin { display: none; }
+.sidebar-collapsed #sidebar-collapse-text { display: none; }
 </style>
 </head>
 <body>
@@ -1217,39 +1228,50 @@ details ul { padding-left: 18px; }
 
     <!-- MIDDLE: nav (scrollable if tall) -->
     <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- OVERVIEW -->
+      <div class="nav-section-label">OVERVIEW</div>
+      <button class="tab active" data-panel="overview">🏠 Overview</button>
+
       <!-- PROJECTS -->
       <div class="nav-section-label">PROJECTS</div>
-      <button class="tab active" data-panel="overview">🏠 Overview</button>
       <button class="tab" data-panel="project-board">📁 Project Board</button>
       <button class="tab" data-panel="kanban">⬜ Kanban</button>
-      <button class="tab" data-panel="projects">📋 Project List</button>
       <button class="tab" data-panel="timeline">📅 Timeline</button>
       <button class="tab" data-panel="tasks-hub">✅ Tasks</button>
+
       <!-- CRM -->
       <div class="nav-section-label">CRM</div>
       <button class="tab" data-panel="leads">🎯 Leads</button>
       <button class="tab" data-panel="clients">🏢 Clients</button>
-      <button class="tab" data-panel="brands">📦 Brands</button>
       <button class="tab" data-panel="clients" data-panel-alias="contacts">👤 Contacts</button>
       <button class="tab" data-panel="opportunities">💼 Opportunities</button>
+
+      <!-- MANAGEMENT -->
+      <div class="nav-section-label">MANAGEMENT</div>
+      <button class="tab" data-panel="brands">📦 Brands</button>
+      <button class="tab" data-panel="projects">📋 Projects</button>
+      <button class="tab" data-panel="tasks-hub" data-panel-alias="tasks-mgmt">✅ Tasks</button>
+      <button class="tab" data-panel="workload">⚡ Resources</button>
+      <button class="tab" data-panel="activity-log">📊 Reports</button>
+
       <!-- TEAM -->
       <div class="nav-section-label">TEAM</div>
       <button class="tab" data-panel="team">👥 Team</button>
-      <button class="tab" data-panel="workload">⚡ Workload</button>
       <button class="tab" data-panel="roles">🎭 Role Demand</button>
       <button class="tab" data-panel="calendar">📅 Calendar</button>
+
       <!-- FINANCE -->
       <div class="nav-section-label">FINANCE</div>
       <button class="tab" data-panel="finance">💰 Finance</button>
       <button class="tab" data-panel="cost-record">📋 Cost Record</button>
       <button class="tab" data-panel="reconcile">⚖️ Reconciliation</button>
-      <!-- OTHER -->
-      <div class="nav-section-label">OTHER</div>
-      <button class="tab" data-panel="risk-register">⚠️ Risks</button>
-      <button class="tab" data-panel="activity-log">📋 Activity</button>
-      <button class="tab" data-panel="framework">📖 SOP &amp; Help</button>
-      <button class="tab" data-panel="training">🎓 Training</button>
+
+      <!-- OTHER (hidden but functional) -->
+      <button class="tab" data-panel="risk-register" style="display:none;">⚠️ Risks</button>
+      <button class="tab" data-panel="framework" style="display:none;">📖 SOP &amp; Help</button>
+      <button class="tab" data-panel="training" style="display:none;">🎓 Training</button>
       <button class="tab" data-panel="capacity" style="display:none;">⚡ Capacity</button>
+
       <!-- PERSONAL -->
       <div class="nav-section-label">PERSONAL</div>
       <button class="tab" data-panel="profile">👤 My Profile</button>
@@ -1259,6 +1281,10 @@ details ul { padding-left: 18px; }
     </nav>
 
     <!-- BOTTOM: user profile -->
+    <button id="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 16px;background:none;border:none;border-top:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;" onmouseover="this.style.color='rgba(255,255,255,.7)'" onmouseout="this.style.color='rgba(255,255,255,.4)'">
+      <span id="sidebar-collapse-icon" style="font-size:14px;">◀</span>
+      <span id="sidebar-collapse-text">Collapse</span>
+    </button>
     <div class="sidebar-user" id="sidebar-user-section">
       <div id="notif-bell" style="display:none;position:relative;margin-bottom:6px;">
         <button onclick="toggleNotifPanel()" style="background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 10px;cursor:pointer;color:rgba(255,255,255,0.8);font-size:12px;font-family:inherit;display:flex;align-items:center;gap:4px;width:100%;justify-content:flex-start;">
@@ -15206,27 +15232,250 @@ function buildBrandDetailPage(brandId, tab) {
       </div>
     </div>`;
   } else if (tab === 'projects') {
-    body = `<div class="dv-section">
-      <div class="dv-section-head"><span>${projs.length} Projects</span><button class="btn btn-sm btn-primary" onclick="openModal(null)">+ Add Project</button></div>
-      <table class="dv-table">
-        <thead><tr><th>Code</th><th>Name</th><th>Status</th><th>Progress</th><th>Budget</th><th>Owner</th><th>Deadline</th></tr></thead>
-        <tbody>${projs.length ? projs.map(p => {
-          const pct = +p.progress || 0;
-          const e = parseDate(p.end || p.launch);
-          const tod = new Date(); tod.setHours(0,0,0,0);
-          const risk = e && Math.round((e - tod) / 86400000) <= 14;
-          return `<tr onclick="navigateTo('project','${p.id||p.code}')">
-            <td style="font-weight:700;">${escHtml(p.code||'–')}</td>
-            <td>${escHtml(p.name||'–')}</td>
-            <td>${badgeFor(p.status)}</td>
-            <td style="min-width:80px;"><div style="background:#e2e8f0;border-radius:4px;height:5px;overflow:hidden;margin-bottom:2px;"><div style="width:${pct}%;background:#6366f1;height:100%;border-radius:4px;"></div></div><span style="font-size:10px;color:#64748b;">${pct}%</span></td>
-            <td style="color:#16a34a;font-weight:600;">฿${fmtMoney(p.budget)}</td>
-            <td>${escHtml(p.owner||'–')}</td>
-            <td style="color:${risk?'#dc2626':'#64748b'};">${e?fmtDate(e):'–'}</td>
-          </tr>`;
-        }).join('') : `<tr><td colspan="7" style="padding:40px;text-align:center;color:#94a3b8;">No projects</td></tr>`}</tbody>
-      </table>
-    </div>`;
+    const tod2 = new Date(); tod2.setHours(0,0,0,0);
+    const totalBudget = projs.reduce((s,p)=>s+(+p.budget||0),0);
+    const completedProjs = projs.filter(p=>p.status&&p.status.toLowerCase().includes('complet'));
+    const overdueProjs = projs.filter(p=>{ const e=parseDate(p.end||p.launch); return e&&e<tod2&&!p.status?.toLowerCase().includes('complet');});
+    const avgProgress = projs.length ? Math.round(projs.reduce((s,p)=>s+(+p.progress||0),0)/projs.length) : 0;
+
+    // Status donut
+    const statusGroups = {};
+    projs.forEach(p => { const st=p.status||'Planning'; statusGroups[st]=(statusGroups[st]||0)+1; });
+    const statusColors = {'In Progress':'#6366f1','Planning':'#f59e0b','Completed':'#16a34a','On Hold':'#94a3b8','At Risk':'#ef4444'};
+    const statusEntries = Object.entries(statusGroups).sort((a,b)=>b[1]-a[1]);
+
+    // PM workload
+    const pmGroups = {};
+    projs.forEach(p=>{ if(p.owner){pmGroups[p.owner]=(pmGroups[p.owner]||0)+1;}});
+    const pmEntries = Object.entries(pmGroups).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxPmCount = pmEntries[0]?.[1]||1;
+
+    // Budget by project (top 6)
+    const budgetProjs = [...projs].sort((a,b)=>(+b.budget||0)-(+a.budget||0)).slice(0,6);
+
+    // Upcoming deadlines
+    const upcomingDeadlines = projs
+      .filter(p=>{ const e=parseDate(p.end||p.launch); return e&&e>=tod2; })
+      .sort((a,b)=>parseDate(a.end||a.launch)-parseDate(b.end||b.launch))
+      .slice(0,4);
+
+    // Mini Gantt timeline
+    const ganttProjs = projs.slice(0,8);
+    const allDates = ganttProjs.flatMap(p=>[parseDate(p.start||p.launch),parseDate(p.end)]).filter(Boolean);
+    const minDate = allDates.length ? new Date(Math.min(...allDates)) : tod2;
+    const maxDate = allDates.length ? new Date(Math.max(...allDates)) : new Date(tod2.getTime()+90*86400000);
+    const totalDays = Math.max((maxDate-minDate)/86400000, 30);
+    const ganttStatusColor = s2 => s2?.toLowerCase().includes('complet')?'#16a34a':s2?.toLowerCase().includes('progress')?'#6366f1':s2?.toLowerCase().includes('hold')?'#94a3b8':s2?.toLowerCase().includes('risk')?'#ef4444':'#f59e0b';
+
+    // Month labels for gantt
+    const ganttMonths = [];
+    const cur = new Date(minDate); cur.setDate(1);
+    while(cur<=maxDate){ ganttMonths.push(new Date(cur)); cur.setMonth(cur.getMonth()+1); }
+    const MTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    body = `
+    <!-- Stats Bar -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;">
+      ${[
+        ['📁','Total Projects',projs.length,'All Status','#e0e7ff','#6366f1'],
+        ['💰','Total Budget','฿'+fmtMoney(totalBudget),'↑ 12% vs last month','#dcfce7','#16a34a'],
+        ['🔄','Active Projects',activeProjs.length,'↑ 2 vs last month','#e0e7ff','#6366f1'],
+        ['✅','Completed',completedProjs.length,'This period','#f0fdf4','#16a34a'],
+        ['⚠️','Overdue',overdueProjs.length,'Needs attention','#fee2e2','#dc2626'],
+        ['📊','Avg Progress',avgProgress+'%','Across all projects','#fff7ed','#d97706'],
+      ].map(([ic,label,val,sub,bg,col])=>`<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 12px;display:flex;align-items:flex-start;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:9px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${ic}</div>
+        <div><div style="font-size:10px;color:#64748b;font-weight:600;">${label}</div><div style="font-size:20px;font-weight:800;color:#1e293b;margin-top:2px;">${val}</div><div style="font-size:10px;color:${col};margin-top:1px;">${sub}</div></div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Search + Filters -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:160px;">
+        <input placeholder="Search projects..." style="width:100%;padding:8px 12px 8px 32px;border:1px solid var(--border);border-radius:8px;font-size:12px;" oninput="filterBrandProjects(this.value,'${brandId}')">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#94a3b8;">🔍</span>
+      </div>
+      <select id="bpj-status-filter" onchange="filterBrandProjects('','${brandId}')" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:#fff;">
+        <option value="">All Status</option>
+        <option>In Progress</option><option>Planning</option><option>Completed</option><option>On Hold</option><option>At Risk</option>
+      </select>
+      <select id="bpj-pm-filter" onchange="filterBrandProjects('','${brandId}')" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:#fff;">
+        <option value="">All Project Managers</option>
+        ${pmEntries.map(([pm])=>`<option>${escHtml(pm)}</option>`).join('')}
+      </select>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm" onclick="openModal(null)" style="font-size:12px;">+ New Project</button>
+      </div>
+    </div>
+
+    <!-- Main content + Right sidebar -->
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;margin-bottom:20px;">
+      <!-- Projects Table -->
+      <div class="dv-section" id="bpj-table-wrap">
+        <div class="dv-section-head">
+          <span>Projects (${projs.length})</span>
+        </div>
+        <table class="dv-table" id="bpj-table">
+          <thead><tr>
+            <th>Project</th>
+            <th>Campaign / Code</th>
+            <th>Status</th>
+            <th>Progress</th>
+            <th>Project Manager</th>
+            <th>Start Date</th>
+            <th>Due Date</th>
+            <th>Budget</th>
+            <th>Tasks</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="bpj-tbody">
+            ${projs.map(p => {
+              const pct = +p.progress||0;
+              const startD = parseDate(p.start||p.launch);
+              const endD = parseDate(p.end);
+              const isRisk = endD && Math.round((endD-tod2)/86400000)<=14;
+              const isDone = p.status?.toLowerCase().includes('complet');
+              const projTasks2 = (DB.tasks||[]).filter(t=>t.project===p.code||t.projectId===(p.id||p.code));
+              const doneTasks2 = projTasks2.filter(t=>t.done||t.status==='done').length;
+              const barColor = isDone?'#16a34a':pct>=70?'#6366f1':pct>=40?'#f59e0b':'#ef4444';
+              const ownerInitials = (p.owner||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+              const ownerHue = Math.abs([...(p.owner||'')].reduce((a,c)=>a+c.charCodeAt(0),0))%360;
+              return `<tr onclick="navigateTo('project','${p.id||p.code}')" style="cursor:pointer;">
+                <td><div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:6px;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">📁</div><span style="font-weight:600;font-size:12px;">${escHtml(p.name||p.code||'–')}</span></div></td>
+                <td style="font-family:monospace;font-size:11px;color:#64748b;">${escHtml(p.code||'–')}</td>
+                <td>${badgeFor(p.status)}</td>
+                <td style="min-width:110px;">
+                  <div style="background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden;margin-bottom:3px;"><div style="width:${pct}%;background:${barColor};height:100%;border-radius:4px;transition:width .3s;"></div></div>
+                  <span style="font-size:10px;color:#64748b;">${pct}%</span>
+                </td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:24px;height:24px;border-radius:50%;background:hsl(${ownerHue},60%,60%);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;">${ownerInitials}</div>
+                    <span style="font-size:11px;">${escHtml(p.owner||'–')}</span>
+                  </div>
+                </td>
+                <td style="font-size:11px;color:#64748b;">${startD?fmtDate(startD):'–'}</td>
+                <td style="font-size:11px;color:${isRisk&&!isDone?'#dc2626':'#64748b'};font-weight:${isRisk&&!isDone?'600':'400'};">${endD?fmtDate(endD):'–'}</td>
+                <td style="font-size:11px;font-weight:600;color:#16a34a;">฿${fmtMoney(p.budget)}</td>
+                <td style="font-size:11px;color:#64748b;">${doneTasks2}/${projTasks2.length}</td>
+                <td><button class="btn btn-sm" onclick="event.stopPropagation();openModal('${p.id||p.code}')" style="font-size:10px;padding:3px 8px;">⋯</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right Sidebar panels -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <!-- Projects by Status donut -->
+        <div class="dv-section" style="padding:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Projects by Status</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            ${svgDonut(statusEntries.map(([st,cnt])=>({pct:cnt/projs.length, color:statusColors[st]||'#94a3b8', label:st, count:cnt})), 90, 45, 45, 32, String(projs.length), 'Total')}
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              ${statusEntries.map(([st,cnt])=>`<div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:2px;background:${statusColors[st]||'#94a3b8'};"></div><span style="font-size:11px;flex:1;">${st}</span><span style="font-size:11px;font-weight:700;">${cnt}</span><span style="font-size:10px;color:#94a3b8;">(${Math.round(cnt/projs.length*100)}%)</span></div>`).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Deadlines -->
+        <div class="dv-section" style="padding:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:700;">Upcoming Deadlines</div>
+          </div>
+          ${upcomingDeadlines.length ? upcomingDeadlines.map(p=>{
+            const e=parseDate(p.end||p.launch);
+            const days=e?Math.round((e-tod2)/86400000):null;
+            const urgColor=days<=7?'#dc2626':days<=30?'#d97706':'#16a34a';
+            const mo=e?MTH_SHORT[e.getMonth()]:'';const dy=e?e.getDate():'';
+            return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f8fafc;">
+              <div style="width:36px;text-align:center;flex-shrink:0;">
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#94a3b8;">${mo}</div>
+                <div style="font-size:16px;font-weight:800;color:#1e293b;line-height:1;">${dy}</div>
+              </div>
+              <div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.name||p.code)}</div><div style="font-size:10px;color:#94a3b8;">${escHtml(p.code||'')}</div></div>
+              <span style="font-size:10px;color:${urgColor};font-weight:600;white-space:nowrap;">${days===0?'Today':days===1?'Tomorrow':'Due in '+days+'d'}</span>
+            </div>`;
+          }).join('') : `<div style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;">No upcoming deadlines</div>`}
+        </div>
+
+        <!-- PM Workload -->
+        <div class="dv-section" style="padding:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Project Managers Workload</div>
+          ${pmEntries.map(([pm,cnt])=>{
+            const pct2=Math.round(cnt/maxPmCount*100);
+            const init=pm.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+            const hue=Math.abs([...pm].reduce((a,c)=>a+c.charCodeAt(0),0))%360;
+            const barC=pct2>=80?'#ef4444':pct2>=60?'#f59e0b':'#16a34a';
+            return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <div style="width:26px;height:26px;border-radius:50%;background:hsl(${hue},60%,60%);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;">${init}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                  <span style="font-size:11px;font-weight:600;">${escHtml(pm)}</span>
+                  <span style="font-size:10px;color:#64748b;">${cnt} Projects</span>
+                </div>
+                <div style="background:#f1f5f9;border-radius:4px;height:5px;overflow:hidden;"><div style="width:${pct2}%;background:${barC};height:100%;border-radius:4px;"></div></div>
+              </div>
+              <span style="font-size:11px;font-weight:700;color:${barC};width:30px;text-align:right;">${pct2}%</span>
+            </div>`;
+          }).join('')}
+        </div>
+
+        <!-- Projects by Budget -->
+        <div class="dv-section" style="padding:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Projects by Budget</div>
+          ${budgetProjs.map(p=>{
+            const pct3=Math.round((+p.budget||0)/((+budgetProjs[0]?.budget||1))*100);
+            return `<div style="margin-bottom:8px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${escHtml(p.code||p.name)}</span>
+                <span style="font-size:11px;font-weight:700;color:#16a34a;">฿${fmtMoney(p.budget)}</span>
+              </div>
+              <div style="background:#f1f5f9;border-radius:4px;height:4px;overflow:hidden;"><div style="width:${pct3}%;background:#6366f1;height:100%;border-radius:4px;"></div></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Timeline (mini Gantt) -->
+    <div class="dv-section" style="margin-bottom:16px;">
+      <div class="dv-section-head"><span>Project Timeline (All Projects)</span></div>
+      <div style="padding:12px 16px;overflow-x:auto;">
+        <!-- Month headers -->
+        <div style="display:flex;margin-left:180px;margin-bottom:6px;">
+          ${ganttMonths.map(m=>`<div style="font-size:10px;font-weight:700;color:#94a3b8;flex-shrink:0;">${MTH_SHORT[m.getMonth()]} ${m.getFullYear()}</div>`).join('<div style="flex:1;"></div>')}
+        </div>
+        ${ganttProjs.map(p=>{
+          const s2=parseDate(p.start||p.launch);
+          const e2=parseDate(p.end);
+          const leftPct=s2?Math.max(0,((s2-minDate)/86400000/totalDays*100)):0;
+          const widPct=s2&&e2?Math.max(2,((e2-s2)/86400000/totalDays*100)):10;
+          const bColor=ganttStatusColor(p.status);
+          return `<div style="display:flex;align-items:center;margin-bottom:6px;">
+            <div style="width:180px;flex-shrink:0;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px;color:#1e293b;font-weight:500;">${escHtml(p.code||p.name)}</div>
+            <div style="flex:1;position:relative;height:20px;background:#f8fafc;border-radius:4px;overflow:hidden;">
+              <div style="position:absolute;left:${Math.max(0,((tod2-minDate)/86400000/totalDays*100))}%;top:0;bottom:0;width:1px;background:#ef4444;z-index:2;"></div>
+              <div style="position:absolute;left:${leftPct}%;width:${widPct}%;top:2px;bottom:2px;background:${bColor};border-radius:4px;display:flex;align-items:center;padding:0 5px;min-width:20px;" title="${escHtml(p.name||p.code)}">
+                <span style="font-size:9px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${badgeFor(p.status)}</span>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="dv-section">
+      <div class="dv-section-head"><span>Recent Activity</span></div>
+      <div style="padding:14px;">
+        ${(() => {
+          const bActs2 = (DB.activity||[]).filter(a=>a.brand===b.name||a.brandId===brandId).slice(0,6);
+          return bActs2.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${bActs2.map(a=>{const init=(a.user||'?').charAt(0).toUpperCase();return `<div style="display:flex;gap:10px;padding:8px;background:#f8fafc;border-radius:8px;"><div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">${init}</div><div><div style="font-size:12px;line-height:1.4;">${escHtml(a.text||a.action||'')}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px;">${a.timeAgo||fmtDate(a.date)||''}</div></div></div>`;}).join('')}</div>` : `<div style="text-align:center;padding:20px;color:#94a3b8;">No recent activity</div>`;
+        })()}
+      </div>
+    </div>
+    `;
   } else if (tab === 'guidelines') {
     // Reuse existing guidelines renderer
     const g = b.guidelines || {};
@@ -15535,6 +15784,20 @@ window.addEventListener('hashchange', () => {
 });
 
 // ── Auth Init ─────────────────────────────────────────────
+function toggleSidebarCollapse() {
+  const sidebar = document.getElementById('sidebar');
+  const mainArea = document.querySelector('.main-area');
+  const detailView = document.getElementById('detail-view');
+  const icon = document.getElementById('sidebar-collapse-icon');
+  const text = document.getElementById('sidebar-collapse-text');
+  const isCollapsed = sidebar?.classList.toggle('sidebar-collapsed');
+  if (icon) icon.textContent = isCollapsed ? '▶' : '◀';
+  if (text) text.style.display = isCollapsed ? 'none' : '';
+  if (mainArea) mainArea.style.marginLeft = isCollapsed ? '56px' : '';
+  if (detailView) detailView.style.left = isCollapsed ? '56px' : '220px';
+  try { localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0'); } catch(e) {}
+}
+
 (async function initAuth() {
   try {
   loadSession();
