@@ -4283,6 +4283,20 @@ details ul { padding-left: 18px; }
   ,"trainingHub": []
 }</script>
 <script>
+// ========== DOM SAFETY HELPER ==========
+/**
+ * Safely attach an event listener to a DOM element by ID.
+ * Logs a warning if the element is missing so execution never throws.
+ * @param {string} id - element id (without #)
+ * @param {string} event - event name, e.g. 'click'
+ * @param {Function} fn - handler
+ */
+function _safeOn(id, event, fn) {
+  const el = document.getElementById(id);
+  if (el) { el.addEventListener(event, fn); }
+  else { console.warn('[DOM] Missing element: #' + id); }
+}
+
 // ========== STATE ==========
 const STORE_KEY = 'pg_projects_db_v2';
 const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -4335,32 +4349,40 @@ function updateFileStatus() {
 
 // ========== FILE OPS ==========
 
-document.getElementById('btn-import').addEventListener('click', () => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
-  input.onchange = async (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    const text = await f.text();
-    try {
-      DB = JSON.parse(text);
-      localStorage.setItem(STORE_KEY, JSON.stringify(DB));
-      renderAll();
-    } catch (err) { alert('Invalid JSON'); }
-  };
-  input.click();
-});
+{
+  const btn = document.getElementById('btn-import');
+  if (btn) btn.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const text = await f.text();
+      try {
+        DB = JSON.parse(text);
+        localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+        renderAll();
+      } catch (err) { alert('Invalid JSON'); }
+    };
+    input.click();
+  });
+  else console.warn('[DOM] Missing element: #btn-import');
+}
 
-document.getElementById('btn-export').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'projects_db.json';
-  a.click();
-  URL.revokeObjectURL(url);
-});
+{
+  const btn = document.getElementById('btn-export');
+  if (btn) btn.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'projects_db.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  else console.warn('[DOM] Missing element: #btn-export');
+}
 
 // ========== IMPORT QT ==========
 let _qtData = [], _qtHeaders = [];
@@ -4384,9 +4406,9 @@ function qtStatusBadge(s) {
   return `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${st.bg};color:${st.color};">${s}</span>`;
 }
 
-document.getElementById('btn-import-qt').addEventListener('click', openQTImport);
-document.getElementById('qt-import-close').addEventListener('click', () => document.getElementById('qt-import-modal').classList.remove('show'));
-document.getElementById('qt-import-cancel').addEventListener('click', () => document.getElementById('qt-import-modal').classList.remove('show'));
+_safeOn('btn-import-qt',    'click', openQTImport);
+_safeOn('qt-import-close',  'click', () => document.getElementById('qt-import-modal')?.classList.remove('show'));
+_safeOn('qt-import-cancel', 'click', () => document.getElementById('qt-import-modal')?.classList.remove('show'));
 
 function openQTImport() {
   _qtData = []; _qtHeaders = [];
@@ -4404,16 +4426,17 @@ function openQTImport() {
 // Drop zone interactions
 (function() {
   const dz = document.getElementById('qt-drop-zone');
-  dz.addEventListener('click', () => document.getElementById('qt-file-input').click());
+  if (!dz) { console.warn('[DOM] Missing element: #qt-drop-zone'); return; }
+  dz.addEventListener('click', () => document.getElementById('qt-file-input')?.click());
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--ci-blue)'; });
   dz.addEventListener('dragleave', () => { dz.style.borderColor = ''; });
   dz.addEventListener('drop', e => {
     e.preventDefault(); dz.style.borderColor = '';
     if (e.dataTransfer.files[0]) processQTFile(e.dataTransfer.files[0]);
   });
-  document.getElementById('qt-file-input').addEventListener('change', e => {
-    if (e.target.files[0]) processQTFile(e.target.files[0]);
-  });
+  const fi = document.getElementById('qt-file-input');
+  if (fi) fi.addEventListener('change', e => { if (e.target.files[0]) processQTFile(e.target.files[0]); });
+  else console.warn('[DOM] Missing element: #qt-file-input');
 })();
 
 async function processQTFile(file) {
@@ -4511,7 +4534,10 @@ function _showQTColumnPicker() {
   document.getElementById('qt-preview').innerHTML = '';
 }
 
-document.getElementById('qt-preview-btn').addEventListener('click', () => {
+{
+  const btn = document.getElementById('qt-preview-btn');
+  if (!btn) { console.warn('[DOM] Missing element: #qt-preview-btn'); }
+  else btn.addEventListener('click', () => {
   const colNo     = +document.getElementById('qt-col-no').value;
   const colStV    = document.getElementById('qt-col-status').value;
   const colSt     = colStV !== '' ? +colStV : null;
@@ -4588,9 +4614,13 @@ document.getElementById('qt-preview-btn').addEventListener('click', () => {
   } else {
     document.getElementById('qt-apply-btn').style.display = 'none';
   }
-});
+  }); // end qt-preview-btn
+} // end guard block
 
-document.getElementById('qt-apply-btn').addEventListener('click', () => {
+{
+  const btn = document.getElementById('qt-apply-btn');
+  if (!btn) { console.warn('[DOM] Missing element: #qt-apply-btn'); }
+  else btn.addEventListener('click', () => {
   const updates = JSON.parse(document.getElementById('qt-apply-btn').dataset.payload || '[]');
   const hasBudget = updates.some(u => u.qtBud > 0);
   const applyBudget = hasBudget && confirm(`พบยอดเงิน QT ใน ${updates.filter(u=>u.qtBud>0).length} รายการ\nต้องการ update Budget ใน Dashboard ด้วยไหม?\n(กด OK = update, Cancel = ข้ามยอดเงิน)`);
@@ -4606,7 +4636,8 @@ document.getElementById('qt-apply-btn').addEventListener('click', () => {
   document.getElementById('qt-import-modal').classList.remove('show');
   renderAll();
   alert(`✅ อัปเดต QT เรียบร้อย ${updates.length} projects${applyBudget ? ' (รวม Budget)' : ''}`);
-});
+  }); // end qt-apply-btn
+} // end guard block
 
 // ── CSV helpers ───────────────────────────────────────────
 function csvEscape(v) {
@@ -9033,17 +9064,17 @@ document.getElementById('f-brand').addEventListener('input', function() {
     }
   }
 });
-document.getElementById('f-pfpg').addEventListener('change', refreshCodeOnPfpgChange);
-document.getElementById('f-launch').addEventListener('change', refreshCodeIfNew);
+_safeOn('f-pfpg',  'change', refreshCodeOnPfpgChange);
+_safeOn('f-launch', 'change', refreshCodeIfNew);
 
-document.getElementById('btn-add').addEventListener('click', () => openModal(null));
-document.getElementById('modal-close').addEventListener('click', closeModal);
-document.getElementById('modal-cancel').addEventListener('click', closeModal);
-document.getElementById('modal').addEventListener('click', (e) => { if (e.target.id==='modal') closeModal(); });
-document.getElementById('proj-summary-modal').addEventListener('click', e => { if (e.target.id==='proj-summary-modal') closeProjectSummary(); });
-document.getElementById('psm-close').addEventListener('click', closeProjectSummary);
-document.getElementById('client-profile-modal').addEventListener('click', e => { if (e.target.id==='client-profile-modal') closeClientProfile(); });
-document.getElementById('clt-close').addEventListener('click', closeClientProfile);
+_safeOn('btn-add',      'click', () => openModal(null));
+_safeOn('modal-close',  'click', closeModal);
+_safeOn('modal-cancel', 'click', closeModal);
+_safeOn('modal', 'click', (e) => { if (e.target.id==='modal') closeModal(); });
+_safeOn('proj-summary-modal', 'click', e => { if (e.target.id==='proj-summary-modal') closeProjectSummary(); });
+_safeOn('psm-close', 'click', closeProjectSummary);
+_safeOn('client-profile-modal', 'click', e => { if (e.target.id==='client-profile-modal') closeClientProfile(); });
+_safeOn('clt-close', 'click', closeClientProfile);
 // Global delegation: click any code-badge to open project summary
 document.addEventListener('click', e => {
   const cb = e.target.closest('.code-badge[data-proj-code]');
@@ -9454,10 +9485,17 @@ function populateOwnerFilters() {
 }
 
 function bind() {
-  ['gantt-status','gantt-owner','gantt-sort','gantt-search'].forEach(id => document.getElementById(id).addEventListener('input', renderGantt));
-  ['prj-search','prj-status','prj-owner','prj-pfpg'].forEach(id => document.getElementById(id).addEventListener('input', renderTable));
-  ['kanban-search','kanban-owner','kanban-dept'].forEach(id => document.getElementById(id).addEventListener('input', renderKanban));
-  ['wl-view','wl-status','wl-role-mode'].forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('change', renderWorkload); });
+  function _bindAll(ids, event, fn) {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.addEventListener(event, fn); }
+      else { console.warn('[DOM] Missing element: #' + id); }
+    });
+  }
+  _bindAll(['gantt-status','gantt-owner','gantt-sort','gantt-search'], 'input', renderGantt);
+  _bindAll(['prj-search','prj-status','prj-owner','prj-pfpg'],         'input', renderTable);
+  _bindAll(['kanban-search','kanban-owner','kanban-dept'],              'input', renderKanban);
+  _bindAll(['wl-view','wl-status','wl-role-mode'],                     'change', renderWorkload);
 }
 
 // ========== DBD LOOKUP ==========
@@ -10959,25 +10997,33 @@ function csvToProjects(text) {
   }
   return { updated, added };
 }
-document.getElementById('btn-csv-down').addEventListener('click', () => {
-  const csv = projectsToCsv();
-  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `projects_${DB.updatedAt||'export'}.csv`; a.click();
-  URL.revokeObjectURL(url);
-});
-document.getElementById('btn-csv-up').addEventListener('click', () => document.getElementById('csv-file-input').click());
-document.getElementById('csv-file-input').addEventListener('change', async (e) => {
-  const f = e.target.files[0]; if (!f) return;
-  const text = await f.text();
-  try {
-    const {updated,added} = csvToProjects(text);
-    saveDB(); renderAll();
-    alert(`CSV imported:\n✓ Updated: ${updated.length} projects\n+ Added: ${added.length} new projects`);
-  } catch(err) { alert('CSV parse error: ' + err.message); }
-  e.target.value = '';
-});
+{
+  const btn = document.getElementById('btn-csv-down');
+  if (btn) btn.addEventListener('click', () => {
+    const csv = projectsToCsv();
+    const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `projects_${DB.updatedAt||'export'}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  });
+  else console.warn('[DOM] Missing element: #btn-csv-down');
+}
+_safeOn('btn-csv-up', 'click', () => document.getElementById('csv-file-input')?.click());
+{
+  const inp = document.getElementById('csv-file-input');
+  if (inp) inp.addEventListener('change', async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const text = await f.text();
+    try {
+      const {updated,added} = csvToProjects(text);
+      saveDB(); renderAll();
+      alert(`CSV imported:\n✓ Updated: ${updated.length} projects\n+ Added: ${added.length} new projects`);
+    } catch(err) { alert('CSV parse error: ' + err.message); }
+    e.target.value = '';
+  });
+  else console.warn('[DOM] Missing element: #csv-file-input');
+}
 
 // ========== TASKS ==========
 const TASK_TYPES = ['Present','Meeting','Deadline','Review','Internal'];
@@ -11026,47 +11072,59 @@ function openTaskModal(id, prefillDate, prefillProject) {
 }
 function closeTaskModal() { document.getElementById('task-modal').classList.remove('show'); }
 
-document.getElementById('task-modal-close').addEventListener('click', closeTaskModal);
-document.getElementById('task-modal-cancel').addEventListener('click', closeTaskModal);
-document.getElementById('task-modal').addEventListener('click', e => { if(e.target.id==='task-modal') closeTaskModal(); });
+_safeOn('task-modal-close',   'click', closeTaskModal);
+_safeOn('task-modal-cancel',  'click', closeTaskModal);
+_safeOn('task-modal', 'click', e => { if(e.target.id==='task-modal') closeTaskModal(); });
 
-document.getElementById('task-form').addEventListener('submit', e => {
-  e.preventDefault();
-  if (!DB.tasks) DB.tasks = [];
-  const id = document.getElementById('tk-id').value || ('tk-'+Math.random().toString(36).slice(2,9));
-  let t = DB.tasks.find(x=>x.id===id);
-  if (!t) { t={id,done:false}; DB.tasks.push(t); }
-  t.title = document.getElementById('tk-title').value.trim();
-  t.type = document.getElementById('tk-type').value;
-  t.projectId = document.getElementById('tk-project').value;
-  t.date = document.getElementById('tk-date').value;
-  t.startTime = document.getElementById('tk-start').value;
-  t.endTime = document.getElementById('tk-end').value;
-  t.assignee = document.getElementById('tk-assignee').value.trim();
-  t.notes = document.getElementById('tk-notes').value.trim();
-  t.updatedAt = new Date().toISOString().slice(0,10);
-  saveDB();
-  closeTaskModal();
-  if (_tabInited.has('calendar')) renderCalendar();
-  // refresh project tasks if modal open
-  const openPrjId = document.getElementById('modal').dataset.id;
-  if (openPrjId) renderPrjTasks(openPrjId);
-});
+{
+  const frm = document.getElementById('task-form');
+  if (frm) frm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!DB.tasks) DB.tasks = [];
+    const id = document.getElementById('tk-id').value || ('tk-'+Math.random().toString(36).slice(2,9));
+    let t = DB.tasks.find(x=>x.id===id);
+    if (!t) { t={id,done:false}; DB.tasks.push(t); }
+    t.title = document.getElementById('tk-title').value.trim();
+    t.type = document.getElementById('tk-type').value;
+    t.projectId = document.getElementById('tk-project').value;
+    t.date = document.getElementById('tk-date').value;
+    t.startTime = document.getElementById('tk-start').value;
+    t.endTime = document.getElementById('tk-end').value;
+    t.assignee = document.getElementById('tk-assignee').value.trim();
+    t.notes = document.getElementById('tk-notes').value.trim();
+    t.updatedAt = new Date().toISOString().slice(0,10);
+    saveDB();
+    closeTaskModal();
+    if (_tabInited.has('calendar')) renderCalendar();
+    // refresh project tasks if modal open
+    const openPrjId = document.getElementById('modal')?.dataset.id;
+    if (openPrjId) renderPrjTasks(openPrjId);
+  });
+  else console.warn('[DOM] Missing element: #task-form');
+}
 
-document.getElementById('tk-delete').addEventListener('click', () => {
-  const id = document.getElementById('tk-id').value;
-  if (!id || !confirm('ลบ task นี้?')) return;
-  DB.tasks = (DB.tasks||[]).filter(x=>x.id!==id);
-  saveDB();
-  closeTaskModal();
-  if (_tabInited.has('calendar')) renderCalendar();
-});
+{
+  const btn = document.getElementById('tk-delete');
+  if (btn) btn.addEventListener('click', () => {
+    const id = document.getElementById('tk-id')?.value;
+    if (!id || !confirm('ลบ task นี้?')) return;
+    DB.tasks = (DB.tasks||[]).filter(x=>x.id!==id);
+    saveDB();
+    closeTaskModal();
+    if (_tabInited.has('calendar')) renderCalendar();
+  });
+  else console.warn('[DOM] Missing element: #tk-delete');
+}
 
-document.getElementById('btn-add-task').addEventListener('click', () => openTaskModal(null));
-document.getElementById('btn-add-prj-task').addEventListener('click', () => {
-  const pid = document.getElementById('modal').dataset.id;
-  openTaskModal(null, null, pid);
-});
+_safeOn('btn-add-task', 'click', () => openTaskModal(null));
+{
+  const btn = document.getElementById('btn-add-prj-task');
+  if (btn) btn.addEventListener('click', () => {
+    const pid = document.getElementById('modal')?.dataset.id;
+    openTaskModal(null, null, pid);
+  });
+  else console.warn('[DOM] Missing element: #btn-add-prj-task');
+}
 
 function renderPrjTasks(projectId) {
   const list = document.getElementById('prj-tasks-list');
@@ -11306,14 +11364,17 @@ function closeAssignModal() {
   document.getElementById('assign-modal').classList.remove('show');
 }
 
-document.getElementById('assign-modal-close').addEventListener('click', closeAssignModal);
-document.getElementById('assign-modal-cancel').addEventListener('click', closeAssignModal);
-document.getElementById('assign-modal').addEventListener('click', e => { if (e.target.id === 'assign-modal') closeAssignModal(); });
+_safeOn('assign-modal-close',   'click', closeAssignModal);
+_safeOn('assign-modal-cancel',  'click', closeAssignModal);
+_safeOn('assign-modal', 'click', e => { if (e.target.id === 'assign-modal') closeAssignModal(); });
 
-document.getElementById('assign-modal-save').addEventListener('click', () => {
-  const nick     = document.getElementById('assign-person-name').textContent;
-  const projId   = document.getElementById('assign-project-select').value;
-  const role     = document.querySelector('input[name="assign-role"]:checked').value;
+{
+  const btn = document.getElementById('assign-modal-save');
+  if (!btn) { console.warn('[DOM] Missing element: #assign-modal-save'); }
+  else btn.addEventListener('click', () => {
+  const nick     = document.getElementById('assign-person-name')?.textContent;
+  const projId   = document.getElementById('assign-project-select')?.value;
+  const role     = document.querySelector('input[name="assign-role"]:checked')?.value;
   const warning  = document.getElementById('assign-warning');
 
   const p = (DB.projects || []).find(x => (x.id || x.code) === projId);
@@ -11346,13 +11407,18 @@ document.getElementById('assign-modal-save').addEventListener('click', () => {
   // re-render Role Demand person view ถ้าเปิดอยู่
   if (_tabInited.has('roles')) renderRoleDemand('person');
   if (_tabInited.has('team')) renderTeam();
-});
+  }); // end assign-modal-save
+} // end guard block
 
 // reset confirmed flag เมื่อ select project หรือ role เปลี่ยน
-document.getElementById('assign-project-select').addEventListener('change', () => {
-  document.getElementById('assign-modal-save').dataset.confirmed = '';
-  document.getElementById('assign-warning').style.display = 'none';
-});
+{
+  const sel = document.getElementById('assign-project-select');
+  if (sel) sel.addEventListener('change', () => {
+    document.getElementById('assign-modal-save').dataset.confirmed = '';
+    document.getElementById('assign-warning').style.display = 'none';
+  });
+  else console.warn('[DOM] Missing element: #assign-project-select');
+}
 document.querySelectorAll('input[name="assign-role"]').forEach(r => r.addEventListener('change', () => {
   document.getElementById('assign-modal-save').dataset.confirmed = '';
   document.getElementById('assign-warning').style.display = 'none';
@@ -11539,60 +11605,61 @@ function openMongoModal() {
 }
 function closeMongoModal() { document.getElementById('mongo-modal').classList.remove('show'); }
 
-document.getElementById('btn-mongo-settings').addEventListener('click', openMongoModal);
-document.getElementById('sync-status').addEventListener('click', openMongoModal);
-document.getElementById('mongo-modal-close').addEventListener('click', closeMongoModal);
-document.getElementById('mongo-modal-cancel').addEventListener('click', closeMongoModal);
-document.getElementById('mongo-modal').addEventListener('click', e => { if (e.target.id==='mongo-modal') closeMongoModal(); });
+_safeOn('btn-mongo-settings',  'click', openMongoModal);
+_safeOn('sync-status',         'click', openMongoModal);
+_safeOn('mongo-modal-close',   'click', closeMongoModal);
+_safeOn('mongo-modal-cancel',  'click', closeMongoModal);
+_safeOn('mongo-modal', 'click', e => { if (e.target.id==='mongo-modal') closeMongoModal(); });
 
-document.getElementById('mg-btn-clear').addEventListener('click', () => {
+_safeOn('mg-btn-clear', 'click', () => {
   if (!confirm('ล้างค่า Cloud Sync ทั้งหมดจริงหรือไม่?')) return;
   localStorage.removeItem(MONGO_CFG_KEY);
   setSyncStatus('idle', '☁️ Cloud');
   closeMongoModal();
 });
 
-document.getElementById('mg-btn-test').addEventListener('click', async () => {
-  const result = document.getElementById('mongo-test-result');
-  result.textContent = '🔌 กำลังทดสอบ…';
-  result.style.color = '#854D0E';
-  const cfg = {
-    apiUrl: document.getElementById('mg-appid').value.trim(),
-    secret: document.getElementById('mg-apikey').value.trim()
-  };
-  if (!cfg.apiUrl) {
-    result.textContent = '⚠ กรุณากรอก API URL ของ server';
-    result.style.color = '#991B1B';
-    return;
-  }
-  try {
-    const res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/health', {
-      headers: apiHeaders(cfg)
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    result.textContent = '✅ เชื่อมต่อสำเร็จ! Server online · ' + (data.ts || '');
-    result.style.color = '#166534';
-  } catch(err) {
-    result.textContent = '❌ เชื่อมต่อไม่ได้: ' + err.message;
-    result.style.color = '#991B1B';
-  }
-});
+{
+  const btn = document.getElementById('mg-btn-test');
+  if (!btn) { console.warn('[DOM] Missing element: #mg-btn-test'); }
+  else btn.addEventListener('click', async () => {
+    const result = document.getElementById('mongo-test-result');
+    if (result) { result.textContent = '🔌 กำลังทดสอบ…'; result.style.color = '#854D0E'; }
+    const cfg = {
+      apiUrl: document.getElementById('mg-appid')?.value.trim(),
+      secret: document.getElementById('mg-apikey')?.value.trim()
+    };
+    if (!cfg.apiUrl) {
+      if (result) { result.textContent = '⚠ กรุณากรอก API URL ของ server'; result.style.color = '#991B1B'; }
+      return;
+    }
+    try {
+      const res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/health', { headers: apiHeaders(cfg) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (result) { result.textContent = '✅ เชื่อมต่อสำเร็จ! Server online · ' + (data.ts || ''); result.style.color = '#166534'; }
+    } catch(err) {
+      if (result) { result.textContent = '❌ เชื่อมต่อไม่ได้: ' + err.message; result.style.color = '#991B1B'; }
+    }
+  });
+}
 
-document.getElementById('mg-btn-save').addEventListener('click', async () => {
-  const cfg = {
-    apiUrl: document.getElementById('mg-appid').value.trim(),
-    secret: document.getElementById('mg-apikey').value.trim()
-  };
-  if (!cfg.apiUrl) { alert('กรุณากรอก API URL ของ server'); return; }
-  saveMongoConfig(cfg);
-  closeMongoModal();
-  // Pull ก่อนเพื่อให้ได้ข้อมูลล่าสุด
-  await mongoPull();
-});
+{
+  const btn = document.getElementById('mg-btn-save');
+  if (!btn) { console.warn('[DOM] Missing element: #mg-btn-save'); }
+  else btn.addEventListener('click', async () => {
+    const cfg = {
+      apiUrl: document.getElementById('mg-appid')?.value.trim(),
+      secret: document.getElementById('mg-apikey')?.value.trim()
+    };
+    if (!cfg.apiUrl) { alert('กรุณากรอก API URL ของ server'); return; }
+    saveMongoConfig(cfg);
+    closeMongoModal();
+    await mongoPull();
+  });
+}
 
-document.getElementById('btn-push').addEventListener('click', () => mongoPush());
-document.getElementById('btn-pull').addEventListener('click', () => mongoPull());
+_safeOn('btn-push', 'click', () => mongoPush());
+_safeOn('btn-pull', 'click', () => mongoPull());
 
 // ========== MY PROFILE ==========
 
@@ -13930,25 +13997,25 @@ function openBrandDetail(brandId, tab) {
   else showLogin();
 
   // Login
-  document.getElementById('auth-login-btn').addEventListener('click', doLogin);
-  document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
-  document.getElementById('auth-username').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('auth-password').focus(); });
+  document.getElementById('auth-login-btn')?.addEventListener('click', doLogin);
+  document.getElementById('auth-password')?.addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+  document.getElementById('auth-username')?.addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('auth-password')?.focus(); });
 
   // Logout / Change PW
-  document.getElementById('btn-logout').addEventListener('click', doLogout);
-  document.getElementById('btn-change-pw').addEventListener('click', () => openChangePassword(false));
+  document.getElementById('btn-logout')?.addEventListener('click', doLogout);
+  document.getElementById('btn-change-pw')?.addEventListener('click', () => openChangePassword(false));
 
   // Sidebar logo — inline <img src="PLATFORM-LOGO-white.png"> in HTML; no JS needed
-  document.getElementById('chpw-save').addEventListener('click', saveChangePassword);
-  document.getElementById('chpw-close').addEventListener('click', () => document.getElementById('chpw-modal').classList.remove('show'));
-  document.getElementById('chpw-cancel').addEventListener('click', () => { if (!_chpwForced) document.getElementById('chpw-modal').classList.remove('show'); });
+  document.getElementById('chpw-save')?.addEventListener('click', saveChangePassword);
+  document.getElementById('chpw-close')?.addEventListener('click', () => document.getElementById('chpw-modal')?.classList.remove('show'));
+  document.getElementById('chpw-cancel')?.addEventListener('click', () => { if (!_chpwForced) document.getElementById('chpw-modal')?.classList.remove('show'); });
 
   // User modal
-  document.getElementById('btn-add-user').addEventListener('click', () => openUserModal(null));
-  document.getElementById('um-save').addEventListener('click', saveUserModal);
-  document.getElementById('um-cancel').addEventListener('click', () => document.getElementById('user-modal').classList.remove('show'));
-  document.getElementById('um-close').addEventListener('click',  () => document.getElementById('user-modal').classList.remove('show'));
-  document.getElementById('um-delete').addEventListener('click', deleteUser);
+  document.getElementById('btn-add-user')?.addEventListener('click', () => openUserModal(null));
+  document.getElementById('um-save')?.addEventListener('click', saveUserModal);
+  document.getElementById('um-cancel')?.addEventListener('click', () => document.getElementById('user-modal')?.classList.remove('show'));
+  document.getElementById('um-close')?.addEventListener('click',  () => document.getElementById('user-modal')?.classList.remove('show'));
+  document.getElementById('um-delete')?.addEventListener('click', deleteUser);
 
   // Render users when admin tab is opened
   document.querySelector('[data-panel="admin"]')?.addEventListener('click', renderUsers);
