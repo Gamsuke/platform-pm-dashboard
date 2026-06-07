@@ -83,6 +83,7 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 }
 .sidebar-nav::-webkit-scrollbar { width: 4px; }
 .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+.nav-section-label { font-size:9px; font-weight:700; letter-spacing:1.5px; color:rgba(255,255,255,0.35); padding:12px 16px 4px; text-transform:uppercase; }
 
 /* ── Sidebar user section ────────────────────── */
 .sidebar-user {
@@ -162,10 +163,10 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .btn { padding: 6px 13px; border: 1px solid rgba(255,255,255,0.28); background: rgba(255,255,255,0.12); border-radius: var(--radius-md); cursor: pointer; font-size: 12px; font-family: inherit; color: #FFFFFF; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s; }
 .btn:hover { background: rgba(255,255,255,0.22); }
 /* Buttons outside the topbar revert to surface style */
-.panel .btn, .card .btn, .modal-content .btn, .modal-box .btn, .form-field .btn, .filter-bar .btn, table .btn {
+.panel .btn, .card .btn, .modal-content .btn, .modal-box .btn, .modal-card .btn, .form-field .btn, .filter-bar .btn, table .btn {
   background: var(--surface); color: var(--text); border-color: var(--border-strong); font-size: 12px;
 }
-.panel .btn:hover, .card .btn:hover, .modal-box .btn:hover, table .btn:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+.panel .btn:hover, .card .btn:hover, .modal-box .btn:hover, .modal-card .btn:hover, table .btn:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
 .btn-primary { background: var(--ci-blue) !important; color: #fff !important; border-color: var(--ci-blue) !important; font-weight: 600; }
 .btn-primary:hover { background: #2E63B8 !important; }
 .btn-danger { background: var(--surface); color: var(--danger); border-color: var(--danger); }
@@ -334,7 +335,8 @@ tr:hover td { background: #F5F8FF; }
 .modal-card { background: var(--surface); border-radius: var(--radius-lg); padding: 20px 24px; max-width: 720px; width: 100%; max-height: calc(100vh - 60px); overflow-y: auto; }
 .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .modal-head h2 { margin: 0; font-size: 16px; font-weight: 500; }
-.modal-close { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--text-muted); padding: 4px 8px; }
+.modal-close { background: none; border: 1.5px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 18px; color: var(--text); padding: 2px 10px; line-height: 1.4; transition: all .15s; font-weight: 700; }
+.modal-close:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-grid .full { grid-column: 1 / -1; }
 .form-field { display: flex; flex-direction: column; gap: 4px; }
@@ -362,6 +364,56 @@ details ul { padding-left: 18px; }
 .comment-text { color: var(--text); }
 .comment-input { display: flex; gap: 6px; margin-top: 8px; }
 .comment-input input { flex: 1; padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); font-size: 13px; font-family: inherit; }
+/* Rich comment editor */
+.rte-wrap { border:1px solid var(--border-strong); border-radius:10px; overflow:hidden; background:#fff; }
+.rte-wrap.drag-over { border-color:var(--accent); background:#f0f5ff; }
+.rte-toolbar { display:flex; align-items:center; gap:1px; padding:6px 8px; border-bottom:1px solid var(--border); background:#fff; flex-wrap:wrap; }
+.rte-btn { background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:5px; font-size:14px; color:#444; line-height:1; transition:background .12s; display:inline-flex; align-items:center; justify-content:center; min-width:28px; height:28px; }
+.rte-btn:hover { background:#f0f0f0; }
+.rte-btn.active { background:#e0e7ff; color:#3730a3; }
+.rte-sep { width:1px; height:20px; background:var(--border); margin:0 3px; flex-shrink:0; }
+.rte-body { min-height:72px; max-height:240px; overflow-y:auto; padding:10px 14px; font-size:13px; line-height:1.6; color:#1a2a3a; outline:none; white-space:pre-wrap; }
+.rte-body:empty:before { content:attr(data-placeholder); color:#aab; pointer-events:none; }
+.rte-body img { max-width:100%; max-height:240px; border-radius:6px; margin:4px 0; display:block; }
+.rte-footer { display:flex; align-items:center; gap:8px; padding:8px 12px; border-top:1px solid var(--border); background:#fafafa; flex-wrap:wrap; }
+.rte-drop-hint { font-size:11px; color:var(--text-hint); margin-left:auto; }
+/* ── Attachment Staging ─── */
+.rte-att-stage { display:flex; flex-wrap:wrap; gap:6px; padding:6px 10px 2px; border-top:1px solid var(--border); background:#fafafa; }
+.rte-att-stage:empty { display:none; }
+.rte-att-chip { display:flex; align-items:center; gap:5px; background:#fff; border:1px solid var(--border-strong); border-radius:8px; padding:4px 6px 4px 5px; font-size:11px; color:var(--text); max-width:200px; cursor:default; position:relative; }
+.rte-att-chip:hover { border-color:var(--accent); }
+.rte-att-chip-thumb { width:28px; height:28px; border-radius:5px; object-fit:cover; flex-shrink:0; }
+.rte-att-chip-icon { width:28px; height:28px; border-radius:5px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.rte-att-chip-name { max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rte-att-chip-size { color:var(--text-hint); flex-shrink:0; }
+.rte-att-chip-rm { background:none; border:none; cursor:pointer; color:var(--text-hint); font-size:13px; padding:0 1px; line-height:1; border-radius:3px; flex-shrink:0; }
+.rte-att-chip-rm:hover { color:var(--danger); background:#fee2e2; }
+/* ── Comment Attachments ─── */
+.comment-atts { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+.comment-att { display:flex; align-items:center; gap:5px; background:#fff; border:1px solid var(--border-strong); border-radius:8px; padding:4px 8px 4px 5px; font-size:11px; color:var(--text); cursor:pointer; text-decoration:none; transition:border-color .12s; max-width:220px; }
+.comment-att:hover { border-color:var(--accent); color:var(--accent); }
+.comment-att-img { border-radius:8px; max-width:100%; max-height:180px; display:block; margin-top:6px; cursor:pointer; }
+.comment-att-video { border-radius:8px; max-width:100%; max-height:220px; margin-top:6px; display:block; }
+.comment-att-audio { width:100%; margin-top:6px; }
+/* ── Attachment Preview Modal ─── */
+.att-preview-modal { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; }
+.att-preview-box { background:#fff; border-radius:14px; max-width:90vw; max-height:90vh; overflow:hidden; display:flex; flex-direction:column; min-width:320px; }
+.att-preview-head { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); }
+.att-preview-title { flex:1; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.att-preview-body { flex:1; overflow:auto; padding:16px; display:flex; align-items:center; justify-content:center; background:#f8f8f8; }
+/* ── Link Chip ─── */
+.rte-link-popup { position:absolute; bottom:calc(100% + 4px); left:0; background:#fff; border:1px solid var(--border-strong); border-radius:10px; padding:10px; box-shadow:0 4px 16px rgba(0,0,0,.1); z-index:200; width:300px; display:none; }
+.rte-link-popup.show { display:block; }
+.rte-link-preview { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; border:1px solid var(--border); margin-top:8px; font-size:12px; cursor:pointer; }
+.rte-link-preview:hover { border-color:var(--accent); background:var(--accent-bg); }
+/* Comment bubble */
+.comment-bubble { display:flex; gap:10px; margin-bottom:14px; }
+.comment-bubble-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; }
+.comment-bubble-body { flex:1; min-width:0; }
+.comment-bubble-header { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
+.comment-bubble-name { font-size:12px; font-weight:700; color:var(--text); }
+.comment-bubble-time { font-size:11px; color:var(--text-hint); }
+.comment-bubble-text { font-size:13px; color:var(--text); line-height:1.5; background:var(--surface-2); border-radius:0 10px 10px 10px; padding:8px 12px; display:inline-block; max-width:100%; }
 
 .recom { background: var(--accent-bg); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: var(--radius-md); margin: 8px 0; font-size: 12px; }
 .recom strong { color: var(--accent); }
@@ -681,9 +733,41 @@ details ul { padding-left: 18px; }
 .pd-stab { padding:10px 16px; border:none; background:none; font-size:13px; font-weight:500; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; font-family:inherit; }
 .pd-stab.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
 .pd-stab:hover:not(.active) { color:var(--text); background:var(--surface-2); }
+.file-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); }
+.file-row:hover { background:var(--surface-2); }
+.file-icon { font-size:20px; flex-shrink:0; width:28px; text-align:center; }
+.file-drop-zone { border:2px dashed var(--border); border-radius:10px; padding:32px; text-align:center; cursor:pointer; transition:border-color .15s; }
+.file-drop-zone:hover, .file-drop-zone.drag-over { border-color:var(--accent); background:var(--accent-bg); }
+.file-version-badge { font-size:10px; font-weight:700; background:rgba(66,125,218,.12); color:var(--ci-blue); padding:1px 6px; border-radius:8px; }
 .pd-task-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:8px; cursor:pointer; }
 .pd-task-card:hover { box-shadow:0 2px 8px rgba(0,33,105,.1); }
 .pd-risk-row { display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);margin-bottom:8px; }
+/* ── CRM / Leads / Opportunities ── */
+.lead-status-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+.lead-status-new        { background:#dbeafe; color:#1e40af; }
+.lead-status-contacted  { background:#e0f2fe; color:#0369a1; }
+.lead-status-qualified  { background:#fef9c3; color:#854d0e; }
+.lead-status-converted  { background:#dcfce7; color:#166534; }
+.lead-status-lost       { background:#fee2e2; color:#991b1b; }
+.opp-stage-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+.opp-stage-lead        { background:#f3f4f6; color:#374151; }
+.opp-stage-qualified   { background:#dbeafe; color:#1e40af; }
+.opp-stage-proposal    { background:#fef9c3; color:#854d0e; }
+.opp-stage-negotiation { background:#fce7f3; color:#9d174d; }
+.opp-stage-won         { background:#dcfce7; color:#166534; }
+.opp-stage-lost        { background:#fee2e2; color:#991b1b; }
+.crm-kanban { display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; }
+.crm-kanban-col { min-width:220px; max-width:260px; background:var(--surface-2); border-radius:10px; padding:10px; flex-shrink:0; }
+.crm-kanban-col-title { font-size:12px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
+.crm-kanban-card { background:#fff; border-radius:8px; padding:10px; margin-bottom:8px; border:1px solid var(--border); cursor:pointer; font-size:12px; }
+.crm-kanban-card:hover { border-color:var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.crm-kanban-card-company { font-weight:700; font-size:13px; margin-bottom:3px; }
+.crm-kanban-card-sub { color:var(--text-muted); font-size:11px; }
+.crm-kanban-count { font-size:10px; color:var(--text-hint); background:var(--surface); border-radius:8px; padding:1px 6px; }
+.clt-detail-tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:16px; flex-wrap:wrap; }
+.clt-detail-tab { padding:8px 14px; font-size:12px; font-weight:600; cursor:pointer; color:var(--text-muted); border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .12s; white-space:nowrap; }
+.clt-detail-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.clt-detail-tab:hover { color:var(--text); }
 </style>
 </head>
 <body>
@@ -699,25 +783,40 @@ details ul { padding-left: 18px; }
 
     <!-- MIDDLE: nav (scrollable if tall) -->
     <nav class="sidebar-nav" id="sidebar-nav">
-      <button class="tab active" data-panel="overview">Overview</button>
+      <!-- PROJECTS -->
+      <div class="nav-section-label">PROJECTS</div>
+      <button class="tab active" data-panel="overview">🏠 Overview</button>
       <button class="tab" data-panel="project-board">📁 Project Board</button>
-      <button class="tab" data-panel="kanban">Kanban</button>
-      <button class="tab" data-panel="timeline">Gantt Timeline</button>
-      <button class="tab" data-panel="workload">Workload</button>
-      <button class="tab" data-panel="roles">Role Demand</button>
-      <button class="tab" data-panel="projects">Project List</button>
-      <button class="tab" data-panel="clients">Clients</button>
-      <button class="tab" data-panel="team">Team</button>
-      <button class="tab" data-panel="calendar">📅 Calendar</button>
-      <button class="tab" data-panel="framework">SOP & Help</button>
+      <button class="tab" data-panel="kanban">⬜ Kanban</button>
+      <button class="tab" data-panel="projects">📋 Project List</button>
+      <button class="tab" data-panel="timeline">📅 Timeline</button>
       <button class="tab" data-panel="tasks-hub">✅ Tasks</button>
-      <button class="tab" data-panel="risk-register">⚠️ Risks</button>
-      <button class="tab" data-panel="activity-log">📋 Activity</button>
+      <!-- CRM -->
+      <div class="nav-section-label">CRM</div>
+      <button class="tab" data-panel="leads">🎯 Leads</button>
+      <button class="tab" data-panel="clients">🏢 Clients</button>
+      <button class="tab" data-panel="clients" data-panel-alias="contacts">👤 Contacts</button>
+      <button class="tab" data-panel="opportunities">💼 Opportunities</button>
+      <!-- TEAM -->
+      <div class="nav-section-label">TEAM</div>
+      <button class="tab" data-panel="team">👥 Team</button>
+      <button class="tab" data-panel="workload">⚡ Workload</button>
+      <button class="tab" data-panel="roles">🎭 Role Demand</button>
+      <button class="tab" data-panel="calendar">📅 Calendar</button>
+      <!-- FINANCE -->
+      <div class="nav-section-label">FINANCE</div>
       <button class="tab" data-panel="finance">💰 Finance</button>
       <button class="tab" data-panel="cost-record">📋 Cost Record</button>
       <button class="tab" data-panel="reconcile">⚖️ Reconciliation</button>
+      <!-- OTHER -->
+      <div class="nav-section-label">OTHER</div>
+      <button class="tab" data-panel="risk-register">⚠️ Risks</button>
+      <button class="tab" data-panel="activity-log">📋 Activity</button>
+      <button class="tab" data-panel="framework">📖 SOP &amp; Help</button>
       <button class="tab" data-panel="training">🎓 Training</button>
-      <button class="tab" data-panel="capacity">⚡ Capacity</button>
+      <button class="tab" data-panel="capacity" style="display:none;">⚡ Capacity</button>
+      <!-- PERSONAL -->
+      <div class="nav-section-label">PERSONAL</div>
       <button class="tab" data-panel="profile">👤 My Profile</button>
       <button class="tab" data-panel="my-team">👥 My Team</button>
       <div style="height:1px;background:rgba(255,255,255,0.1);margin:6px 14px;"></div>
@@ -727,8 +826,8 @@ details ul { padding-left: 18px; }
     <!-- BOTTOM: user profile -->
     <div class="sidebar-user" id="sidebar-user-section">
       <div id="notif-bell" style="display:none;position:relative;margin-bottom:6px;">
-        <button onclick="toggleNotifPanel()" style="background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 10px;cursor:pointer;color:rgba(255,255,255,.8);font-size:14px;display:flex;align-items:center;gap:4px;width:100%;justify-content:flex-start;">
-          🔔 <span id="notif-count" style="font-size:10px;font-weight:700;background:var(--danger);color:#fff;border-radius:8px;padding:0 5px;display:none;">0</span>
+        <button onclick="toggleNotifPanel()" style="background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 10px;cursor:pointer;color:rgba(255,255,255,1);font-size:14px;font-family:inherit;display:flex;align-items:center;gap:4px;width:100%;justify-content:flex-start;">
+          🔔 Notifications <span id="notif-count" style="font-size:10px;font-weight:700;background:var(--danger);color:#fff;border-radius:8px;padding:0 5px;display:none;">0</span>
         </button>
         <div id="notif-panel" style="display:none;position:absolute;left:0;bottom:calc(100% + 8px);width:320px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;max-height:400px;overflow-y:auto;">
           <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;">
@@ -955,9 +1054,12 @@ details ul { padding-left: 18px; }
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <button class="btn btn-sm" id="btn-import-clients">📥 Import</button>
           <button class="btn btn-sm" id="btn-export-clients">📤 Export</button>
+          <button class="btn btn-sm" id="btn-sync-clients" title="ดึง Company/Brand จาก Projects มาเพิ่มใน Contacts โดยไม่ duplicate">🔄 Sync from Projects</button>
           <button class="btn btn-primary" id="btn-add-client">+ Add Contact</button>
         </div>
       </div>
+      <!-- Sync banner -->
+      <div id="client-sync-banner" style="display:none;margin-bottom:10px;"></div>
       <div class="filter-bar">
         <input id="client-search" placeholder="Search company or contact…" style="min-width:260px;">
       </div>
@@ -1584,6 +1686,57 @@ details ul { padding-left: 18px; }
   <div class="prof-stabs" id="prof-stabs"></div>
   <div id="prof-content" style="min-height:200px;"></div>
 </div>
+
+<!-- LEADS PANEL -->
+<div class="panel" id="leads">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+      <h2 style="margin:0;">🎯 Leads</h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-sm" id="leads-view-table" onclick="setLeadsView('table')">☰ Table</button>
+        <button class="btn btn-sm" id="leads-view-kanban" onclick="setLeadsView('kanban')">⬜ Kanban</button>
+        <button class="btn btn-primary" onclick="openLeadModal(null)">+ Add Lead</button>
+      </div>
+    </div>
+    <div class="filter-bar" style="margin-bottom:10px;">
+      <input id="leads-search" placeholder="Search company, contact, owner…" style="min-width:240px;" oninput="renderLeads()">
+      <select id="leads-filter-status" onchange="renderLeads()">
+        <option value="">All Status</option>
+        <option>New</option><option>Contacted</option><option>Qualified</option><option>Converted</option><option>Lost</option>
+      </select>
+      <select id="leads-filter-owner" onchange="renderLeads()">
+        <option value="">All Owners</option>
+      </select>
+    </div>
+    <div id="leads-content"></div>
+  </div>
+</div>
+
+<!-- OPPORTUNITIES PANEL -->
+<div class="panel" id="opportunities">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+      <h2 style="margin:0;">💼 Opportunities</h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-sm" id="opp-view-table" onclick="setOppView('table')">☰ Table</button>
+        <button class="btn btn-sm" id="opp-view-kanban" onclick="setOppView('kanban')">⬜ Pipeline</button>
+        <button class="btn btn-primary" onclick="openOppModal(null)">+ Add Opportunity</button>
+      </div>
+    </div>
+    <div class="filter-bar" style="margin-bottom:10px;">
+      <input id="opp-search" placeholder="Search opportunity, company…" style="min-width:240px;" oninput="renderOpportunities()">
+      <select id="opp-filter-stage" onchange="renderOpportunities()">
+        <option value="">All Stages</option>
+        <option>Lead</option><option>Qualified</option><option>Proposal</option><option>Negotiation</option><option>Won</option><option>Lost</option>
+      </select>
+      <select id="opp-filter-owner" onchange="renderOpportunities()">
+        <option value="">All Owners</option>
+      </select>
+    </div>
+    <div id="opp-content"></div>
+  </div>
+</div>
+
   </div><!-- end .main-area -->
 
 </div><!-- end .app-layout -->
@@ -1682,13 +1835,25 @@ details ul { padding-left: 18px; }
           </select>
         </div>
         <div class="form-field">
-          <label>Brand</label>
-          <input id="f-brand" list="brand-list" autocomplete="off">
-          <div id="f-brand-hint" style="font-size:11px;color:var(--accent);margin-top:3px;min-height:14px;"></div>
+          <label>Company</label>
+          <div style="position:relative;">
+            <select id="f-company-sel" onchange="onProjCompanySel(this)" style="width:100%;background:#fff;color:#1a2a3a;padding-right:32px;">
+              <option value="">— เลือก Company —</option>
+              <option value="__new__">＋ เพิ่ม Company ใหม่...</option>
+            </select>
+          </div>
+          <input id="f-company" placeholder="พิมพ์ชื่อบริษัทใหม่..." list="company-list" autocomplete="off" style="margin-top:6px;display:none;">
         </div>
         <div class="form-field">
-          <label>Company</label>
-          <input id="f-company" list="company-list" autocomplete="off">
+          <label>Brand / Campaign</label>
+          <div style="position:relative;">
+            <select id="f-brand-sel" onchange="onProjBrandSel(this)" style="width:100%;background:#fff;color:#1a2a3a;padding-right:32px;">
+              <option value="">— เลือก Brand —</option>
+              <option value="__new__">＋ เพิ่ม Brand ใหม่...</option>
+            </select>
+          </div>
+          <input id="f-brand" placeholder="พิมพ์ชื่อ Brand ใหม่..." list="brand-list" autocomplete="off" style="margin-top:6px;display:none;">
+          <div id="f-brand-hint" style="font-size:11px;color:var(--accent);margin-top:3px;min-height:14px;"></div>
         </div>
         <div class="form-field full"><label>Project Name</label><input id="f-name"></div>
         <div class="form-field full">
@@ -1708,8 +1873,8 @@ details ul { padding-left: 18px; }
         <div class="form-field"><label>Owner</label><input id="f-owner" list="owner-list"></div>
         <div class="form-field"><label>Support</label><input id="f-support" list="owner-list"></div>
         <div class="form-field"><label>Department</label><input id="f-dept" list="dept-list"></div>
-        <div class="form-field"><label>Budget (THB)</label><input type="number" id="f-budget" min="0" step="1000"></div>
-        <div class="form-field"><label>Spent (THB) <span style="font-weight:400;color:var(--text-muted);font-size:11px;">ค่าใช้จ่ายจริง</span></label><input type="number" id="f-spent" min="0" step="1000"></div>
+        <div class="form-field"><label>Budget (THB)</label><input type="number" id="f-budget" min="0" step="0.01"></div>
+        <div class="form-field"><label>Spent (THB) <span style="font-weight:400;color:var(--text-muted);font-size:11px;">ค่าใช้จ่ายจริง</span></label><input type="number" id="f-spent" min="0" step="0.01"></div>
         <div class="form-field"><label>Brief date</label><input type="date" id="f-brief"></div>
         <div class="form-field"><label>Present date</label><input type="date" id="f-present"></div>
         <div class="form-field"><label>Working Start</label><input type="date" id="f-launch"></div>
@@ -1720,7 +1885,7 @@ details ul { padding-left: 18px; }
           <div id="f-team-picker" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:44px;background:var(--surface-2);max-height:160px;overflow-y:auto;"></div>
           <div id="f-team-picker-info" style="font-size:11px;color:var(--text-muted);margin-top:4px;min-height:16px;"></div>
         </div>
-        <div class="form-field full"><label>Project Types (เว้นบรรทัด)</label><textarea id="f-types"></textarea></div>
+        <div class="form-field full"><label>Project Description</label><textarea id="f-types" placeholder="รายละเอียด project เพิ่มเติม..." style="min-height:80px;"></textarea></div>
 
         <!-- LOSS ANALYSIS — แสดงเฉพาะเมื่อ status = Pitch Lost -->
         <div id="loss-section" class="form-field full" style="display:none;">
@@ -1762,16 +1927,78 @@ details ul { padding-left: 18px; }
         </div>
         <div class="form-field full">
           <label>Comments</label>
-          <div class="comment-list" id="comment-list"></div>
-          <div class="comment-input">
-            <input id="comment-text" placeholder="เพิ่ม note / update / ปัญหา…">
-            <button type="button" class="btn btn-sm" id="btn-add-comment">Add</button>
+          <div class="comment-list" id="comment-list" style="margin-bottom:14px;padding-right:2px;"></div>
+          <!-- Rich text comment editor -->
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div id="proj-rte-avatar" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;margin-top:4px;background:#888;"></div>
+            <div style="flex:1;min-width:0;">
+          <div class="rte-wrap" id="proj-rte-wrap">
+            <div class="rte-toolbar" id="proj-rte-toolbar">
+              <button class="rte-btn" onclick="rteCmd('proj','bold')" title="Bold"><b>B</b></button>
+              <button class="rte-btn" onclick="rteCmd('proj','italic')" title="Italic"><i>I</i></button>
+              <button class="rte-btn" onclick="rteCmd('proj','strikeThrough')" title="Strikethrough"><s>S</s></button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="rteCmd('proj','insertUnorderedList')" title="Bullet list">☰</button>
+              <button class="rte-btn" onclick="rteCmd('proj','insertOrderedList')" title="Numbered list">⋮</button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="rteCmd('proj','formatBlock','blockquote')" title="Quote">❝</button>
+              <button class="rte-btn" onclick="rteInsertCode('proj')" title="Code">&lt;/&gt;</button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="rteCmd('proj','undo')" title="Undo">↩</button>
+              <button class="rte-btn" onclick="rteCmd('proj','redo')" title="Redo">↪</button>
+              <div class="rte-sep"></div>
+              <label class="rte-btn" title="แนบไฟล์" style="cursor:pointer;">📎<input type="file" accept="*/*" multiple style="display:none;" onchange="rteAttachFiles('proj',this.files);this.value='';"></label>
+              <div style="position:relative;">
+                <button class="rte-btn" title="เพิ่ม Link (GDrive/Figma/Loom)" onclick="rteToggleLinkPopup('proj')" id="proj-rte-link-btn">🔗</button>
+                <div class="rte-link-popup" id="proj-rte-link-popup">
+                  <div style="font-size:12px;font-weight:600;margin-bottom:6px;">แนบ Link</div>
+                  <input id="proj-rte-link-input" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;" placeholder="https://drive.google.com/... หรือ Figma/Loom URL" oninput="rtePreviewLink('proj')" onkeydown="if(event.key==='Enter'){rteConfirmLink('proj');}">
+                  <div id="proj-rte-link-preview"></div>
+                  <div style="display:flex;gap:6px;margin-top:8px;">
+                    <button class="btn btn-primary btn-sm" style="font-size:11px;" onclick="rteConfirmLink('proj')">เพิ่ม</button>
+                    <button class="btn btn-sm" style="font-size:11px;" onclick="rteToggleLinkPopup('proj')">ยกเลิก</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rte-body" id="proj-rte-body" contenteditable="true" data-placeholder="Type your comment here..."></div>
+            <div class="rte-att-stage" id="proj-rte-att-stage"></div>
+            <div class="rte-footer">
+              <button type="button" class="btn btn-primary btn-sm" onclick="rteSubmitComment('proj')" style="font-size:12px;">Add this comment</button>
+              <button type="button" class="btn btn-sm" onclick="rteClear('proj')" style="font-size:12px;">Never mind</button>
+              <span class="rte-drop-hint">📎 ลากไฟล์หรือวางรูปมาวางได้เลย</span>
+            </div>
           </div>
+            </div><!-- end flex col -->
+          </div><!-- end flex row -->
+          <input type="hidden" id="comment-text">
         </div>
       </div>
       <datalist id="owner-list"></datalist>
       <datalist id="brand-list"></datalist>
       <datalist id="dept-list"><option>Account Management</option><option>Business Development</option><option>Creative</option><option>Strategy</option><option>Media</option></datalist>
+      <!-- File Upload Section -->
+      <div id="proj-form-files" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <label style="font-size:13px;font-weight:600;color:var(--text);">📎 เอกสาร / ไฟล์แนบ</label>
+          <label class="btn btn-sm" style="cursor:pointer;font-size:11px;" title="เลือกไฟล์">
+            ⬆ Upload ไฟล์
+            <input type="file" id="proj-file-input" multiple style="display:none;" onchange="projFormUploadFiles(this.files)">
+          </label>
+        </div>
+        <!-- Drop zone -->
+        <div id="proj-drop-zone" style="border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;font-size:12px;color:var(--text-muted);transition:all .15s;margin-bottom:8px;"
+             onclick="document.getElementById('proj-file-input').click()"
+             ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-bg)';"
+             ondragleave="this.style.borderColor='';this.style.background='';"
+             ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';projFormUploadFiles(event.dataTransfer.files);">
+          ลากไฟล์มาวาง หรือคลิกเพื่อเลือก — รองรับทุกประเภท สูงสุด 20MB
+        </div>
+        <!-- Upload progress -->
+        <div id="proj-upload-progress" style="display:none;"></div>
+        <!-- File list -->
+        <div id="proj-file-list" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;"></div>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" id="btn-delete">Delete</button>
         <button type="button" class="btn" id="modal-cancel">Cancel</button>
@@ -1859,7 +2086,19 @@ details ul { padding-left: 18px; }
       <div class="form-grid">
         <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:2px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">🏢 บริษัท / แบรนด์</div>
         <div class="form-field full"><label>บริษัท / Company</label><input id="cf-company" list="company-list" placeholder="ชื่อบริษัท เช่น Nestle Thailand"></div>
-        <div class="form-field full"><label>แบรนด์ / Brand <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(ถ้า 1 บริษัทมีหลายแบรนด์)</span></label><input id="cf-brand" placeholder="เช่น Friskies, Milo"></div>
+        <div class="form-field full">
+          <label>แบรนด์ / Brand <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(ถ้า 1 บริษัทมีหลายแบรนด์ — กด Enter หรือ + เพื่อเพิ่ม)</span></label>
+          <!-- Brand chips -->
+          <div id="cf-brands-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface-2);margin-bottom:6px;"></div>
+          <!-- Add brand input -->
+          <div style="display:flex;gap:6px;">
+            <input id="cf-brand-input" placeholder="พิมพ์ชื่อแบรนด์แล้วกด Enter เช่น Milo, Friskies"
+              style="flex:1;font-size:13px;"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();cfAddBrand();}">
+            <button type="button" class="btn btn-sm" onclick="cfAddBrand()" style="flex-shrink:0;font-size:12px;">+ เพิ่ม</button>
+          </div>
+          <input type="hidden" id="cf-brand"><!-- kept for backward compat -->
+        </div>
         <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">👤 ผู้ติดต่อ</div>
         <div class="form-field full"><label>ชื่อผู้ติดต่อ</label><input id="cf-name" placeholder="ชื่อ-นามสกุล"></div>
         <div class="form-field"><label>ชื่อเล่น <span style="font-weight:400;color:var(--text-muted);">(ไว้เรียกในทีม)</span></label><input id="cf-nickname" placeholder="เช่น คุณนุ่น"></div>
@@ -2085,8 +2324,9 @@ details ul { padding-left: 18px; }
     <div id="auth-loading" style="text-align:center;padding:16px 0;">
       <div style="font-size:36px;margin-bottom:12px;">🏢</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Platform Group</div>
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">กำลังโหลดข้อมูล...</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">กำลังโหลดข้อมูล...<br><span style="font-size:11px;color:var(--text-hint);">(รอสูงสุด 10 วินาที)</span></div>
       <div style="display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      <div id="auth-cloud-hint" style="display:none;margin-top:16px;font-size:11px;color:#e67e22;background:#fff8e1;border-radius:8px;padding:8px 12px;">⚠️ Cloud offline — ใช้ข้อมูล local แทน</div>
     </div>
     <!-- Login form (hidden until loaded) -->
     <div id="auth-form" style="display:none;">
@@ -4429,6 +4669,8 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.panel === 'training') initTrainingHub();
     if (t.dataset.panel === 'capacity') renderCapacity();
     if (t.dataset.panel === 'admin') { renderUsers(); renderDataHealth(); }
+    if (t.dataset.panel === 'leads') renderLeads();
+    if (t.dataset.panel === 'opportunities') renderOpportunities();
   });
 });
 
@@ -5284,6 +5526,7 @@ function renderProjDetail() {
     {key:'timeline', label:'📅 Timeline'},
     {key:'risks',    label:'⚠ Risks'},
     {key:'log',      label:'📋 Log'},
+    {key:'files',    label:'📎 Files'},
   ];
   document.getElementById('pd-stabs').innerHTML = TABS.map(t=>
     `<button class="pd-stab${_pdTab===t.key?' active':''}" onclick="switchPdTab('${t.key}')">${t.label}</button>`
@@ -5304,6 +5547,7 @@ function switchPdTab(tab) {
     {key:'timeline', label:'📅 Timeline'},
     {key:'risks',    label:'⚠ Risks'},
     {key:'log',      label:'📋 Log'},
+    {key:'files',    label:'📎 Files'},
   ];
   document.getElementById('pd-stabs').innerHTML = TABS.map(t=>
     `<button class="pd-stab${_pdTab===t.key?' active':''}" onclick="switchPdTab('${t.key}')">${t.label}</button>`
@@ -5319,6 +5563,7 @@ function renderPdContent() {
     case 'timeline':  el.innerHTML = buildPdTimeline(); break;
     case 'risks':     el.innerHTML = buildPdRisks(); break;
     case 'log':       el.innerHTML = buildPdLog(); break;
+    case 'files':     buildPdFiles(el); break;
   }
 }
 
@@ -5485,6 +5730,140 @@ function _pdDropTask(event, colEl) {
   saveDB(true);
   renderPdContent();
   renderProjectBoard();
+}
+
+async function buildPdFiles(container) {
+  const projId = _pdProjId;
+  const cfg = getMongoConfig();
+
+  container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ กำลังโหลดไฟล์...</div>`;
+
+  if (!cfg.apiUrl) {
+    container.innerHTML = `<div class="card" style="text-align:center;padding:40px;">
+      <div style="font-size:32px;margin-bottom:12px;">☁️</div>
+      <div style="font-weight:600;margin-bottom:8px;">ยังไม่ได้เชื่อม Cloud</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">ต้องตั้งค่า MongoDB API ก่อนถึงจะ upload ไฟล์ได้</div>
+      <button class="btn btn-primary" onclick="openMongoModal()">⚙ ตั้งค่า Cloud Sync</button>
+    </div>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${cfg.apiUrl.replace(/\/$/,'')}/files/project/${encodeURIComponent(projId)}`, {
+      headers: { 'x-api-secret': cfg.apiSecret || '' }
+    });
+    const files = res.ok ? await res.json() : [];
+
+    const fileIcon = mime => {
+      if (!mime) return '📄';
+      if (mime.startsWith('image/')) return '🖼';
+      if (mime === 'application/pdf') return '📋';
+      if (mime.includes('spreadsheet') || mime.includes('excel') || mime.endsWith('.xlsx')) return '📊';
+      if (mime.includes('word') || mime.endsWith('.docx')) return '📝';
+      if (mime.includes('video')) return '🎬';
+      if (mime.includes('zip') || mime.includes('compressed')) return '🗜';
+      return '📄';
+    };
+
+    const fmtSize = bytes => {
+      if (!bytes) return '';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+      return (bytes/1048576).toFixed(1) + ' MB';
+    };
+
+    const fileRows = files.length ? files.map(f => `
+      <div class="file-row">
+        <div class="file-icon">${fileIcon(f.mimeType)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.originalName)}</div>
+          <div style="font-size:11px;color:var(--text-muted);">
+            ${escHtml(f.uploadedBy||'—')} · ${fmtDate(f.uploadedAt?.slice?.(0,10)||'')} · ${fmtSize(f.size)}
+          </div>
+        </div>
+        ${f.version>1?`<span class="file-version-badge">v${f.version}</span>`:''}
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          ${f.mimeType?.startsWith('image/')||f.mimeType==='application/pdf'
+            ? `<a href="${cfg.apiUrl.replace(/\/$/,'')}/files/${f.fileId}?preview=1&secret=${cfg.apiSecret||''}" target="_blank" class="btn btn-sm" style="font-size:11px;">👁 Preview</a>`
+            : ''}
+          <a href="${cfg.apiUrl.replace(/\/$/,'')}/files/${f.fileId}?secret=${cfg.apiSecret||''}" download="${escHtml(f.originalName)}" class="btn btn-sm" style="font-size:11px;">⬇ Download</a>
+          <button class="btn btn-sm" style="font-size:11px;color:var(--danger);" onclick="pdDeleteFile('${f.fileId}','${escHtml(f.originalName)}')">✕</button>
+        </div>
+      </div>`).join('')
+    : `<div style="padding:32px;text-align:center;color:var(--text-muted);">ยังไม่มีไฟล์ — ลากไฟล์มาวางหรือกด "+ Upload"</div>`;
+
+    container.innerHTML = `
+      <div class="file-drop-zone" id="pd-drop-zone" onclick="document.getElementById('pd-file-input').click()">
+        <div style="font-size:28px;margin-bottom:8px;">📎</div>
+        <div style="font-weight:600;margin-bottom:4px;">ลากไฟล์มาวาง หรือคลิกเพื่อเลือก</div>
+        <div style="font-size:12px;color:var(--text-muted);">รองรับทุกประเภทไฟล์ · สูงสุด 20MB</div>
+        <input type="file" id="pd-file-input" multiple style="display:none;" onchange="pdUploadFiles(this.files)">
+      </div>
+      <div id="pd-upload-progress" style="display:none;margin-top:10px;"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-top:16px;">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:700;font-size:13px;">📁 ไฟล์ใน Project (${files.length})</span>
+          <button class="btn btn-sm btn-primary" onclick="document.getElementById('pd-file-input').click()" style="font-size:11px;">+ Upload</button>
+        </div>
+        <div id="pd-file-list">${fileRows}</div>
+      </div>`;
+
+    const dz = document.getElementById('pd-drop-zone');
+    if (dz) {
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+      dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+      dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); pdUploadFiles(e.dataTransfer.files); });
+    }
+  } catch(err) {
+    container.innerHTML = `<div class="card" style="text-align:center;padding:32px;color:var(--danger);">❌ โหลดไฟล์ไม่ได้: ${escHtml(err.message)}</div>`;
+  }
+}
+
+async function pdUploadFiles(fileList) {
+  const cfg = getMongoConfig();
+  if (!cfg.apiUrl) { alert('กรุณาตั้งค่า Cloud Sync ก่อน'); return; }
+  const projId = _pdProjId;
+  const nick = myNick();
+  const progressEl = document.getElementById('pd-upload-progress');
+  if (progressEl) progressEl.style.display = '';
+
+  let done = 0;
+  for (const file of [...fileList]) {
+    if (progressEl) progressEl.innerHTML = `<div style="padding:8px 12px;background:var(--accent-bg);border-radius:8px;font-size:12px;">⬆ กำลัง upload "${file.name}" (${done+1}/${fileList.length})...</div>`;
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('projectId', projId);
+      form.append('uploadedBy', nick);
+      const res = await fetch(`${cfg.apiUrl.replace(/\/$/,'')}/files/upload`, {
+        method: 'POST',
+        headers: { 'x-api-secret': cfg.apiSecret || '' },
+        body: form
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Upload failed');
+      logActivity(nick, 'project', 'added', projId, `อัปโหลดไฟล์: ${file.name} v${result.version}`);
+      done++;
+    } catch(err) {
+      alert(`Upload "${file.name}" ล้มเหลว: ${err.message}`);
+    }
+  }
+  if (progressEl) progressEl.style.display = 'none';
+  if (done > 0) { saveDB(true); renderPdContent(); }
+}
+
+async function pdDeleteFile(fileId, name) {
+  if (!confirm(`ลบไฟล์ "${name}"?`)) return;
+  const cfg = getMongoConfig();
+  try {
+    await fetch(`${cfg.apiUrl.replace(/\/$/,'')}/files/${fileId}?by=${encodeURIComponent(myNick())}`, {
+      method: 'DELETE',
+      headers: { 'x-api-secret': cfg.apiSecret || '' }
+    });
+    logActivity(myNick(), 'project', 'deleted', _pdProjId, `ลบไฟล์: ${name}`);
+    saveDB(true);
+    renderPdContent();
+  } catch(err) { alert('ลบไม่ได้: ' + err.message); }
 }
 
 function buildPdTimeline() {
@@ -6378,6 +6757,63 @@ function buildThPerson(tasks, today) {
       </div>
     </div>`;
   }).filter(Boolean).join('');
+}
+
+// ========== PROJECT FORM FILE UPLOAD ==========
+let _projFormProjId = null;
+
+async function projFormLoadFiles(projId) {
+  _projFormProjId = projId;
+  const listEl = document.getElementById('proj-file-list');
+  if (!listEl) return;
+  const cfg = getMongoConfig();
+  if (!cfg.apiUrl) { listEl.innerHTML = `<div style="font-size:11px;color:var(--text-hint);padding:4px 0;">💡 <a href="#" onclick="closeModal();openMongoModal();" style="color:var(--ci-blue);">ตั้งค่า Cloud Sync</a> เพื่อ upload ไฟล์</div>`; return; }
+  try {
+    listEl.innerHTML = `<div style="font-size:11px;color:var(--text-muted);">⏳ กำลังโหลด...</div>`;
+    const res = await fetch(`${cfg.apiUrl.replace(/\/$/,'')}/files/project/${encodeURIComponent(projId)}`, { headers:{'x-api-secret':cfg.apiSecret||''} });
+    const files = res.ok ? await res.json() : [];
+    if (!files.length) { listEl.innerHTML = `<div style="font-size:11px;color:var(--text-hint);padding:4px 0;">ยังไม่มีไฟล์แนบ</div>`; return; }
+    const fmtSize = b => b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB';
+    const fileIcon = m => m?.startsWith('image/')?'🖼':m==='application/pdf'?'📋':m?.includes('spreadsheet')||m?.includes('excel')?'📊':m?.includes('word')?'📝':'📄';
+    listEl.innerHTML = files.map(f=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surface-2);border-radius:6px;font-size:12px;">
+      <span style="flex-shrink:0;">${fileIcon(f.mimeType)}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${escHtml(f.originalName)}</span>
+      ${f.version>1?`<span style="font-size:9px;font-weight:700;background:rgba(66,125,218,.12);color:var(--ci-blue);padding:1px 5px;border-radius:6px;flex-shrink:0;">v${f.version}</span>`:''}
+      <span style="color:var(--text-hint);flex-shrink:0;">${fmtSize(f.size||0)}</span>
+      <a href="${cfg.apiUrl.replace(/\/$/,'')}/files/${f.fileId}?secret=${cfg.apiSecret||''}" download="${escHtml(f.originalName)}" style="font-size:10px;color:var(--ci-blue);text-decoration:none;flex-shrink:0;">⬇</a>
+      <button onclick="projFormDeleteFile('${f.fileId}','${escHtml(f.originalName).replace(/'/g,"\\'")}','${projId}')" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:13px;padding:0;flex-shrink:0;">×</button>
+    </div>`).join('');
+  } catch(e) { listEl.innerHTML = `<div style="font-size:11px;color:var(--danger);">โหลดไฟล์ไม่ได้: ${escHtml(e.message)}</div>`; }
+}
+
+async function projFormUploadFiles(fileList) {
+  const projId = _projFormProjId || document.getElementById('tf-id')?.value || document.getElementById('f-code')?.value;
+  if (!projId) { alert('กรุณา Save project ก่อนแล้วค่อย Upload ไฟล์'); return; }
+  const cfg = getMongoConfig();
+  if (!cfg.apiUrl) { openMongoModal(); return; }
+  const progressEl = document.getElementById('proj-upload-progress');
+  if (progressEl) progressEl.style.display='';
+  let done=0;
+  for (const file of [...fileList]) {
+    if (progressEl) progressEl.innerHTML=`<div style="font-size:11px;padding:5px 8px;background:var(--accent-bg);border-radius:6px;color:var(--accent);">⬆ "${file.name}" (${done+1}/${fileList.length})...</div>`;
+    try {
+      const form=new FormData(); form.append('file',file); form.append('projectId',projId); form.append('uploadedBy',myNick());
+      const res=await fetch(`${cfg.apiUrl.replace(/\/$/,'')}/files/upload`,{method:'POST',headers:{'x-api-secret':cfg.apiSecret||''},body:form});
+      if (!res.ok) throw new Error((await res.json()).error||'Upload failed');
+      done++;
+    } catch(e) { alert(`Upload "${file.name}" ล้มเหลว: ${e.message}`); }
+  }
+  if (progressEl) progressEl.style.display='none';
+  if (done>0) projFormLoadFiles(projId);
+}
+
+async function projFormDeleteFile(fileId, name, projId) {
+  if (!confirm(`ลบไฟล์ "${name}"?`)) return;
+  const cfg=getMongoConfig();
+  try {
+    await fetch(`${cfg.apiUrl.replace(/\/$/,'')}/files/${fileId}?by=${encodeURIComponent(myNick())}`,{method:'DELETE',headers:{'x-api-secret':cfg.apiSecret||''}});
+    projFormLoadFiles(projId||_projFormProjId);
+  } catch(e) { alert('ลบไม่ได้: '+e.message); }
 }
 
 // ========== COST RECORD ==========
@@ -7573,6 +8009,8 @@ function openModal(id) {
   document.getElementById('f-pfpg').value = p.pfpg || 'PF';
   document.getElementById('f-code').value = p.code || '';
   document.getElementById('f-status').value = p.status || 'Working';
+  // Populate company/brand combobox
+  populateProjCompanySel(p.company||'', p.brand||'');
   document.getElementById('f-brand').value = p.brand || '';
   document.getElementById('f-company').value = p.company || '';
   document.getElementById('f-name').value = p.name || '';
@@ -7613,6 +8051,8 @@ function openModal(id) {
   toggleLossSection(p.status);
   renderComments(p);
   if (DB.tasks) renderPrjTasks(p.id||p.code);
+  // Load file attachments
+  projFormLoadFiles(p.id||p.code);
   modal.dataset.id = p.id || p.code;
   modal.dataset.isNew = id ? '0' : '1';
   updateBrandDatalist();
@@ -7666,6 +8106,104 @@ function refreshCodeIfNew() {
   const year = launch ? parseInt(launch.slice(0, 4)) : null;
   document.getElementById('f-code').value = nextCode(pfpg, year);
 }
+// ── Project Form Company/Brand Combobox ──────────────────
+function populateProjCompanySel(currentCompany, currentBrand) {
+  const compSel  = document.getElementById('f-company-sel');
+  const brandSel = document.getElementById('f-brand-sel');
+  if (!compSel) return;
+
+  // Collect companies from clients + projects
+  const companies = [...new Set([
+    ...(DB.clients||[]).map(c=>c.company).filter(Boolean),
+    ...(DB.projects||[]).map(p=>p.company).filter(Boolean),
+  ])].sort();
+
+  compSel.innerHTML = '<option value="">— เลือก Company —</option>'
+    + companies.map(c=>`<option value="${escHtml(c)}" ${c===currentCompany?'selected':''}>${escHtml(c)}</option>`).join('')
+    + '<option value="__new__">＋ เพิ่ม Company ใหม่...</option>';
+
+  // Show/hide text input
+  const compInput = document.getElementById('f-company');
+  compInput.style.display = currentCompany && !companies.includes(currentCompany) ? '' : 'none';
+  if (compInput.style.display === '') compInput.value = currentCompany||'';
+
+  // Populate brands for selected company
+  populateProjBrandSel(currentCompany, currentBrand);
+}
+
+function populateProjBrandSel(company, currentBrand) {
+  const brandSel = document.getElementById('f-brand-sel');
+  if (!brandSel) return;
+
+  // Brands from matching clients
+  const clientBrands = (DB.clients||[])
+    .filter(c => !company || c.company === company)
+    .flatMap(c => c.brands?.length ? c.brands : (c.brand?[c.brand]:[]))
+    .filter(Boolean);
+
+  // Brands from projects (same company)
+  const projBrands = (DB.projects||[])
+    .filter(p => !company || p.company === company)
+    .map(p=>p.brand).filter(Boolean);
+
+  const brands = [...new Set([...clientBrands, ...projBrands])].sort();
+
+  brandSel.innerHTML = '<option value="">— เลือก Brand —</option>'
+    + brands.map(b=>`<option value="${escHtml(b)}" ${b===currentBrand?'selected':''}>${escHtml(b)}</option>`).join('')
+    + '<option value="__new__">＋ เพิ่ม Brand ใหม่...</option>';
+
+  // Show/hide text input
+  const brandInput = document.getElementById('f-brand');
+  const isNew = currentBrand && !brands.includes(currentBrand);
+  brandInput.style.display = isNew ? '' : 'none';
+  if (isNew) brandInput.value = currentBrand||'';
+}
+
+function onProjCompanySel(sel) {
+  const compInput = document.getElementById('f-company');
+  if (sel.value === '__new__') {
+    compInput.style.display = '';
+    compInput.value = '';
+    compInput.focus();
+    // Keep select to show "เพิ่มใหม่" selected
+    populateProjBrandSel('', '');
+  } else {
+    compInput.style.display = 'none';
+    compInput.value = sel.value;
+    populateProjBrandSel(sel.value, '');
+    // Clear brand
+    document.getElementById('f-brand').value = '';
+    const hint = document.getElementById('f-brand-hint');
+    if (hint) hint.textContent = sel.value ? `✓ บริษัท: ${sel.value}` : '';
+  }
+}
+
+function onProjBrandSel(sel) {
+  const brandInput = document.getElementById('f-brand');
+  if (sel.value === '__new__') {
+    brandInput.style.display = '';
+    brandInput.value = '';
+    brandInput.focus();
+  } else {
+    brandInput.style.display = 'none';
+    brandInput.value = sel.value;
+    const hint = document.getElementById('f-brand-hint');
+    if (hint) hint.textContent = sel.value ? `✓ Brand: ${sel.value}` : '';
+  }
+}
+
+function getProjFormBrand() {
+  const sel = document.getElementById('f-brand-sel');
+  const input = document.getElementById('f-brand');
+  return sel.value === '__new__' || sel.value === '' ? input.value.trim() : sel.value;
+}
+
+function getProjFormCompany() {
+  const sel = document.getElementById('f-company-sel');
+  const input = document.getElementById('f-company');
+  return sel.value === '__new__' || sel.value === '' ? input.value.trim() : sel.value;
+}
+
 // Brand input → auto-fill Company from Contacts DB
 document.getElementById('f-brand').addEventListener('input', function() {
   const typed = this.value.trim();
@@ -7714,24 +8252,307 @@ document.addEventListener('click', e => {
 
 function renderComments(p) {
   const list = document.getElementById('comment-list');
+  // Set composer avatar
+  const avatarEl = document.getElementById('proj-rte-avatar');
+  if (avatarEl) {
+    const me = myNick();
+    const col = avatarColor(me||'?');
+    const tm = (DB.team||[]).find(m=>(m.nickname||m.name)===me);
+    if (tm?.avatar) { avatarEl.innerHTML=`<img src="${tm.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`; avatarEl.style.background='none'; }
+    else { avatarEl.textContent=(me||'?').slice(0,2).toUpperCase(); avatarEl.style.background=col; }
+  }
   const cs = p.comments || [];
-  list.innerHTML = cs.length ? cs.map(c => `<div class="comment"><div class="comment-head"><span>${c.date}</span></div><div class="comment-text">${c.text}</div></div>`).join('') : '<div style="font-size:11px;color:var(--text-hint);padding:6px;">ยังไม่มี comment</div>';
+  rteInitEvents('proj');
+  if (!cs.length) { list.innerHTML = ''; return; }
+  list.innerHTML = cs.map(c => {
+    const col = avatarColor(c.author||c.nick||'?');
+    const initials = (c.author||c.nick||'?').slice(0,2).toUpperCase();
+    const tm = (DB.team||[]).find(m=>(m.nickname||m.name)===(c.author||c.nick));
+    const aHtml = tm?.avatar ? `<img src="${tm.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">` : `<div class="comment-bubble-avatar" style="background:${col};">${initials}</div>`;
+    const timeStr = c.date ? new Date(c.date).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}) : (c.ts ? new Date(c.ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}) : '');
+    return `<div class="comment-bubble">
+      ${aHtml}
+      <div class="comment-bubble-body">
+        <div class="comment-bubble-header">
+          <span class="comment-bubble-name">${escHtml(c.author||c.nick||'—')}</span>
+          <span class="comment-bubble-time">${timeStr}</span>
+        </div>
+        <div class="comment-bubble-text">${c.html||escHtml(c.text||'')}</div>
+        ${renderCommentAtts(c.attachments)}
+      </div>
+    </div>`;
+  }).join('');
 }
 
-document.getElementById('btn-add-comment').addEventListener('click', () => {
-  const txt = document.getElementById('comment-text').value.trim();
-  if (!txt) return;
-  const id = document.getElementById('modal').dataset.id;
-  let p = DB.projects.find(x => (x.id||x.code) === id);
-  if (!p) {
-    // creating new — comments to a temp store handled at save
-    p = { id, comments: [] };
+// ══════════════════════════════════════════════════════════
+// ── Rich Text Editor (RTE) + File Attachments  ───────────
+// ══════════════════════════════════════════════════════════
+
+const _rteAtts = {}; // staging attachments per scope: {proj:[], task:[]}
+
+// ── File type helpers ─────────────────────────────────────
+const RTE_ACCEPT = '.jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.mp3,.m4a,.wav,.aac,.ogg,.mp4,.mov,.avi,.webm,.zip,.rar,.7z,.ai,.psd,.xd,.fig,.json,.xml,.sql';
+
+function rteFileIcon(name, mime) {
+  mime = mime||'';
+  const ext = (name||'').split('.').pop().toLowerCase();
+  if (mime.startsWith('image/'))  return '🖼';
+  if (mime.startsWith('video/'))  return '🎬';
+  if (mime.startsWith('audio/'))  return '🎵';
+  if (mime==='application/pdf')   return '📕';
+  if (['doc','docx'].includes(ext)) return '📝';
+  if (['xls','xlsx','csv'].includes(ext)) return '📊';
+  if (['ppt','pptx'].includes(ext)) return '📊';
+  if (['zip','rar','7z'].includes(ext)) return '🗜';
+  if (['ai','psd','xd','fig'].includes(ext)) return '🎨';
+  if (['json','xml','sql','txt'].includes(ext)) return '📄';
+  return '📎';
+}
+function rteFmtSize(b) {
+  if (b<1024) return b+'B';
+  if (b<1024*1024) return (b/1024).toFixed(1)+'KB';
+  return (b/1024/1024).toFixed(1)+'MB';
+}
+
+// ── Attachment staging ────────────────────────────────────
+function rteGetStage(scope) { return _rteAtts[scope]||(_rteAtts[scope]=[]); }
+function rteClearAttachments(scope) { _rteAtts[scope]=[]; rteRenderStage(scope); }
+function rteRenderStage(scope) {
+  const el = document.getElementById(scope+'-rte-att-stage');
+  if (!el) return;
+  const atts = rteGetStage(scope);
+  el.innerHTML = atts.map((a,i)=>{
+    const icon = rteFileIcon(a.name, a.mime);
+    const thumb = a.mime?.startsWith('image/') && a.dataUrl
+      ? `<img class="rte-att-chip-thumb" src="${a.dataUrl}" alt="">`
+      : `<div class="rte-att-chip-icon">${icon}</div>`;
+    return `<div class="rte-att-chip" title="${escHtml(a.name)}">
+      ${thumb}
+      <span class="rte-att-chip-name">${escHtml(a.name)}</span>
+      <span class="rte-att-chip-size">${rteFmtSize(a.size||0)}</span>
+      <button class="rte-att-chip-rm" onclick="rteRemoveAtt('${scope}',${i})" title="ลบ">×</button>
+    </div>`;
+  }).join('');
+}
+function rteRemoveAtt(scope, idx) {
+  rteGetStage(scope).splice(idx,1);
+  rteRenderStage(scope);
+}
+function rteAttachFiles(scope, files) {
+  if (!files||!files.length) return;
+  const stage = rteGetStage(scope);
+  Array.from(files).forEach(file=>{
+    if (file.size > 20*1024*1024) { alert(`ไฟล์ "${file.name}" ใหญ่เกิน 20MB`); return; }
+    const att = { id:'att_'+Date.now()+'_'+Math.random().toString(36).slice(2), name:file.name, mime:file.type, size:file.size, dataUrl:null };
+    stage.push(att);
+    // Read as dataUrl (base64)
+    const reader = new FileReader();
+    reader.onload = e => { att.dataUrl = e.target.result; rteRenderStage(scope); };
+    reader.readAsDataURL(file);
+    // Also inline images into editor body
+    if (file.type.startsWith('image/')) {
+      const r2 = new FileReader();
+      r2.onload = e2 => rteInsertImageDataUrl(scope, e2.target.result);
+      r2.readAsDataURL(file);
+    }
+  });
+  rteRenderStage(scope);
+}
+
+// ── Image inline insertion ────────────────────────────────
+function rteInsertImageDataUrl(scope, dataUrl) {
+  const body = document.getElementById(scope+'-rte-body');
+  if (!body) return;
+  body.focus();
+  document.execCommand('insertHTML', false,
+    `<img src="${dataUrl}" style="max-width:100%;max-height:220px;border-radius:6px;margin:4px 0;display:block;">`
+  );
+}
+
+// ── Paste from clipboard ──────────────────────────────────
+function rteHandlePaste(scope, e) {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const file = item.getAsFile();
+      if (!file) return;
+      // Add to staging + inline
+      rteAttachFiles(scope, [file]);
+      return;
+    }
   }
-  if (!p.comments) p.comments = [];
-  p.comments.push({ date: new Date().toISOString().slice(0,16).replace('T',' '), text: txt });
-  document.getElementById('comment-text').value = '';
-  renderComments(p);
-});
+}
+
+// ── Drag & Drop ───────────────────────────────────────────
+function rteHandleDrop(scope, e) {
+  const files = e.dataTransfer?.files;
+  if (!files||!files.length) return;
+  e.preventDefault();
+  rteAttachFiles(scope, files);
+  const wrap = document.getElementById(scope+'-rte-body')?.closest('.rte-wrap');
+  if (wrap) wrap.classList.remove('drag-over');
+}
+
+// ── Init RTE event listeners ──────────────────────────────
+function rteInitEvents(scope) {
+  const body = document.getElementById(scope+'-rte-body');
+  if (!body || body._rteInit) return;
+  body._rteInit = true;
+  const wrap = body.closest('.rte-wrap');
+  body.addEventListener('paste', e => rteHandlePaste(scope, e));
+  body.addEventListener('drop',  e => rteHandleDrop(scope, e));
+  body.addEventListener('dragover', e => { e.preventDefault(); wrap?.classList.add('drag-over'); });
+  body.addEventListener('dragleave', () => wrap?.classList.remove('drag-over'));
+  body.addEventListener('dragend',   () => wrap?.classList.remove('drag-over'));
+  // Close link popup on outside click
+  document.addEventListener('click', ev => {
+    const popup = document.getElementById(scope+'-rte-link-popup');
+    const btn   = document.getElementById(scope+'-rte-link-btn');
+    if (popup && !popup.contains(ev.target) && ev.target !== btn) popup.classList.remove('show');
+  }, { capture:false });
+}
+
+// ── Link popup (GDrive / Figma / Loom) ───────────────────
+function rteDetectLink(url) {
+  if (!url) return null;
+  if (/figma\.com/.test(url))       return { type:'figma',  icon:'🎨', label:'Figma' };
+  if (/loom\.com/.test(url))        return { type:'loom',   icon:'🎥', label:'Loom Video' };
+  if (/drive\.google\.com/.test(url)||/docs\.google\.com/.test(url)) return { type:'gdrive', icon:'📁', label:'Google Drive' };
+  if (/youtube\.com|youtu\.be/.test(url)) return { type:'youtube', icon:'▶️', label:'YouTube' };
+  if (/notion\.so/.test(url))       return { type:'notion', icon:'📓', label:'Notion' };
+  return { type:'link', icon:'🔗', label:url.replace(/^https?:\/\//,'').slice(0,40) };
+}
+function rteToggleLinkPopup(scope) {
+  const popup = document.getElementById(scope+'-rte-link-popup');
+  if (!popup) return;
+  popup.classList.toggle('show');
+  if (popup.classList.contains('show')) {
+    const inp = document.getElementById(scope+'-rte-link-input');
+    if (inp) { inp.value=''; inp.focus(); }
+    document.getElementById(scope+'-rte-link-preview').innerHTML='';
+  }
+}
+function rtePreviewLink(scope) {
+  const url = document.getElementById(scope+'-rte-link-input')?.value.trim();
+  const el = document.getElementById(scope+'-rte-link-preview');
+  if (!el) return;
+  if (!url) { el.innerHTML=''; return; }
+  const info = rteDetectLink(url);
+  if (!info) { el.innerHTML=''; return; }
+  el.innerHTML = `<div class="rte-link-preview">${info.icon} <span style="font-size:12px;">${info.label}</span></div>`;
+}
+function rteConfirmLink(scope) {
+  const url = document.getElementById(scope+'-rte-link-input')?.value.trim();
+  if (!url) return;
+  const info = rteDetectLink(url)||{type:'link',icon:'🔗',label:url};
+  const stage = rteGetStage(scope);
+  stage.push({ id:'lnk_'+Date.now(), name:info.label, mime:'text/uri-list', size:0, dataUrl:null, url, linkType:info.type, icon:info.icon });
+  rteRenderStage(scope);
+  rteToggleLinkPopup(scope);
+}
+
+// ── RTE core ──────────────────────────────────────────────
+function rteCmd(scope, cmd, val) {
+  const body = document.getElementById(scope+'-rte-body');
+  if (!body) return;
+  body.focus();
+  document.execCommand(cmd, false, val||null);
+}
+function rteInsertCode(scope) {
+  const sel = window.getSelection();
+  const text = sel && !sel.isCollapsed ? sel.toString() : '';
+  document.execCommand('insertHTML', false, `<code style="background:#f0f0f0;padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px;">${escHtml(text)||'code'}</code>`);
+}
+function rteClear(scope) {
+  const body = document.getElementById(scope+'-rte-body');
+  if (body) { body.innerHTML=''; }
+  rteClearAttachments(scope);
+}
+function rteGetContent(scope) {
+  const body = document.getElementById(scope+'-rte-body');
+  if (!body) return {text:'',html:''};
+  return { text: body.innerText.trim(), html: body.innerHTML.trim() };
+}
+function rteSubmitComment(scope) {
+  const {text, html} = rteGetContent(scope);
+  const atts = [...rteGetStage(scope)]; // snapshot
+  if (!text && !atts.length) return;
+  if (scope === 'proj') {
+    const id = document.getElementById('modal').dataset.id;
+    let p = DB.projects.find(x=>(x.id||x.code)===id);
+    if (!p) { p={id,comments:[]}; DB.projects.unshift(p); }
+    if (!p.comments) p.comments=[];
+    p.comments.push({ author:myNick(), nick:myNick(), date:new Date().toISOString(), text, html, attachments: atts });
+    saveDB();
+    rteClear(scope);
+    renderComments(p);
+    logActivity(myNick(),'project','added',id,`comment: ${text.slice(0,60)}`);
+  } else if (scope === 'task') {
+    addTaskComment(text, html, atts);
+    rteClear(scope);
+  }
+}
+
+// ── Render attachments in a submitted comment ─────────────
+function renderCommentAtts(attachments) {
+  if (!attachments||!attachments.length) return '';
+  return `<div class="comment-atts">${attachments.map(a=>{
+    if (a.url) {
+      // Link chip
+      return `<a class="comment-att" href="${escHtml(a.url)}" target="_blank" rel="noopener">${a.icon||'🔗'} <span>${escHtml(a.name)}</span></a>`;
+    }
+    if (a.mime?.startsWith('image/') && a.dataUrl) {
+      return `<div><img class="comment-att-img" src="${a.dataUrl}" alt="${escHtml(a.name)}" onclick="openAttPreview(${JSON.stringify({name:a.name,mime:a.mime,dataUrl:a.dataUrl}).replace(/"/g,'&quot;')})"></div>`;
+    }
+    if (a.mime?.startsWith('video/') && a.dataUrl) {
+      return `<div><video class="comment-att-video" controls src="${a.dataUrl}"></video></div>`;
+    }
+    if (a.mime?.startsWith('audio/') && a.dataUrl) {
+      return `<div><audio class="comment-att-audio" controls src="${a.dataUrl}"></audio></div>`;
+    }
+    // Generic chip → download
+    const icon = rteFileIcon(a.name, a.mime);
+    const sz = a.size ? ' · '+rteFmtSize(a.size) : '';
+    if (a.dataUrl) {
+      return `<a class="comment-att" href="${a.dataUrl}" download="${escHtml(a.name)}">${icon} <span>${escHtml(a.name)}${sz}</span></a>`;
+    }
+    return `<div class="comment-att">${icon} <span>${escHtml(a.name)}${sz}</span></div>`;
+  }).join('')}</div>`;
+}
+
+// ── Attachment full-screen preview ────────────────────────
+function openAttPreview(att) {
+  document.querySelector('.att-preview-modal')?.remove();
+  let body = '';
+  if (att.mime?.startsWith('image/') && att.dataUrl) {
+    body = `<img src="${att.dataUrl}" style="max-width:80vw;max-height:75vh;border-radius:8px;">`;
+  } else if (att.mime?.startsWith('video/') && att.dataUrl) {
+    body = `<video controls src="${att.dataUrl}" style="max-width:80vw;max-height:75vh;border-radius:8px;"></video>`;
+  } else if (att.mime?.startsWith('audio/') && att.dataUrl) {
+    body = `<audio controls src="${att.dataUrl}" style="width:340px;"></audio>`;
+  } else if (att.mime==='application/pdf' && att.dataUrl) {
+    body = `<iframe src="${att.dataUrl}" style="width:80vw;height:75vh;border:none;border-radius:8px;"></iframe>`;
+  } else {
+    body = `<div style="text-align:center;padding:30px;"><div style="font-size:48px;">${rteFileIcon(att.name,att.mime)}</div><div style="margin-top:12px;font-weight:600;">${escHtml(att.name)}</div><a href="${att.dataUrl||att.url}" download="${escHtml(att.name)}" class="btn btn-primary" style="margin-top:14px;display:inline-block;">⬇ Download</a></div>`;
+  }
+  const dlBtn = att.dataUrl ? `<a href="${att.dataUrl}" download="${escHtml(att.name)}" class="btn btn-sm" style="font-size:11px;">⬇</a>` : '';
+  const newTab = att.dataUrl||att.url ? `<a href="${att.dataUrl||att.url}" target="_blank" class="btn btn-sm" style="font-size:11px;">↗</a>` : '';
+  document.body.insertAdjacentHTML('beforeend',`
+    <div class="att-preview-modal" onclick="if(event.target===this)this.remove()">
+      <div class="att-preview-box">
+        <div class="att-preview-head">
+          <span class="att-preview-title">${rteFileIcon(att.name,att.mime)} ${escHtml(att.name)}</span>
+          ${dlBtn}${newTab}
+          <button class="modal-close" onclick="this.closest('.att-preview-modal').remove()">×</button>
+        </div>
+        <div class="att-preview-body">${body}</div>
+      </div>
+    </div>`);
+}
+
+// (btn-add-comment removed — now handled inline by rteSubmitComment)
 
 document.getElementById('prj-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -7742,8 +8563,8 @@ document.getElementById('prj-form').addEventListener('submit', (e) => {
   p.pfpg = document.getElementById('f-pfpg').value;
   p.code = document.getElementById('f-code').value.trim();
   p.status = document.getElementById('f-status').value;
-  p.brand = document.getElementById('f-brand').value.trim();
-  p.company = document.getElementById('f-company').value.trim();
+  p.brand = getProjFormBrand();
+  p.company = getProjFormCompany();
   p.name = document.getElementById('f-name').value.trim();
   p.basecampUrl = document.getElementById('f-basecamp').value.trim();
   p.driveUrl = document.getElementById('f-drive').value.trim();
@@ -7945,6 +8766,7 @@ function renderManualLinks(ids) {
 function initClientPage() {
   document.getElementById('client-search').addEventListener('input', renderClients);
   document.getElementById('btn-add-client').addEventListener('click', () => openClientModal(null));
+  document.getElementById('btn-sync-clients').addEventListener('click', syncClientsFromProjects);
   document.getElementById('cf-project-add').addEventListener('change', function() {
     if (!this.value) return;
     const cur = [...document.querySelectorAll('.manual-link-tag')].map(t=>t.dataset.pid);
@@ -7962,7 +8784,9 @@ function initClientPage() {
     let c = DB.clients.find(x => x.id === id);
     if (!c) { c = { id }; DB.clients.push(c); }
     c.company = document.getElementById('cf-company').value.trim();
-    c.brand = document.getElementById('cf-brand').value.trim();
+    // Save brands array + keep legacy c.brand = first brand
+    c.brands = cfGetBrands();
+    c.brand = c.brands[0] || '';
     c.contactName = document.getElementById('cf-name').value.trim();
     c.nickname = document.getElementById('cf-nickname').value.trim();
     c.position = document.getElementById('cf-position').value.trim();
@@ -7991,6 +8815,40 @@ function initClientPage() {
   });
   renderClients();
 }
+// ── Brand Chip Helpers ────────────────────────────────
+function cfGetBrands() {
+  return [...(document.getElementById('cf-brands-chips')?.querySelectorAll('[data-brand]')||[])].map(el=>el.dataset.brand).filter(Boolean);
+}
+
+function cfSetBrands(list) {
+  const container = document.getElementById('cf-brands-chips');
+  if (!container) return;
+  container.innerHTML = '';
+  (list||[]).forEach(b => cfRenderBrandChip(b));
+  document.getElementById('cf-brand-input').value = '';
+}
+
+function cfRenderBrandChip(brand) {
+  const container = document.getElementById('cf-brands-chips');
+  if (!container || !brand.trim()) return;
+  const chip = document.createElement('span');
+  chip.dataset.brand = brand;
+  chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:rgba(66,125,218,.12);color:var(--ci-blue);border:1.5px solid rgba(66,125,218,.25);border-radius:16px;padding:3px 10px 3px 10px;font-size:12px;font-weight:600;';
+  chip.innerHTML = `📦 ${escHtml(brand)} <button type="button" onclick="this.closest('[data-brand]').remove()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;line-height:1;padding:0;margin-left:2px;">×</button>`;
+  container.appendChild(chip);
+}
+
+function cfAddBrand() {
+  const input = document.getElementById('cf-brand-input');
+  const val = input?.value.trim();
+  if (!val) return;
+  // Avoid duplicates
+  if (cfGetBrands().some(b => b.toLowerCase() === val.toLowerCase())) { input.value=''; return; }
+  cfRenderBrandChip(val);
+  input.value = '';
+  input.focus();
+}
+
 function openClientModal(id) {
   const modal = document.getElementById('client-modal');
   updateCompanyDatalist();
@@ -8000,7 +8858,8 @@ function openClientModal(id) {
     document.getElementById('client-modal-title').textContent = 'Edit Contact';
     document.getElementById('cf-id').value = c.id;
     document.getElementById('cf-company').value = c.company||'';
-    document.getElementById('cf-brand').value = c.brand||'';
+    // Load brands (array or fallback from legacy c.brand)
+    cfSetBrands(c.brands?.length ? c.brands : (c.brand ? [c.brand] : []));
     document.getElementById('cf-name').value = c.contactName||'';
     document.getElementById('cf-nickname').value = c.nickname||'';
     document.getElementById('cf-position').value = c.position||'';
@@ -8029,7 +8888,7 @@ function openClientModal(id) {
     document.getElementById('client-modal-title').textContent = 'Add Contact';
     document.getElementById('cf-id').value = '';
     document.getElementById('cf-company').value = '';
-    document.getElementById('cf-brand').value = '';
+    cfSetBrands([]);
     document.getElementById('cf-name').value = '';
     document.getElementById('cf-nickname').value = '';
     document.getElementById('cf-position').value = '';
@@ -8072,6 +8931,7 @@ function updateBrandDatalist() {
   dl.innerHTML = brands.map(b=>`<option value="${b}">`).join('');
 }
 function renderClients() {
+  renderClientSyncBanner();
   const q = (document.getElementById('client-search').value||'').toLowerCase();
   const clients = (DB.clients||[]).filter(c =>
     !q || `${c.company} ${c.contactName} ${c.position} ${c.email}`.toLowerCase().includes(q)
@@ -8086,7 +8946,7 @@ function renderClients() {
       : `<span class="clt-active-badge clt-active">🟢 Active</span>`;
     const bdStr = c.birthday ? `🎂 ${c.birthday.slice(5)}` : '';
     return `<tr style="cursor:default;">
-    <td><b data-client-profile="${c.id}" style="cursor:pointer;color:var(--accent);text-decoration:underline dotted;" title="คลิกดู profile">${c.company||'–'}</b>${c.brand?`<br><span data-brand-view="${c.brand}" data-brand-company="${c.company||''}" style="font-size:12px;color:var(--text-muted);cursor:pointer;" title="คลิกดู projects ของ ${c.brand||''}">📦 <u>${c.brand}</u></span>`:''}<br>${actBadge}</td>
+    <td><b data-client-profile="${c.id}" style="cursor:pointer;color:var(--accent);text-decoration:underline dotted;" title="คลิกดู profile">${c.company||'–'}</b>${(()=>{const brands=c.brands?.length?c.brands:(c.brand?[c.brand]:[]);return brands.length?`<br>${brands.map(b=>`<span data-brand-view="${escHtml(b)}" data-brand-company="${escHtml(c.company||'')}" style="display:inline-block;font-size:11px;color:var(--ci-blue);background:rgba(66,125,218,.1);padding:1px 7px;border-radius:8px;cursor:pointer;margin:1px;" title="คลิกดู projects ของ ${escHtml(b)}">📦 ${escHtml(b)}</span>`).join('')}`:'';})()}<br>${actBadge}</td>
     <td>${c.nickname?`<b>${c.nickname}</b><br>`:''}<span style="font-size:12px;">${c.contactName||'–'}</span>${bdStr?`<br><span style="font-size:10px;color:var(--accent);">${bdStr}</span>`:''}</td>
     <td><span class="dept-badge">${c.position||'–'}</span></td>
     <td>${c.phone ? `<a href="tel:${c.phone.replace(/[^0-9+]/g,'')}" style="color:inherit;">${c.phone}</a>` : '–'}</td>
@@ -8101,6 +8961,101 @@ function renderClients() {
   tbody.querySelectorAll('[data-brand-view]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openBrandProjects(b.dataset.brandView, b.dataset.brandCompany); }));
 }
 
+
+// ── Sync Company/Brand from Projects → Clients ────────────
+function getProjectCompanyBrandMap() {
+  // Returns Map: company → Set of brands
+  const map = new Map();
+  (DB.projects||[]).forEach(p => {
+    const co = (p.company||'').trim();
+    if (!co) return;
+    if (!map.has(co)) map.set(co, new Set());
+    // brand may be string or array (qtList etc.)
+    const brands = p.brands?.length ? p.brands : (p.brand ? [p.brand] : []);
+    brands.forEach(b => { if (b && b.trim()) map.get(co).add(b.trim()); });
+  });
+  return map;
+}
+
+function syncClientsFromProjects() {
+  const coMap = getProjectCompanyBrandMap();
+  if (!coMap.size) { alert('ไม่พบข้อมูล Company ใน Projects เลย'); return; }
+  if (!DB.clients) DB.clients = [];
+
+  let added = 0, updatedBrands = 0;
+  const skipped = [];
+
+  coMap.forEach((brands, company) => {
+    // หา existing client ที่ company ตรงกัน (case-insensitive)
+    const existing = DB.clients.find(c => (c.company||'').trim().toLowerCase() === company.toLowerCase());
+    if (existing) {
+      // Merge brands เข้า existing — ไม่ duplicate
+      const existingBrands = new Set(existing.brands?.length ? existing.brands : (existing.brand ? [existing.brand] : []));
+      const before = existingBrands.size;
+      brands.forEach(b => existingBrands.add(b));
+      if (existingBrands.size > before) {
+        existing.brands = [...existingBrands];
+        existing.brand  = existing.brands[0]||'';
+        updatedBrands++;
+      }
+      skipped.push(company);
+    } else {
+      // สร้าง Contact ใหม่ — เฉพาะ company + brands, ไม่มี contact person ยัง
+      DB.clients.push({
+        id: 'clt_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+        company,
+        brands: [...brands],
+        brand:  [...brands][0]||'',
+        contactName: '',
+        nickname: '',
+        position: '',
+        phone: '',
+        email: '',
+        active: 'active',
+        note: '⚡ Auto-synced from Projects — กรุณากรอกข้อมูลให้ครบ',
+        projectIds: [],
+      });
+      added++;
+    }
+  });
+
+  saveDB(true);
+  renderClients();
+  renderClientSyncBanner(coMap);
+
+  // Summary alert
+  const msgs = [];
+  if (added) msgs.push(`✅ เพิ่ม ${added} บริษัทใหม่`);
+  if (updatedBrands) msgs.push(`🔄 อัปเดต Brand ใน ${updatedBrands} บริษัท`);
+  if (skipped.length - updatedBrands > 0) msgs.push(`⏭ ข้าม ${skipped.length - updatedBrands} บริษัทที่มีอยู่แล้ว`);
+  if (!msgs.length) msgs.push('ข้อมูล Clients ครบถ้วนแล้ว ไม่มีอะไรต้องเพิ่ม');
+  alert(msgs.join('\n'));
+}
+
+function renderClientSyncBanner(coMap) {
+  const banner = document.getElementById('client-sync-banner');
+  if (!banner) return;
+  // หา companies ที่ยังไม่มี contact name (auto-synced หรือ manual ที่ยังว่าง)
+  const incomplete = (DB.clients||[]).filter(c => !c.contactName && (c.company||''));
+  if (!incomplete.length) { banner.style.display = 'none'; return; }
+  banner.style.display = '';
+  banner.innerHTML = `
+    <div style="background:#fff8e1;border:1px solid #f6c026;border-radius:10px;padding:10px 14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:14px;">⚠️</span>
+        <span style="font-size:12px;font-weight:700;color:#92400e;">${incomplete.length} บริษัทยังไม่มีข้อมูลผู้ติดต่อ — คลิกเพื่อกรอกให้ครบ</span>
+        <button onclick="document.getElementById('client-sync-banner').style.display='none'" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:14px;color:#92400e;">×</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${incomplete.map(c=>`
+          <div style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #f6c026;border-radius:20px;padding:3px 10px 3px 8px;font-size:12px;cursor:pointer;" onclick="openClientModal('${c.id}')">
+            🏢 <b>${escHtml(c.company)}</b>
+            ${c.brands?.length ? `<span style="color:var(--text-hint);font-size:10px;">${c.brands.slice(0,2).map(b=>escHtml(b)).join(', ')}${c.brands.length>2?' +'+( c.brands.length-2):''}</span>` : ''}
+            <span style="font-size:10px;color:var(--accent);font-weight:600;">+ กรอกข้อมูล</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
 
 // ========== PROJECT SUMMARY MODAL ==========
 function openProjectSummary(codeOrId) {
@@ -8236,6 +9191,8 @@ function openBrandProjects(brand, company) {
   document.getElementById('client-profile-modal').classList.add('show');
 }
 function openClientProfile(clientId) {
+  // Delegate to CRM tabbed profile if available
+  if (typeof openClientProfileCRM === 'function') { openClientProfileCRM(clientId, 'overview'); return; }
   const cl = (DB.clients||[]).find(x => x.id === clientId);
   if (!cl) return;
   const linked = (DB.projects||[]).filter(p => p.company === cl.company || (cl.projectIds||[]).includes(p.id||p.code));
@@ -9417,9 +10374,15 @@ async function mongoLoadDB() {
   if (!cfg.apiUrl) return false;
   setSyncStatus('syncing', '☁️ Loading…');
   try {
-    const res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', {
-      method: 'GET', headers: apiHeaders(cfg)
-    });
+    // Timeout 10s — Render free tier อาจนอนหลับ อย่ารอนาน
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 10000);
+    let res;
+    try {
+      res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', {
+        method: 'GET', headers: apiHeaders(cfg), signal: controller.signal
+      });
+    } finally { clearTimeout(tid); }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data && data.projects) {
@@ -9434,7 +10397,11 @@ async function mongoLoadDB() {
     return false;
   } catch(err) {
     console.error('Cloud load error:', err);
-    setSyncStatus('error', '☁️ Offline ✗');
+    if (err.name === 'AbortError') {
+      setSyncStatus('error', '☁️ Timeout — ใช้ข้อมูล Local');
+    } else {
+      setSyncStatus('error', '☁️ Offline ✗');
+    }
     return false;
   }
 }
@@ -10074,7 +11041,57 @@ function openMyTaskModal(id) {
   // Log section
   const logHtml = t && (t.log||[]).length ? `<div style="margin-top:14px;"><div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--text-muted);">📜 Log</div>${(t.log||[]).slice().reverse().map(l=>`<div style="font-size:11px;color:var(--text-hint);padding:3px 0;border-bottom:1px solid var(--border);">${l.ts?new Date(l.ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):''} · <b>${escHtml(l.user||'')}</b> · ${escHtml(l.action||'')} ${escHtml(l.detail||'')}</div>`).join('')}</div>` : '';
   // Comments section
-  const commentsHtml = t ? `<div style="margin-top:14px;"><div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--text-muted);">💬 Comments</div>${(t.comments||[]).map(c=>`<div style="background:var(--surface);border-radius:8px;padding:6px 10px;margin-bottom:6px;"><div style="font-size:11px;font-weight:700;">${escHtml(c.authorNick||'?')}</div><div style="font-size:13px;margin:2px 0;">${escHtml(c.text||'')}</div><div style="font-size:10px;color:var(--text-hint);">${c.ts?new Date(c.ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):''}</div></div>`).join('')}<div style="display:flex;gap:6px;margin-top:6px;"><textarea id="mtf-new-comment" placeholder="เพิ่ม comment..." style="flex:1;min-height:40px;resize:vertical;font-size:12px;"></textarea><button class="btn btn-sm" onclick="addTaskComment()" style="align-self:flex-end;">ส่ง</button></div></div>` : '';
+  const commentsHtml = t ? `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--text-muted);">💬 Comments</div>
+    <div id="task-comment-list">${(t.comments||[]).map(c=>{
+      const col=avatarColor(c.authorNick||'?');
+      const ini=(c.authorNick||'?').slice(0,2).toUpperCase();
+      const tm=(DB.team||[]).find(m=>(m.nickname||m.name)===c.authorNick);
+      const aHtml=tm?.avatar?`<img src="${tm.avatar}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">`:`<div style="width:30px;height:30px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">${ini}</div>`;
+      const ts=c.ts?new Date(c.ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):'';
+      return `<div class="comment-bubble">${aHtml}<div class="comment-bubble-body"><div class="comment-bubble-header"><span class="comment-bubble-name">${escHtml(c.authorNick||'—')}</span><span class="comment-bubble-time">${ts}</span></div><div class="comment-bubble-text">${c.html||escHtml(c.text||'')}</div>${renderCommentAtts(c.attachments)}</div></div>`;
+    }).join('')}</div>
+    <div style="display:flex;gap:10px;align-items:flex-start;margin-top:10px;">${(()=>{
+      const me2=myNick(); const col2=avatarColor(me2||'?');
+      const tm2=(DB.team||[]).find(m=>(m.nickname||m.name)===me2);
+      const avi2=tm2?.avatar?`<img src="${tm2.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`:`<div style="width:32px;height:32px;border-radius:50%;background:${col2};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">${(me2||'?').slice(0,2).toUpperCase()}</div>`;
+      return avi2;
+    })()}
+    <div style="flex:1;min-width:0;"><div class="rte-wrap">
+      <div class="rte-toolbar">
+        <button class="rte-btn" onclick="rteCmd('task','bold')" title="Bold"><b>B</b></button>
+        <button class="rte-btn" onclick="rteCmd('task','italic')" title="Italic"><i>I</i></button>
+        <button class="rte-btn" onclick="rteCmd('task','strikeThrough')" title="Strikethrough"><s>S</s></button>
+        <div class="rte-sep"></div>
+        <button class="rte-btn" onclick="rteCmd('task','insertUnorderedList')" title="List">☰</button>
+        <button class="rte-btn" onclick="rteCmd('task','formatBlock','blockquote')" title="Quote">❝</button>
+        <div class="rte-sep"></div>
+        <button class="rte-btn" onclick="rteCmd('task','undo')" title="Undo">↩</button>
+        <button class="rte-btn" onclick="rteCmd('task','redo')" title="Redo">↪</button>
+        <div class="rte-sep"></div>
+        <label class="rte-btn" title="แนบไฟล์" style="cursor:pointer;">📎<input type="file" accept="*/*" multiple style="display:none;" onchange="rteAttachFiles('task',this.files);this.value='';"></label>
+        <div style="position:relative;">
+          <button class="rte-btn" title="เพิ่ม Link" onclick="rteToggleLinkPopup('task')" id="task-rte-link-btn">🔗</button>
+          <div class="rte-link-popup" id="task-rte-link-popup">
+            <div style="font-size:12px;font-weight:600;margin-bottom:6px;">แนบ Link</div>
+            <input id="task-rte-link-input" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;" placeholder="https://drive.google.com/... Figma/Loom URL" oninput="rtePreviewLink('task')" onkeydown="if(event.key==='Enter'){rteConfirmLink('task');}">
+            <div id="task-rte-link-preview"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <button class="btn btn-primary btn-sm" style="font-size:11px;" onclick="rteConfirmLink('task')">เพิ่ม</button>
+              <button class="btn btn-sm" style="font-size:11px;" onclick="rteToggleLinkPopup('task')">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="task-rte-body" class="rte-body" contenteditable="true" data-placeholder="เพิ่ม comment..."></div>
+      <div class="rte-att-stage" id="task-rte-att-stage"></div>
+      <div class="rte-footer">
+        <button class="btn btn-primary btn-sm" onclick="submitTaskComment()" style="font-size:12px;">Add this comment</button>
+        <button class="btn btn-sm" onclick="rteClear('task')" style="font-size:12px;">Never mind</button>
+        <span class="rte-drop-hint">📎 ลากไฟล์หรือวางรูปมาวางได้เลย</span>
+      </div>
+    </div></div></div>
+  </div>` : '';
   document.getElementById('my-task-modal')?.remove();
   document.body.insertAdjacentHTML('beforeend',`<div class="modal show" id="my-task-modal" style="z-index:1100;">
     <div class="modal-box" style="max-width:520px;max-height:90vh;overflow-y:auto;">
@@ -10090,7 +11107,41 @@ function openMyTaskModal(id) {
         <div class="form-field"><label>Status</label><select id="mtf-status"><option value="" ${!t?.status?'selected':''}>📋 To Do</option><option value="in-progress" ${t?.status==='in-progress'?'selected':''}>⚡ กำลังทำ</option></select></div>
         <div class="form-field"><label>เสร็จแล้ว?</label><label style="display:flex;align-items:center;gap:8px;margin-top:6px;cursor:pointer;"><input type="checkbox" id="mtf-done" ${t?.done?'checked':''}> ทำเสร็จแล้ว ✅</label></div>
         <div class="form-field"><label>Assignee</label><select id="mtf-assignee" ${!isLead?'disabled':''}>${assigneeOpts}</select></div>
-        <div class="form-field full"><label>Note</label><textarea id="mtf-note" style="min-height:60px;resize:vertical;">${escHtml(t?.note||'')}</textarea></div>
+        <div class="form-field full"><label>Note</label>
+          <div class="rte-wrap" id="note-rte-wrap">
+            <div class="rte-toolbar">
+              <button class="rte-btn" onclick="rteCmd('note','bold')" title="Bold"><b>B</b></button>
+              <button class="rte-btn" onclick="rteCmd('note','italic')" title="Italic"><i>I</i></button>
+              <button class="rte-btn" onclick="rteCmd('note','strikeThrough')" title="Strike"><s>S</s></button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="rteCmd('note','insertUnorderedList')" title="List">☰</button>
+              <button class="rte-btn" onclick="rteCmd('note','insertOrderedList')" title="Numbered">⋮</button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="rteCmd('note','formatBlock','blockquote')" title="Quote">❝</button>
+              <button class="rte-btn" onclick="rteInsertCode('note')" title="Code">&lt;/&gt;</button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="rteCmd('note','undo')" title="Undo">↩</button>
+              <button class="rte-btn" onclick="rteCmd('note','redo')" title="Redo">↪</button>
+              <div class="rte-sep"></div>
+              <label class="rte-btn" title="แนบไฟล์" style="cursor:pointer;">📎<input type="file" accept="*/*" multiple style="display:none;" onchange="rteAttachFiles('note',this.files);this.value='';"></label>
+              <div style="position:relative;">
+                <button class="rte-btn" title="เพิ่ม Link" onclick="rteToggleLinkPopup('note')" id="note-rte-link-btn">🔗</button>
+                <div class="rte-link-popup" id="note-rte-link-popup">
+                  <div style="font-size:12px;font-weight:600;margin-bottom:6px;">แนบ Link</div>
+                  <input id="note-rte-link-input" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;" placeholder="https://drive.google.com/... Figma/Loom URL" oninput="rtePreviewLink('note')" onkeydown="if(event.key==='Enter'){rteConfirmLink('note');}">
+                  <div id="note-rte-link-preview"></div>
+                  <div style="display:flex;gap:6px;margin-top:8px;">
+                    <button class="btn btn-primary btn-sm" style="font-size:11px;" onclick="rteConfirmLink('note')">เพิ่ม</button>
+                    <button class="btn btn-sm" style="font-size:11px;" onclick="rteToggleLinkPopup('note')">ยกเลิก</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rte-body" id="note-rte-body" contenteditable="true" data-placeholder="Note... (ลากไฟล์หรือวางรูปได้เลย)" style="min-height:60px;">${t?.noteHtml||escHtml(t?.note||'')}</div>
+            <div class="rte-att-stage" id="note-rte-att-stage"></div>
+          </div>
+          <input type="hidden" id="mtf-note">
+        </div>
       </div>
       ${commentsHtml}
       ${logHtml}
@@ -10101,6 +11152,14 @@ function openMyTaskModal(id) {
       </div>
     </div>
   </div>`);
+  // Init RTE events + restore note attachments after modal is in DOM
+  setTimeout(() => {
+    rteInitEvents('task');
+    rteInitEvents('note');
+    // Restore saved note attachments into staging
+    _rteAtts['note'] = t?.noteAtts ? [...t.noteAtts] : [];
+    rteRenderStage('note');
+  }, 50);
 }
 
 function saveMyTask() {
@@ -10127,7 +11186,10 @@ function saveMyTask() {
   t.date      = t.endDate; // keep legacy field in sync
   t.priority  = document.getElementById('mtf-priority')?.value||'';
   t.status    = document.getElementById('mtf-status')?.value||'';
-  t.note      = document.getElementById('mtf-note')?.value||'';
+  const noteBody = document.getElementById('note-rte-body');
+  t.note        = noteBody ? noteBody.innerText.trim() : '';
+  t.noteHtml    = noteBody ? noteBody.innerHTML.trim() : '';
+  t.noteAtts    = [...rteGetStage('note')];
   t.done      = document.getElementById('mtf-done')?.checked||false;
   const assigneeEl = document.getElementById('mtf-assignee');
   if (assigneeEl && !assigneeEl.disabled) t.assignee = assigneeEl.value || nick;
@@ -10146,18 +11208,24 @@ function saveMyTask() {
   renderProfContent();
 }
 
-function addTaskComment() {
-  const text = document.getElementById('mtf-new-comment')?.value.trim();
-  if (!text) return;
+function addTaskComment(text, html, attachments) {
+  if (!text && !(attachments&&attachments.length)) return;
   if (!_editingMyTask) return;
   const t = (DB.tasks||[]).find(x=>x.id===_editingMyTask);
   if (!t) return;
   if (!t.comments) t.comments = [];
-  t.comments.push({authorNick: myNick(), text, ts: new Date().toISOString()});
+  t.comments.push({ authorNick: myNick(), text, html: html||escHtml(text||''), ts: new Date().toISOString(), attachments: attachments||[] });
   t.updatedAt = new Date().toISOString();
   saveDB(true);
-  // Re-render modal
   openMyTaskModal(_editingMyTask);
+}
+
+function submitTaskComment() {
+  const {text, html} = rteGetContent('task');
+  const atts = [...rteGetStage('task')];
+  if (!text && !atts.length) return;
+  addTaskComment(text, html, atts);
+  rteClear('task');
 }
 
 function deleteMyTask(id) {
@@ -10498,7 +11566,10 @@ const ALL_TABS = [
   { key:'workload',  label:'Workload' },
   { key:'roles',     label:'Role Demand' },
   { key:'projects',  label:'Project List' },
-  { key:'clients',   label:'Clients' },
+  { key:'clients',       label:'Clients' },
+  { key:'leads',         label:'Leads' },
+  { key:'contacts',      label:'Contacts' },
+  { key:'opportunities', label:'Opportunities' },
   { key:'team',      label:'Team' },
   { key:'calendar',  label:'Calendar' },
   { key:'framework', label:'SOP & Help' },
@@ -11134,12 +12205,21 @@ async function adminResetPassword(userId) {
   loadSession();
 
   // ── 1. Pull จาก cloud ก่อน เพื่อให้ได้ user list ล่าสุด ──
+  //   mongoLoadDB() มี timeout 10s ในตัวแล้ว — ถ้า Render ยังหลับอยู่ จะ skip เร็ว
   const cfg = getMongoConfig();
   if (cfg.apiUrl) {
     try {
       const pulled = await mongoLoadDB();
       if (pulled) renderAll();
     } catch(e) { /* ใช้ localStorage แทน */ }
+  }
+  // hint แบนเนอร์ cloud offline
+  {
+    const st = document.getElementById('sync-status-text');
+    const hint = document.getElementById('auth-cloud-hint');
+    if (hint && cfg.apiUrl && st && st.textContent.includes('Timeout')) {
+      hint.style.display = '';
+    }
   }
 
   // ── 2. สร้าง default admin เฉพาะเมื่อยังไม่มี user เลย ──
@@ -11209,6 +12289,659 @@ async function adminResetPassword(userId) {
   document.querySelector('[data-panel="admin"]')?.addEventListener('click', renderUsers);
   document.querySelector('[data-panel="profile"]')?.addEventListener('click', initProfile);
 })();
+
+// ══════════════════════════════════════════════════════════
+// ── CRM MODULE: Leads + Opportunities ────────────────────
+// ══════════════════════════════════════════════════════════
+
+const LEAD_STATUSES = ['New','Contacted','Qualified','Converted','Lost'];
+const OPP_STAGES   = ['Lead','Qualified','Proposal','Negotiation','Won','Lost'];
+const LEAD_STATUS_COLOR = { New:'lead-status-new', Contacted:'lead-status-contacted', Qualified:'lead-status-qualified', Converted:'lead-status-converted', Lost:'lead-status-lost' };
+const OPP_STAGE_COLOR   = { Lead:'opp-stage-lead', Qualified:'opp-stage-qualified', Proposal:'opp-stage-proposal', Negotiation:'opp-stage-negotiation', Won:'opp-stage-won', Lost:'opp-stage-lost' };
+
+function leadStatusBadge(s)  { return `<span class="lead-status-badge ${LEAD_STATUS_COLOR[s]||''}">${s||'New'}</span>`; }
+function oppStageBadge(s)    { return `<span class="opp-stage-badge ${OPP_STAGE_COLOR[s]||''}">${s||'Lead'}</span>`; }
+
+let _leadsView = 'table';
+let _oppView   = 'table';
+function setLeadsView(v) { _leadsView = v; renderLeads(); }
+function setOppView(v)   { _oppView   = v; renderOpportunities(); }
+
+// ── LEADS render ─────────────────────────────────────────
+function renderLeads() {
+  if (!DB.leads) DB.leads = [];
+  const q      = (document.getElementById('leads-search')?.value||'').toLowerCase();
+  const stF    = document.getElementById('leads-filter-status')?.value||'';
+  const ownerF = document.getElementById('leads-filter-owner')?.value||'';
+  let leads    = (DB.leads||[]).filter(l => {
+    if (stF    && l.status !== stF) return false;
+    if (ownerF && l.owner  !== ownerF) return false;
+    if (q && !`${l.company} ${l.contactName} ${l.owner} ${l.source}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const ownerSel = document.getElementById('leads-filter-owner');
+  if (ownerSel) {
+    const owners = [...new Set((DB.leads||[]).map(l=>l.owner).filter(Boolean))].sort();
+    const cur = ownerSel.value;
+    ownerSel.innerHTML = `<option value="">All Owners</option>${owners.map(o=>`<option ${o===cur?'selected':''}>${escHtml(o)}</option>`).join('')}`;
+  }
+  const el = document.getElementById('leads-content');
+  if (!el) return;
+  if (_leadsView === 'kanban') {
+    el.innerHTML = renderLeadsKanban(leads);
+  } else {
+    el.innerHTML = renderLeadsTable(leads);
+  }
+  el.querySelectorAll('[data-lead-edit]').forEach(b => b.addEventListener('click', ()=>openLeadModal(b.dataset.leadEdit)));
+  el.querySelectorAll('[data-lead-convert]').forEach(b => b.addEventListener('click', ()=>openConvertLead(b.dataset.leadConvert)));
+  el.querySelectorAll('.crm-kanban-card[data-lead-edit]').forEach(b => b.addEventListener('click', ()=>openLeadModal(b.dataset.leadEdit)));
+}
+
+function renderLeadsTable(leads) {
+  if (!leads.length) return `<div style="text-align:center;padding:40px;color:var(--text-muted);">ยังไม่มี Leads — กด "+ Add Lead" เพื่อเพิ่ม</div>`;
+  return `<div class="tbl-wrap"><table class="data-table">
+    <thead><tr>
+      <th>Company</th><th>Contact</th><th>Source</th><th>Owner</th>
+      <th>Status</th><th>Created</th><th>Last Activity</th><th></th>
+    </tr></thead>
+    <tbody>${leads.map(l=>`<tr>
+      <td><b>${escHtml(l.company||'–')}</b></td>
+      <td>${l.nickname?`<b>${escHtml(l.nickname)}</b><br>`:''}${escHtml(l.contactName||'–')}<br><span style="font-size:11px;color:var(--text-muted);">${escHtml(l.position||'')}</span></td>
+      <td><span style="font-size:11px;">${escHtml(l.source||'–')}</span></td>
+      <td>${escHtml(l.owner||'–')}</td>
+      <td>${leadStatusBadge(l.status)}</td>
+      <td style="font-size:11px;">${l.createdAt?fmtDate(l.createdAt.slice(0,10)):'–'}</td>
+      <td style="font-size:11px;">${l.lastActivityAt?fmtDate(l.lastActivityAt.slice(0,10)):'–'}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-sm" data-lead-edit="${l.id}" style="margin-right:4px;">Edit</button>
+        ${l.status!=='Converted'?`<button class="btn btn-sm btn-primary" data-lead-convert="${l.id}" style="font-size:10px;">↗ Convert</button>`:`<span style="font-size:10px;color:var(--success);">✅ Converted</span>`}
+      </td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderLeadsKanban(leads) {
+  return `<div class="crm-kanban">${LEAD_STATUSES.map(st=>{
+    const cols = leads.filter(l=>l.status===st);
+    return `<div class="crm-kanban-col">
+      <div class="crm-kanban-col-title">
+        ${leadStatusBadge(st)}
+        <span class="crm-kanban-count">${cols.length}</span>
+      </div>
+      ${cols.map(l=>`<div class="crm-kanban-card" data-lead-edit="${l.id}">
+        <div class="crm-kanban-card-company">${escHtml(l.company||'–')}</div>
+        <div class="crm-kanban-card-sub">${escHtml(l.contactName||'')}${l.owner?` · ${escHtml(l.owner)}`:''}</div>
+        ${l.source?`<div class="crm-kanban-card-sub" style="margin-top:3px;">📡 ${escHtml(l.source)}</div>`:''}
+      </div>`).join('')}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── LEADS CRUD ────────────────────────────────────────────
+function openLeadModal(id) {
+  const modal = document.getElementById('lead-modal');
+  const ownerSel = document.getElementById('lf-owner');
+  if (ownerSel) {
+    const members = (DB.team||[]).filter(m=>(m.status||'active')==='active').sort((a,b)=>(a.nickname||a.name).localeCompare(b.nickname||b.name));
+    ownerSel.innerHTML = `<option value="">— เลือก Owner —</option>${members.map(m=>{const n=m.nickname||m.name;return`<option value="${escHtml(n)}">${escHtml(n)}</option>`;}).join('')}`;
+  }
+  const delBtn = document.getElementById('lf-delete');
+  if (id) {
+    const l = (DB.leads||[]).find(x=>x.id===id);
+    if (!l) return;
+    document.getElementById('lead-modal-title').textContent = 'Edit Lead';
+    document.getElementById('lf-id').value = l.id;
+    document.getElementById('lf-company').value = l.company||'';
+    document.getElementById('lf-contact-name').value = l.contactName||'';
+    document.getElementById('lf-nickname').value = l.nickname||'';
+    document.getElementById('lf-position').value = l.position||'';
+    document.getElementById('lf-email').value = l.email||'';
+    document.getElementById('lf-phone').value = l.phone||'';
+    document.getElementById('lf-source').value = l.source||'';
+    document.getElementById('lf-status').value = l.status||'New';
+    document.getElementById('lf-note').value = l.note||'';
+    if (ownerSel) ownerSel.value = l.owner||'';
+    if (delBtn) delBtn.style.display = '';
+  } else {
+    document.getElementById('lead-modal-title').textContent = 'Add Lead';
+    document.getElementById('lf-id').value = '';
+    document.getElementById('lf-company').value = '';
+    document.getElementById('lf-contact-name').value = '';
+    document.getElementById('lf-nickname').value = '';
+    document.getElementById('lf-position').value = '';
+    document.getElementById('lf-email').value = '';
+    document.getElementById('lf-phone').value = '';
+    document.getElementById('lf-source').value = '';
+    document.getElementById('lf-status').value = 'New';
+    document.getElementById('lf-note').value = '';
+    if (ownerSel) ownerSel.value = myNick()||'';
+    if (delBtn) delBtn.style.display = 'none';
+  }
+  modal.classList.add('show');
+}
+
+function saveLead() {
+  const company = document.getElementById('lf-company').value.trim();
+  if (!company) { alert('กรุณากรอก Company Name'); return; }
+  if (!DB.leads) DB.leads = [];
+  const id = document.getElementById('lf-id').value || ('lead_'+Date.now());
+  let l = DB.leads.find(x=>x.id===id);
+  if (!l) { l={id, createdAt:new Date().toISOString()}; DB.leads.push(l); }
+  l.company     = company;
+  l.contactName = document.getElementById('lf-contact-name').value.trim();
+  l.nickname    = document.getElementById('lf-nickname').value.trim();
+  l.position    = document.getElementById('lf-position').value.trim();
+  l.email       = document.getElementById('lf-email').value.trim();
+  l.phone       = document.getElementById('lf-phone').value.trim();
+  l.source      = document.getElementById('lf-source').value;
+  l.owner       = document.getElementById('lf-owner').value;
+  l.status      = document.getElementById('lf-status').value;
+  l.note        = document.getElementById('lf-note').value.trim();
+  l.lastActivityAt = new Date().toISOString();
+  saveDB(true);
+  document.getElementById('lead-modal').classList.remove('show');
+  renderLeads();
+}
+
+function deleteLead() {
+  const id = document.getElementById('lf-id').value;
+  if (!id || !confirm('ลบ Lead นี้?')) return;
+  DB.leads = (DB.leads||[]).filter(x=>x.id!==id);
+  saveDB(true);
+  document.getElementById('lead-modal').classList.remove('show');
+  renderLeads();
+}
+
+// ── CONVERT LEAD ──────────────────────────────────────────
+function openConvertLead(id) {
+  const l = (DB.leads||[]).find(x=>x.id===id);
+  if (!l) return;
+  const modal = document.getElementById('convert-lead-modal');
+  document.getElementById('clf-lead-id').value = id;
+  document.getElementById('clf-lead-summary').innerHTML =
+    `<b>${escHtml(l.company)}</b>${l.contactName?` · ${escHtml(l.contactName)}`:''}<br><span style="font-size:11px;color:var(--text-muted);">${escHtml(l.source||'')} · ${escHtml(l.owner||'')}</span>`;
+  const existSel = document.getElementById('clf-company-existing');
+  existSel.innerHTML = '<option value="">— เลือก Client —</option>'+(DB.clients||[]).map(c=>`<option value="${c.id}">${escHtml(c.company)}</option>`).join('');
+  document.getElementById('clf-company-action').value = 'new';
+  existSel.style.display = 'none';
+  document.getElementById('clf-create-contact').checked = true;
+  document.getElementById('clf-create-opp').checked = false;
+  document.getElementById('clf-opp-fields').style.display = 'none';
+  document.getElementById('clf-opp-name').value = `Opportunity — ${l.company}`;
+  document.getElementById('clf-opp-budget').value = '';
+  document.getElementById('clf-opp-close').value = '';
+  document.getElementById('clf-company-action').onchange = function() {
+    existSel.style.display = this.value === 'existing' ? '' : 'none';
+  };
+  document.getElementById('clf-create-opp').onchange = function() {
+    document.getElementById('clf-opp-fields').style.display = this.checked ? '' : 'none';
+  };
+  modal.classList.add('show');
+}
+
+function confirmConvertLead() {
+  const leadId = document.getElementById('clf-lead-id').value;
+  const l = (DB.leads||[]).find(x=>x.id===leadId);
+  if (!l) return;
+  if (!DB.clients) DB.clients = [];
+  if (!DB.opportunities) DB.opportunities = [];
+  let clientId;
+  if (document.getElementById('clf-company-action').value === 'existing') {
+    clientId = document.getElementById('clf-company-existing').value;
+  } else {
+    const existing = DB.clients.find(c=>(c.company||'').toLowerCase()===l.company.toLowerCase());
+    if (existing) {
+      clientId = existing.id;
+    } else {
+      clientId = 'clt_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+      DB.clients.push({
+        id: clientId, company: l.company, brands: [], brand: '',
+        contactName: l.contactName||'', nickname: l.nickname||'',
+        position: l.position||'', phone: l.phone||'', email: l.email||'',
+        active: 'active', note: '', projectIds: [], leadIds: [leadId],
+      });
+    }
+  }
+  if (document.getElementById('clf-create-contact').checked && l.contactName) {
+    const dupContact = DB.clients.find(c=>
+      c.company===l.company && c.contactName===l.contactName && c.id !== clientId
+    );
+    if (!dupContact) {
+      DB.clients.push({
+        id: 'clt_'+Date.now()+'c_'+Math.random().toString(36).slice(2,6),
+        company: l.company, brands: [], brand: '',
+        contactName: l.contactName, nickname: l.nickname||'',
+        position: l.position||'', phone: l.phone||'', email: l.email||'',
+        active: 'active', note: `Converted from Lead`, projectIds: [], leadIds: [leadId],
+      });
+    }
+  }
+  if (document.getElementById('clf-create-opp').checked) {
+    const oppName = document.getElementById('clf-opp-name').value.trim() || `Opportunity — ${l.company}`;
+    DB.opportunities.push({
+      id: 'opp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+      name: oppName, company: l.company, brand: '', contact: l.contactName||'',
+      owner: l.owner||'', budget: +document.getElementById('clf-opp-budget').value||0,
+      probability: 50, closeDate: document.getElementById('clf-opp-close').value,
+      stage: 'Qualified', note: l.note||'', leadId: leadId,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    });
+  }
+  l.status = 'Converted';
+  l.lastActivityAt = new Date().toISOString();
+  l.clientId = clientId;
+  saveDB(true);
+  document.getElementById('convert-lead-modal').classList.remove('show');
+  renderLeads();
+  alert(`✅ Convert สำเร็จ!\nClient: ${l.company}${document.getElementById('clf-create-opp').checked?' · Opportunity สร้างแล้ว':''}`);
+}
+
+// ── OPPORTUNITIES render ──────────────────────────────────
+function renderOpportunities() {
+  if (!DB.opportunities) DB.opportunities = [];
+  const q      = (document.getElementById('opp-search')?.value||'').toLowerCase();
+  const stF    = document.getElementById('opp-filter-stage')?.value||'';
+  const ownerF = document.getElementById('opp-filter-owner')?.value||'';
+  let opps = (DB.opportunities||[]).filter(o => {
+    if (stF    && o.stage !== stF) return false;
+    if (ownerF && o.owner !== ownerF) return false;
+    if (q && !`${o.name} ${o.company} ${o.owner} ${o.contact}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const ownerSel = document.getElementById('opp-filter-owner');
+  if (ownerSel) {
+    const owners = [...new Set((DB.opportunities||[]).map(o=>o.owner).filter(Boolean))].sort();
+    const cur = ownerSel.value;
+    ownerSel.innerHTML = `<option value="">All Owners</option>${owners.map(o=>`<option ${o===cur?'selected':''}>${escHtml(o)}</option>`).join('')}`;
+  }
+  const el = document.getElementById('opp-content');
+  if (!el) return;
+  if (_oppView === 'kanban') {
+    el.innerHTML = renderOppKanban(opps);
+  } else {
+    el.innerHTML = renderOppTable(opps);
+  }
+  el.querySelectorAll('[data-opp-edit]').forEach(b => b.addEventListener('click', ()=>openOppModal(b.dataset.oppEdit)));
+  el.querySelectorAll('[data-opp-convert]').forEach(b => b.addEventListener('click', ()=>oppConvertToProject(b.dataset.oppConvert)));
+  el.querySelectorAll('.crm-kanban-card[data-opp-edit]').forEach(b => b.addEventListener('click', ()=>openOppModal(b.dataset.oppEdit)));
+}
+
+function renderOppTable(opps) {
+  if (!opps.length) return `<div style="text-align:center;padding:40px;color:var(--text-muted);">ยังไม่มี Opportunities — กด "+ Add Opportunity" เพื่อเพิ่ม</div>`;
+  const totalBudget = opps.reduce((s,o)=>s+(+o.budget||0),0);
+  const weighted    = opps.reduce((s,o)=>s+(+o.budget||0)*((+o.probability||0)/100),0);
+  return `
+  <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;">
+    <div style="background:var(--surface-2);border-radius:8px;padding:10px 16px;">
+      <div style="font-size:10px;color:var(--text-muted);font-weight:600;">TOTAL PIPELINE</div>
+      <div style="font-size:16px;font-weight:700;">฿${fmtMoney(totalBudget)}</div>
+    </div>
+    <div style="background:var(--surface-2);border-radius:8px;padding:10px 16px;">
+      <div style="font-size:10px;color:var(--text-muted);font-weight:600;">WEIGHTED</div>
+      <div style="font-size:16px;font-weight:700;color:var(--accent);">฿${fmtMoney(weighted)}</div>
+    </div>
+    <div style="background:var(--surface-2);border-radius:8px;padding:10px 16px;">
+      <div style="font-size:10px;color:var(--text-muted);font-weight:600;">OPPORTUNITIES</div>
+      <div style="font-size:16px;font-weight:700;">${opps.length}</div>
+    </div>
+  </div>
+  <div class="tbl-wrap"><table class="data-table">
+    <thead><tr>
+      <th>Opportunity</th><th>Company</th><th>Contact</th><th>Owner</th>
+      <th>Budget</th><th>Prob%</th><th>Close Date</th><th>Stage</th><th></th>
+    </tr></thead>
+    <tbody>${opps.map(o=>`<tr>
+      <td><b>${escHtml(o.name||'–')}</b>${o.brand?`<br><span style="font-size:11px;color:var(--text-muted);">${escHtml(o.brand)}</span>`:''}</td>
+      <td>${escHtml(o.company||'–')}</td>
+      <td style="font-size:12px;">${escHtml(o.contact||'–')}</td>
+      <td>${escHtml(o.owner||'–')}</td>
+      <td style="font-weight:600;">฿${fmtMoney(+o.budget||0)}</td>
+      <td><div style="display:flex;align-items:center;gap:4px;"><div style="width:40px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="width:${o.probability||0}%;height:100%;background:var(--accent);"></div></div><span style="font-size:11px;">${o.probability||0}%</span></div></td>
+      <td style="font-size:11px;">${o.closeDate?fmtDate(o.closeDate):'–'}</td>
+      <td>${oppStageBadge(o.stage)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-sm" data-opp-edit="${o.id}" style="margin-right:4px;">Edit</button>
+        ${o.stage==='Won'&&!o.projectId?`<button class="btn btn-sm btn-primary" data-opp-convert="${o.id}" style="font-size:10px;">→ Project</button>`:''}
+        ${o.projectId?`<span style="font-size:10px;color:var(--success);">✅ ${escHtml(o.projectId)}</span>`:''}
+      </td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderOppKanban(opps) {
+  return `<div class="crm-kanban">${OPP_STAGES.map(st=>{
+    const cols = opps.filter(o=>o.stage===st);
+    const total = cols.reduce((s,o)=>s+(+o.budget||0),0);
+    return `<div class="crm-kanban-col">
+      <div class="crm-kanban-col-title">
+        ${oppStageBadge(st)}
+        <span class="crm-kanban-count">${cols.length}${total?` · ฿${fmtMoney(total)}`:''}</span>
+      </div>
+      ${cols.map(o=>`<div class="crm-kanban-card" data-opp-edit="${o.id}">
+        <div class="crm-kanban-card-company">${escHtml(o.name||'–')}</div>
+        <div class="crm-kanban-card-sub">${escHtml(o.company||'')}${o.owner?` · ${escHtml(o.owner)}`:''}</div>
+        ${o.budget?`<div style="font-size:11px;font-weight:600;color:var(--accent);margin-top:3px;">฿${fmtMoney(+o.budget)}</div>`:''}
+        ${o.probability?`<div style="margin-top:4px;"><div style="width:100%;height:4px;background:var(--border);border-radius:2px;"><div style="width:${o.probability}%;height:100%;background:var(--accent);border-radius:2px;"></div></div></div>`:''}
+      </div>`).join('')}
+      ${st==='Won'?`<button class="btn btn-sm btn-primary" style="width:100%;font-size:11px;margin-top:4px;" onclick="openOppModal(null)">+ Won Deal</button>`:''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── OPPORTUNITIES CRUD ────────────────────────────────────
+function openOppModal(id) {
+  const modal = document.getElementById('opp-modal');
+  const ownerSel = document.getElementById('of-owner');
+  if (ownerSel) {
+    const members = (DB.team||[]).filter(m=>(m.status||'active')==='active').sort((a,b)=>(a.nickname||a.name).localeCompare(b.nickname||b.name));
+    ownerSel.innerHTML = `<option value="">— เลือก Owner —</option>${members.map(m=>{const n=m.nickname||m.name;return`<option value="${escHtml(n)}">${escHtml(n)}</option>`;}).join('')}`;
+  }
+  const delBtn = document.getElementById('of-delete');
+  if (id) {
+    const o = (DB.opportunities||[]).find(x=>x.id===id);
+    if (!o) return;
+    document.getElementById('opp-modal-title').textContent = 'Edit Opportunity';
+    document.getElementById('of-id').value = o.id;
+    document.getElementById('of-name').value = o.name||'';
+    document.getElementById('of-company').value = o.company||'';
+    document.getElementById('of-brand').value = o.brand||'';
+    document.getElementById('of-contact').value = o.contact||'';
+    document.getElementById('of-budget').value = o.budget||'';
+    document.getElementById('of-prob').value = o.probability||'';
+    document.getElementById('of-close').value = o.closeDate||'';
+    document.getElementById('of-stage').value = o.stage||'Lead';
+    document.getElementById('of-note').value = o.note||'';
+    if (ownerSel) ownerSel.value = o.owner||'';
+    if (delBtn) delBtn.style.display = '';
+  } else {
+    document.getElementById('opp-modal-title').textContent = 'Add Opportunity';
+    document.getElementById('of-id').value = '';
+    document.getElementById('of-name').value = '';
+    document.getElementById('of-company').value = '';
+    document.getElementById('of-brand').value = '';
+    document.getElementById('of-contact').value = '';
+    document.getElementById('of-budget').value = '';
+    document.getElementById('of-prob').value = '50';
+    document.getElementById('of-close').value = '';
+    document.getElementById('of-stage').value = 'Lead';
+    document.getElementById('of-note').value = '';
+    if (ownerSel) ownerSel.value = myNick()||'';
+    if (delBtn) delBtn.style.display = 'none';
+  }
+  modal.classList.add('show');
+}
+
+function saveOpp() {
+  const name = document.getElementById('of-name').value.trim();
+  if (!name) { alert('กรุณากรอก Opportunity Name'); return; }
+  if (!DB.opportunities) DB.opportunities = [];
+  const id = document.getElementById('of-id').value || ('opp_'+Date.now());
+  let o = DB.opportunities.find(x=>x.id===id);
+  if (!o) { o={id, createdAt:new Date().toISOString()}; DB.opportunities.push(o); }
+  o.name        = name;
+  o.company     = document.getElementById('of-company').value.trim();
+  o.brand       = document.getElementById('of-brand').value.trim();
+  o.contact     = document.getElementById('of-contact').value.trim();
+  o.owner       = document.getElementById('of-owner').value;
+  o.budget      = +document.getElementById('of-budget').value||0;
+  o.probability = +document.getElementById('of-prob').value||0;
+  o.closeDate   = document.getElementById('of-close').value;
+  o.stage       = document.getElementById('of-stage').value;
+  o.note        = document.getElementById('of-note').value.trim();
+  o.updatedAt   = new Date().toISOString();
+  saveDB(true);
+  document.getElementById('opp-modal').classList.remove('show');
+  renderOpportunities();
+}
+
+function deleteOpp() {
+  const id = document.getElementById('of-id').value;
+  if (!id || !confirm('ลบ Opportunity นี้?')) return;
+  DB.opportunities = (DB.opportunities||[]).filter(x=>x.id!==id);
+  saveDB(true);
+  document.getElementById('opp-modal').classList.remove('show');
+  renderOpportunities();
+}
+
+// ── Convert Opportunity → Project ────────────────────────
+function oppConvertToProject(id) {
+  const o = (DB.opportunities||[]).find(x=>x.id===id);
+  if (!o) return;
+  if (!confirm(`Convert "${o.name}" เป็น Project?\n\nจะสร้าง Project ใหม่โดยอัตโนมัติจากข้อมูล Opportunity นี้`)) return;
+  if (!DB.projects) DB.projects = [];
+  const newId = 'PROJ_'+Date.now();
+  const newProj = {
+    id: newId, code: newId,
+    name: o.name, brand: o.brand||'', company: o.company||'',
+    budget: o.budget||0, owner: o.owner||'',
+    status: 'Active', pfpg: 'PG',
+    brief: o.note||'',
+    createdAt: new Date().toISOString(),
+    comments: [], teamMembers: o.owner?[o.owner]:[],
+    opportunityId: id,
+  };
+  DB.projects.unshift(newProj);
+  o.projectId = newId;
+  o.stage = 'Won';
+  o.updatedAt = new Date().toISOString();
+  saveDB(true);
+  renderOpportunities();
+  renderAll();
+  alert(`✅ สร้าง Project สำเร็จ!\nProject ID: ${newId}\nคุณสามารถแก้ไขรายละเอียดเพิ่มเติมได้ใน Project List`);
+}
+
+// ── Enhanced Client Profile (CRM tabbed view) ────────────
+function openClientProfileCRM(clientId, activeTab) {
+  activeTab = activeTab||'overview';
+  const cl = (DB.clients||[]).find(x=>x.id===clientId);
+  if (!cl) return;
+  const linked   = (DB.projects||[]).filter(p=>p.company===cl.company||(cl.projectIds||[]).includes(p.id||p.code));
+  const leads    = (DB.leads||[]).filter(l=>l.company===cl.company||(cl.leadIds||[]).includes(l.id));
+  const opps     = (DB.opportunities||[]).filter(o=>o.company===cl.company);
+  const totalRev = linked.reduce((s,p)=>s+(+p.budget||0),0);
+  const isActive = (cl.active||'active')!=='inactive';
+  const brands   = cl.brands?.length?cl.brands:(cl.brand?[cl.brand]:[]);
+  const TABS = ['overview','brands','contacts','leads','opportunities','projects','revenue','activity'];
+  const tabLabels = {overview:'📊 Overview',brands:'📦 Brands',contacts:'👤 Contacts',leads:'🎯 Leads',opportunities:'💼 Opportunities',projects:'📁 Projects',revenue:'💰 Revenue',activity:'📋 Activity'};
+  const tabsHtml = TABS.map(t=>`<div class="clt-detail-tab${t===activeTab?' active':''}" onclick="openClientProfileCRM('${clientId}','${t}')">${tabLabels[t]}</div>`).join('');
+  let bodyHtml = '';
+  if (activeTab==='overview') {
+    bodyHtml = `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">PROJECTS</div><div style="font-size:20px;font-weight:700;">${linked.length}</div></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">LEADS</div><div style="font-size:20px;font-weight:700;">${leads.length}</div></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">OPPS</div><div style="font-size:20px;font-weight:700;">${opps.length}</div></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">REVENUE</div><div style="font-size:16px;font-weight:700;">฿${fmtMoney(totalRev)}</div></div>
+      </div>
+      ${cl.phone?`<div class="mpp-info-row"><span class="mpp-info-icon">📞</span><span class="mpp-info-val">${cl.phone}</span><a href="tel:${cl.phone.replace(/[^0-9+]/g,'')}" class="mpp-info-btn">Call</a></div>`:''}
+      ${cl.email?`<div class="mpp-info-row"><span class="mpp-info-icon">📧</span><span class="mpp-info-val">${cl.email}</span><button class="mpp-info-btn" onclick="navigator.clipboard.writeText('${cl.email}')">Copy</button></div>`:''}
+      ${cl.address?`<div class="mpp-info-row"><span class="mpp-info-icon">📍</span><span class="mpp-info-val">${escHtml(cl.address)}</span></div>`:''}
+      ${cl.note?`<div style="margin-top:10px;padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;">${escHtml(cl.note)}</div>`:''}
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-sm btn-primary" onclick="openClientModal('${cl.id}')">✏ Edit</button>
+        <button class="btn btn-sm" onclick="openOppModal(null);setTimeout(()=>document.getElementById('of-company').value='${escHtml(cl.company)}',50)">+ Opportunity</button>
+        <button class="btn btn-sm" onclick="openLeadModal(null);setTimeout(()=>document.getElementById('lf-company').value='${escHtml(cl.company)}',50)">+ Lead</button>
+      </div>`;
+  } else if (activeTab==='brands') {
+    bodyHtml = brands.length
+      ? brands.map(b=>`<div style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">
+          <span style="font-size:24px;">📦</span>
+          <div><div style="font-weight:600;">${escHtml(b)}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${(DB.projects||[]).filter(p=>p.brand===b).length} projects</div></div>
+        </div>`).join('')
+      : `<div style="color:var(--text-muted);padding:20px;text-align:center;">ยังไม่มี Brand</div>`;
+  } else if (activeTab==='contacts') {
+    const allContacts = (DB.clients||[]).filter(c=>c.company===cl.company && c.contactName);
+    bodyHtml = allContacts.length
+      ? allContacts.map(c=>`<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;" onclick="openClientModal('${c.id}')">
+          <div style="width:36px;height:36px;border-radius:50%;background:${avatarColor(c.contactName||'?')};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;">${(c.contactName||'?').slice(0,2).toUpperCase()}</div>
+          <div><div style="font-weight:600;">${escHtml(c.contactName)}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${escHtml(c.position||'')} ${c.email?'· '+c.email:''}</div></div>
+        </div>`).join('')
+      : `<div style="color:var(--text-muted);padding:20px;text-align:center;">ยังไม่มี Contact</div>`;
+    bodyHtml += `<button class="btn btn-sm btn-primary" style="margin-top:8px;" onclick="openClientModal(null)">+ Add Contact</button>`;
+  } else if (activeTab==='leads') {
+    bodyHtml = leads.length
+      ? `<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Contact</th><th>Source</th><th>Status</th><th>Owner</th><th></th></tr></thead><tbody>${leads.map(l=>`<tr><td>${escHtml(l.contactName||'–')}</td><td>${escHtml(l.source||'–')}</td><td>${leadStatusBadge(l.status)}</td><td>${escHtml(l.owner||'–')}</td><td><button class="btn btn-sm" onclick="openLeadModal('${l.id}')">Edit</button></td></tr>`).join('')}</tbody></table></div>`
+      : `<div style="color:var(--text-muted);padding:20px;text-align:center;">ยังไม่มี Leads</div>`;
+    bodyHtml += `<button class="btn btn-sm btn-primary" style="margin-top:8px;" onclick="openLeadModal(null);setTimeout(()=>document.getElementById('lf-company').value='${escHtml(cl.company)}',50)">+ Add Lead</button>`;
+  } else if (activeTab==='opportunities') {
+    bodyHtml = opps.length
+      ? `<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Budget</th><th>Stage</th><th>Close Date</th><th></th></tr></thead><tbody>${opps.map(o=>`<tr><td>${escHtml(o.name||'–')}</td><td>฿${fmtMoney(+o.budget||0)}</td><td>${oppStageBadge(o.stage)}</td><td style="font-size:11px;">${o.closeDate?fmtDate(o.closeDate):'–'}</td><td><button class="btn btn-sm" onclick="openOppModal('${o.id}')">Edit</button></td></tr>`).join('')}</tbody></table></div>`
+      : `<div style="color:var(--text-muted);padding:20px;text-align:center;">ยังไม่มี Opportunities</div>`;
+    bodyHtml += `<button class="btn btn-sm btn-primary" style="margin-top:8px;" onclick="openOppModal(null);setTimeout(()=>document.getElementById('of-company').value='${escHtml(cl.company)}',50)">+ Add Opportunity</button>`;
+  } else if (activeTab==='projects') {
+    bodyHtml = linked.length
+      ? linked.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+          <span class="code-mono">${p.code||'–'}</span>
+          <div style="flex:1;"><div style="font-weight:600;font-size:13px;">${escHtml(p.name||p.brand||'–')}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${escHtml(p.status||'')} · ฿${fmtMoney(+p.budget||0)}</div></div>
+        </div>`).join('')
+      : `<div style="color:var(--text-muted);padding:20px;text-align:center;">ยังไม่มี Projects</div>`;
+  } else if (activeTab==='revenue') {
+    const byYear = {};
+    linked.forEach(p=>{ const y=(p.start||p.launch||p.createdAt||'').slice(0,4)||'—'; byYear[y]=(byYear[y]||0)+(+p.budget||0); });
+    bodyHtml = `<div style="margin-bottom:12px;"><b>Total Revenue: ฿${fmtMoney(totalRev)}</b></div>`
+      + Object.entries(byYear).sort((a,b)=>b[0].localeCompare(a[0])).map(([y,v])=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:13px;font-weight:600;width:50px;">${y}</span>
+          <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="width:${Math.min(100,(v/Math.max(totalRev,1)*100))}%;height:100%;background:var(--accent);border-radius:4px;"></div></div>
+          <span style="font-size:13px;font-weight:600;">฿${fmtMoney(v)}</span>
+        </div>`).join('');
+  } else if (activeTab==='activity') {
+    const acts = (DB.activityLog||[]).filter(a=>a.projectId&&linked.some(p=>(p.id||p.code)===a.projectId)).slice(0,20);
+    bodyHtml = acts.length
+      ? acts.map(a=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;"><b>${escHtml(a.user||a.personNick||'')}</b> ${escHtml(a.action||'')} <span style="color:var(--text-muted);">${a.ts?new Date(a.ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):''}</span></div>`).join('')
+      : `<div style="color:var(--text-muted);padding:20px;text-align:center;">ยังไม่มี Activity</div>`;
+  }
+  document.getElementById('clt-content').innerHTML = `
+    <div class="clt-header" style="border-bottom:1px solid var(--border);">
+      <div class="clt-avatar"><span style="font-size:20px;">🏢</span></div>
+      <div style="flex:1;">
+        <div style="font-size:16px;font-weight:700;">${escHtml(cl.company||'–')}</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px;">${cl.contactName?escHtml(cl.contactName)+' ':''}${cl.position?'· '+escHtml(cl.position):''}</div>
+        <span class="clt-active-badge ${isActive?'clt-active':'clt-inactive'}">${isActive?'🟢 Active':'⚫ Inactive'}</span>
+        ${brands.map(b=>`<span style="font-size:11px;background:rgba(66,125,218,.1);color:var(--ci-blue);padding:1px 7px;border-radius:8px;margin-left:4px;">📦 ${escHtml(b)}</span>`).join('')}
+      </div>
+    </div>
+    <div class="clt-detail-tabs">${tabsHtml}</div>
+    <div style="padding:4px 0;">${bodyHtml}</div>`;
+  document.getElementById('client-profile-modal').classList.add('show');
+}
 </script>
+
+<!-- LEAD MODAL -->
+<div class="modal" id="lead-modal">
+  <div class="modal-box" style="max-width:540px;">
+    <div class="modal-head">
+      <h2 id="lead-modal-title">Add Lead</h2>
+      <button class="modal-close" onclick="document.getElementById('lead-modal').classList.remove('show')">&times;</button>
+    </div>
+    <div class="form-grid" style="padding:16px;">
+      <input type="hidden" id="lf-id">
+      <div class="form-field full"><label>Company Name *</label><input id="lf-company" placeholder="บริษัทที่ติดต่อ" list="company-list"></div>
+      <div class="form-field"><label>Contact Person</label><input id="lf-contact-name" placeholder="ชื่อผู้ติดต่อ"></div>
+      <div class="form-field"><label>Nickname</label><input id="lf-nickname" placeholder="ชื่อเล่น"></div>
+      <div class="form-field"><label>Position</label><input id="lf-position" placeholder="ตำแหน่ง"></div>
+      <div class="form-field"><label>Email</label><input id="lf-email" type="email" placeholder="email@example.com"></div>
+      <div class="form-field"><label>Phone</label><input id="lf-phone" placeholder="0812345678"></div>
+      <div class="form-field"><label>Source</label>
+        <select id="lf-source">
+          <option value="">— เลือก Source —</option>
+          <option>Referral</option><option>Event</option><option>Website</option>
+          <option>Cold Outreach</option><option>Existing Client Referral</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Owner</label>
+        <select id="lf-owner"></select>
+      </div>
+      <div class="form-field"><label>Status</label>
+        <select id="lf-status">
+          <option>New</option><option>Contacted</option><option>Qualified</option><option>Converted</option><option>Lost</option>
+        </select>
+      </div>
+      <div class="form-field full"><label>Note</label><textarea id="lf-note" style="min-height:60px;resize:vertical;"></textarea></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border);">
+      <button type="button" class="btn" onclick="document.getElementById('lead-modal').classList.remove('show')">Cancel</button>
+      <button type="button" class="btn btn-danger" id="lf-delete" onclick="deleteLead()" style="display:none;margin-right:auto;">🗑 Delete</button>
+      <button type="button" class="btn btn-primary" onclick="saveLead()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONVERT LEAD MODAL -->
+<div class="modal" id="convert-lead-modal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-head">
+      <h2>Convert Lead</h2>
+      <button class="modal-close" onclick="document.getElementById('convert-lead-modal').classList.remove('show')">&times;</button>
+    </div>
+    <div style="padding:16px;">
+      <input type="hidden" id="clf-lead-id">
+      <div style="background:var(--surface-2);border-radius:10px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px;">Lead</div>
+        <div id="clf-lead-summary" style="font-size:13px;"></div>
+      </div>
+      <div class="form-field full" style="margin-bottom:10px;">
+        <label>🏢 Client / Company Action</label>
+        <select id="clf-company-action">
+          <option value="new">สร้าง Client ใหม่</option>
+          <option value="existing">เชื่อมกับ Client ที่มีอยู่</option>
+        </select>
+        <select id="clf-company-existing" style="margin-top:6px;display:none;"></select>
+      </div>
+      <div class="form-field full" style="margin-bottom:10px;">
+        <label><input type="checkbox" id="clf-create-contact" checked style="margin-right:6px;">สร้าง Contact จาก Lead นี้</label>
+      </div>
+      <div class="form-field full" style="margin-bottom:10px;">
+        <label><input type="checkbox" id="clf-create-opp" style="margin-right:6px;">สร้าง Opportunity ใหม่</label>
+      </div>
+      <div id="clf-opp-fields" style="display:none;background:var(--surface-2);border-radius:8px;padding:10px;margin-top:6px;">
+        <div class="form-field full"><label>Opportunity Name</label><input id="clf-opp-name" placeholder="ชื่อโอกาสทางธุรกิจ"></div>
+        <div class="form-field"><label>Estimated Budget</label><input id="clf-opp-budget" type="number" placeholder="0"></div>
+        <div class="form-field"><label>Expected Close Date</label><input id="clf-opp-close" type="date"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border);">
+      <button class="btn" onclick="document.getElementById('convert-lead-modal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmConvertLead()">✅ Convert</button>
+    </div>
+  </div>
+</div>
+
+<!-- OPPORTUNITY MODAL -->
+<div class="modal" id="opp-modal">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-head">
+      <h2 id="opp-modal-title">Add Opportunity</h2>
+      <button class="modal-close" onclick="document.getElementById('opp-modal').classList.remove('show')">&times;</button>
+    </div>
+    <div class="form-grid" style="padding:16px;">
+      <input type="hidden" id="of-id">
+      <div class="form-field full"><label>Opportunity Name *</label><input id="of-name" placeholder="ชื่อโอกาสทางธุรกิจ"></div>
+      <div class="form-field"><label>Client / Company</label><input id="of-company" list="company-list" placeholder="ชื่อบริษัท"></div>
+      <div class="form-field"><label>Brand</label><input id="of-brand" placeholder="Brand"></div>
+      <div class="form-field"><label>Main Contact</label><input id="of-contact" placeholder="ชื่อผู้ติดต่อ"></div>
+      <div class="form-field"><label>Owner</label><select id="of-owner"></select></div>
+      <div class="form-field"><label>Estimated Budget (฿)</label><input id="of-budget" type="number" placeholder="0" min="0"></div>
+      <div class="form-field"><label>Probability %</label><input id="of-prob" type="number" placeholder="50" min="0" max="100"></div>
+      <div class="form-field"><label>Expected Close Date</label><input id="of-close" type="date"></div>
+      <div class="form-field full"><label>Stage</label>
+        <select id="of-stage">
+          <option>Lead</option><option>Qualified</option><option>Proposal</option>
+          <option>Negotiation</option><option>Won</option><option>Lost</option>
+        </select>
+      </div>
+      <div class="form-field full"><label>Note</label><textarea id="of-note" style="min-height:60px;resize:vertical;"></textarea></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border);">
+      <button class="btn" onclick="document.getElementById('opp-modal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-danger" id="of-delete" onclick="deleteOpp()" style="display:none;margin-right:auto;">🗑 Delete</button>
+      <button class="btn btn-primary" onclick="saveOpp()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
