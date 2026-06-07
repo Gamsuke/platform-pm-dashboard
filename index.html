@@ -2497,17 +2497,8 @@ details ul { padding-left: 18px; }
 <div class="auth-overlay" id="auth-overlay">
   <div class="auth-box">
     <!-- Loading state -->
-    <div id="auth-loading" style="text-align:center;padding:16px 0;">
-      <div style="font-size:36px;margin-bottom:12px;">🏢</div>
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Platform Group</div>
-      <div id="auth-loading-msg" style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">กำลังโหลดข้อมูล...<br><span style="font-size:11px;color:var(--text-hint);">(รอสูงสุด 6 วินาที)</span></div>
-      <div style="display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-      <div style="margin-top:18px;">
-        <button id="btn-skip-cloud" onclick="window._skipCloud=true" style="font-size:11px;color:var(--text-muted);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 14px;cursor:pointer;display:none;">⏭ ข้ามรอ Cloud</button>
-      </div>
-      <div id="auth-cloud-hint" style="display:none;margin-top:12px;font-size:11px;color:#e67e22;background:#fff8e1;border-radius:8px;padding:8px 12px;">⚠️ Cloud offline — ใช้ข้อมูล local แทน</div>
-    </div>
-    <!-- Login form (hidden until loaded) -->
+    <div id="auth-loading" style="display:none;"></div>
+    <!-- Login form -->
     <div id="auth-form" style="display:none;">
       <div class="auth-logo">
         <div style="font-size:40px;line-height:1;">🏢</div>
@@ -13938,39 +13929,21 @@ function openBrandDetail(brandId, tab) {
   try {
   loadSession();
 
-  // ── 1. Pull จาก cloud ก่อน เพื่อให้ได้ user list ล่าสุด ──
+  // ── 1. แสดง login ทันที ไม่รอ cloud — sync ใน background แทน ──
   const cfg = getMongoConfig();
   if (cfg.apiUrl) {
-    // แสดงปุ่ม "ข้ามรอ Cloud" หลัง 2 วินาที
-    window._skipCloud = false;
-    const skipTimer = setTimeout(() => {
-      const sb = document.getElementById('btn-skip-cloud');
-      if (sb) sb.style.display = '';
-    }, 2000);
-
-    // Race: mongoLoadDB vs user click skip
-    try {
-      await Promise.race([
-        mongoLoadDB().then(pulled => { if (pulled) renderAll(); }),
-        new Promise(resolve => {
-          const poll = setInterval(() => {
-            if (window._skipCloud) { clearInterval(poll); resolve(); }
-          }, 100);
-        })
-      ]);
-    } catch(e) { /* ใช้ localStorage แทน */ }
-
-    clearTimeout(skipTimer);
-    const sb = document.getElementById('btn-skip-cloud');
-    if (sb) sb.style.display = 'none';
-  }
-  // hint แบนเนอร์ cloud offline
-  {
-    const st = document.getElementById('sync-status-text');
-    const hint = document.getElementById('auth-cloud-hint');
-    if (hint && cfg.apiUrl && st && (st.textContent.includes('Timeout') || window._skipCloud)) {
-      hint.style.display = '';
-    }
+    // Fire-and-forget: ดึง cloud ใน background หลัง login แสดงแล้ว
+    setTimeout(async () => {
+      try {
+        const pulled = await mongoLoadDB();
+        if (pulled) {
+          renderAll();
+          // ถ้า user กำลังอยู่หน้า login อยู่ ให้ refresh user list เงียบๆ
+          const hint = document.getElementById('auth-cloud-hint');
+          if (hint) hint.style.display = 'none';
+        }
+      } catch(e) { /* ไม่เป็นไร ใช้ local */ }
+    }, 0);
   }
 
   // ── 2. สร้าง default admin เฉพาะเมื่อยังไม่มี user เลย ──
