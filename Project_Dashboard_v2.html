@@ -14228,12 +14228,15 @@ function openBrandDetail(brandId, tab) {
     }
   }
 
-  // ── 4. แสดง login หรือ app ──
+  // ── 4. ข้าม login — เข้า app ตรงๆ ──
   document.getElementById('auth-loading').style.display = 'none';
-  document.getElementById('auth-form').style.display = 'block';
-
-  if (SESSION) { showApp(); if (SESSION.forceReset) openChangePassword(true); }
-  else showLogin();
+  document.getElementById('auth-form').style.display = 'none';
+  // set SESSION เป็น admin ถ้ายังไม่มี
+  if (!SESSION) {
+    const adminUser = (DB.users||[]).find(u => u.role === 'admin') || { id:'u_admin_default', username:'admin', name:'Gam', role:'admin' };
+    saveSession({ userId: adminUser.id, username: adminUser.username, name: adminUser.name || 'Admin', role: adminUser.role });
+  }
+  showApp();
 
   // Login
   document.getElementById('auth-login-btn')?.addEventListener('click', doLogin);
