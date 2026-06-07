@@ -13817,6 +13817,29 @@ function getBrandRevenue(brandId) {
   return getBrandProjects(brandId).reduce((s,p)=>s+(+p.budget||0),0);
 }
 
+function previewBrandLogo(url) {
+  const el = document.getElementById('bf-logo-preview');
+  if (!el) return;
+  if (url) {
+    el.innerHTML = `<img src="${escHtml(url)}" style="width:100%;height:100%;object-fit:contain;border-radius:8px;" onerror="this.parentElement.innerHTML='📦'">`;
+  } else {
+    el.innerHTML = '📦';
+  }
+}
+
+function uploadBrandLogo(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    const logoInput = document.getElementById('bf-logo');
+    if (logoInput) logoInput.value = dataUrl;
+    previewBrandLogo(dataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
 function openBrandModal(id) {
   const modal = document.getElementById('brand-modal');
   const clientSel = document.getElementById('bf-client');
@@ -13833,6 +13856,8 @@ function openBrandModal(id) {
     document.getElementById('bf-name').value = b.name||'';
     document.getElementById('bf-desc').value = b.description||'';
     document.getElementById('bf-status').value = b.status||'active';
+    document.getElementById('bf-logo').value = b.logo||'';
+    previewBrandLogo(b.logo||'');
     if (clientSel) clientSel.value = b.clientName||'';
     if (delBtn) delBtn.style.display = '';
   } else {
@@ -13841,6 +13866,8 @@ function openBrandModal(id) {
     document.getElementById('bf-name').value = '';
     document.getElementById('bf-desc').value = '';
     document.getElementById('bf-status').value = 'active';
+    document.getElementById('bf-logo').value = '';
+    previewBrandLogo('');
     if (clientSel) clientSel.value = '';
     if (delBtn) delBtn.style.display = 'none';
   }
@@ -13862,6 +13889,7 @@ function saveBrand() {
   b.clientName  = clientName;
   b.description = document.getElementById('bf-desc').value.trim();
   b.status      = document.getElementById('bf-status').value;
+  b.logo        = document.getElementById('bf-logo').value.trim();
   (DB.projects||[]).forEach(p => {
     if ((p.brand||'').toLowerCase()===name.toLowerCase() &&
         (p.company||'').toLowerCase()===clientName.toLowerCase()) {
@@ -14013,7 +14041,10 @@ function renderBrandCard(b) {
   return `<div class="bpf-card" onclick="navigateTo('brand','${b.id}')">
     <button class="bpf-card-menu" onclick="event.stopPropagation();openBrandModal('${b.id}')">⋯</button>
     <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding-right:24px;">
-      <div class="bpf-avatar" style="background:${logoColor};">${initials}</div>
+      ${b.logo
+        ? `<img src="${escHtml(b.logo)}" style="width:44px;height:44px;border-radius:12px;object-fit:contain;border:1px solid var(--border);background:#fff;flex-shrink:0;" onerror="this.outerHTML='<div class=bpf-avatar style=background:${logoColor};>${initials}</div>'">`
+        : `<div class="bpf-avatar" style="background:${logoColor};">${initials}</div>`
+      }
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(b.name||'–')}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">🏢 ${escHtml(b.clientName||'–')}</div>
@@ -16447,6 +16478,19 @@ ${files.length ? `<div style="border:1px solid var(--border);border-radius:12px;
         </select>
       </div>
       <div class="form-field full"><label>Description</label><input id="bf-desc" placeholder="คำอธิบาย brand"></div>
+      <div class="form-field full">
+        <label>Brand Logo</label>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+          <div id="bf-logo-preview" style="width:52px;height:52px;border-radius:10px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;background:#f8fafc;flex-shrink:0;overflow:hidden;">📦</div>
+          <div style="flex:1;">
+            <input id="bf-logo" placeholder="URL รูป logo เช่น https://..." style="width:100%;margin-bottom:6px;" oninput="previewBrandLogo(this.value)">
+            <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--accent);">
+              <input type="file" accept="image/*" style="display:none;" onchange="uploadBrandLogo(this)">
+              📤 Upload from device
+            </label>
+          </div>
+        </div>
+      </div>
       <div class="form-field"><label>Status</label>
         <select id="bf-status"><option value="active">🟢 Active</option><option value="inactive">⚫ Inactive</option></select>
       </div>
