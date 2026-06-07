@@ -14026,9 +14026,9 @@ function openBrandDetail(brandId, tab) {
   const s = getBrandStats(brandId);
   const {projs, activeProjs, tasks, openTasks, revenueYTD, totalRev, atRisk, openOpps, workloadPct, health, relatedContacts, lastAct, monthBudgets} = s;
 
-  const TABS = ['overview','projects','tasks','revenue','activity','files','contacts'];
+  const TABS = ['overview','projects','tasks','guidelines','revenue','activity','files','contacts'];
   const tabLabels = {
-    overview:'📊 Overview', projects:'📁 Projects', tasks:'✅ Tasks',
+    overview:'📊 Overview', projects:'📁 Projects', tasks:'✅ Tasks', guidelines:'📐 Brand Guidelines',
     revenue:'💰 Revenue', activity:'📋 Activity', files:'📎 Files', contacts:'👤 Related Contacts'
   };
   const tabsHtml = TABS.map(t=>`<div class="clt-detail-tab${t===_brandDetailTab?' active':''}" onclick="openBrandDetail('${brandId}','${t}')">${tabLabels[t]}</div>`).join('');
@@ -14087,6 +14087,145 @@ function openBrandDetail(brandId, tab) {
           </tr>`;
         }).join('')}
       </tbody></table></div>` : '<div style="text-align:center;padding:30px;color:var(--text-muted);">ยังไม่มี Tasks</div>'}`;
+  } else if (_brandDetailTab==='guidelines') {
+  const g = b.guidelines || {};
+  // Completeness score
+  const mandatoryFields = [
+    !!g.brandBook, !!(g.logos&&g.logos.length>0), !!(g.doDont&&(g.doDont.approved||g.doDont.restricted)),
+    !!g.brandPositioning, !!g.targetAudience, !!g.toneOfVoice, !!g.approvalContact
+  ];
+  const score = Math.round(mandatoryFields.filter(Boolean).length / mandatoryFields.length * 100);
+  const scoreColor = score>=80?'#16a34a':score>=50?'#d97706':'#dc2626';
+
+  bodyHtml = `
+    <!-- Completeness Score -->
+    <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border:1px solid #c7d2fe;border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+      <div style="position:relative;width:56px;height:56px;flex-shrink:0;">
+        <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#e2e8f0" stroke-width="6"/><circle cx="28" cy="28" r="24" fill="none" stroke="${scoreColor}" stroke-width="6" stroke-dasharray="${Math.round(score*1.508)} 150.8" stroke-dashoffset="37.7" stroke-linecap="round"/></svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${scoreColor};">${score}%</div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:14px;">Brand Setup Completeness</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${score>=80?'✅ Brand is well documented':'⚠️ Missing key brand information'}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">
+          ${['Brand Book','Logo','Do & Don\'t','Positioning','Target Audience','Tone of Voice','Approval Contact'].map((f,i)=>`<span style="font-size:9px;padding:2px 7px;border-radius:8px;background:${mandatoryFields[i]?'#dcfce7':'#fee2e2'};color:${mandatoryFields[i]?'#15803d':'#dc2626'};font-weight:600;">${mandatoryFields[i]?'✓':'+'}${f}</span>`).join('')}
+        </div>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="openBrandGuidelinesEditor('${brandId}')">✏ Edit Guidelines</button>
+    </div>
+
+    <!-- Section 1: Brand Overview -->
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);">📋 1. Brand Overview</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Brand Positioning</div>
+          <div style="font-size:12px;">${g.brandPositioning?escHtml(g.brandPositioning):'<span style="color:var(--text-hint);font-style:italic;">Not set</span>'}</div>
+        </div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Brand Purpose</div>
+          <div style="font-size:12px;">${g.brandPurpose?escHtml(g.brandPurpose):'<span style="color:var(--text-hint);font-style:italic;">Not set</span>'}</div>
+        </div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Target Audience</div>
+          <div style="font-size:12px;">${g.targetAudience?escHtml(g.targetAudience):'<span style="color:var(--text-hint);font-style:italic;">Not set</span>'}</div>
+        </div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Tone of Voice</div>
+          <div style="font-size:12px;">${g.toneOfVoice?escHtml(g.toneOfVoice):'<span style="color:var(--text-hint);font-style:italic;">Not set</span>'}</div>
+        </div>
+      </div>
+      ${g.keyMessages?`<div style="margin-top:8px;background:var(--surface-2);border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Key Messages</div><div style="font-size:12px;">${escHtml(g.keyMessages)}</div></div>`:''}
+    </div>
+
+    <!-- Section 2: Do & Don't -->
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);">✅ 2. Do & Don't</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px;">
+          <div style="font-size:10px;font-weight:700;color:#15803d;margin-bottom:6px;">✅ DO — Approved Practices</div>
+          <div style="font-size:12px;white-space:pre-wrap;">${g.doDont?.approved?escHtml(g.doDont.approved):'<span style="color:var(--text-hint);font-style:italic;">Not set</span>'}</div>
+        </div>
+        <div style="background:#fff1f2;border:1px solid #fecaca;border-radius:8px;padding:10px;">
+          <div style="font-size:10px;font-weight:700;color:#dc2626;margin-bottom:6px;">❌ DON'T — Restricted Practices</div>
+          <div style="font-size:12px;white-space:pre-wrap;">${g.doDont?.restricted?escHtml(g.doDont.restricted):'<span style="color:var(--text-hint);font-style:italic;">Not set</span>'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Brand CI -->
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);">🎨 3. Brand CI</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        ${(g.colors||[]).length?`<div style="border-radius:8px;overflow:hidden;border:1px solid var(--border);"><div style="display:flex;">${g.colors.slice(0,4).map(c=>`<div style="flex:1;height:32px;background:${c};"></div>`).join('')}</div><div style="padding:6px 8px;font-size:10px;font-weight:700;">Color Palette<br><span style="font-weight:400;color:var(--text-muted);">${g.colors.join(', ')}</span></div></div>`:'<div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;font-size:11px;color:var(--text-muted);">Color Palette<br><i>Not set</i></div>'}
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;margin-bottom:4px;">Typography</div><div style="font-size:12px;">${g.typography?escHtml(g.typography):'<i style="color:var(--text-hint);">Not set</i>'}</div></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;margin-bottom:4px;">Logos</div><div style="font-size:12px;">${(g.logos||[]).length?g.logos.length+' file(s)':'<i style="color:var(--text-hint);">Not uploaded</i>'}</div></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;margin-bottom:4px;">Visual Guidelines</div><div style="font-size:12px;">${g.visualGuidelines?escHtml(g.visualGuidelines.slice(0,60))+'...':'<i style="color:var(--text-hint);">Not set</i>'}</div></div>
+      </div>
+    </div>
+
+    <!-- Section 4: Brand Book -->
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);">📚 4. Brand Book</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${g.brandBook?`<a href="${g.brandBook}" target="_blank" class="btn btn-sm">📄 View Brand Book</a>`:'<span style="font-size:12px;color:var(--text-hint);font-style:italic;">No Brand Book uploaded</span>'}
+        ${g.brandBookPpt?`<a href="${g.brandBookPpt}" target="_blank" class="btn btn-sm">📊 View PPT</a>`:''}
+        ${(g.externalLinks||[]).length?g.externalLinks.map(l=>`<a href="${l.url}" target="_blank" class="btn btn-sm">🔗 ${escHtml(l.label||l.url)}</a>`).join(''):''}
+      </div>
+    </div>
+
+    <!-- Section 5: Content Rules -->
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);">📝 5. Content Rules</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:#f0fdf4;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;color:#15803d;margin-bottom:4px;">Allowed Claims</div><div style="font-size:12px;white-space:pre-wrap;">${g.allowedClaims?escHtml(g.allowedClaims):'<i style="color:var(--text-hint);">Not set</i>'}</div></div>
+        <div style="background:#fff1f2;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;color:#dc2626;margin-bottom:4px;">Restricted Claims</div><div style="font-size:12px;white-space:pre-wrap;">${g.restrictedClaims?escHtml(g.restrictedClaims):'<i style="color:var(--text-hint);">Not set</i>'}</div></div>
+      </div>
+      ${g.legalRequirements?`<div style="margin-top:8px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;color:#92400e;margin-bottom:4px;">⚖️ Legal Requirements</div><div style="font-size:12px;">${escHtml(g.legalRequirements)}</div></div>`:''}
+    </div>
+
+    <!-- Section 6: Mandatory Disclaimer -->
+    ${g.disclaimer?`<div style="border:1px solid #fde68a;background:#fffbeb;border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-weight:700;font-size:13px;color:#92400e;">⚠️ 6. Mandatory Disclaimer</div>
+        <button class="btn btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(g.disclaimer)}).then(()=>alert('Copied!'))">📋 Copy</button>
+      </div>
+      <div style="font-size:12px;white-space:pre-wrap;color:#78350f;">${escHtml(g.disclaimer)}</div>
+    </div>`:''}
+
+    <!-- Section 7: KOL Guidelines -->
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);">🌟 7. KOL Guidelines</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div style="background:#f0fdf4;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;color:#15803d;margin-bottom:4px;">Approved Categories</div><div style="font-size:12px;">${g.kolApproved?escHtml(g.kolApproved):'<i style="color:var(--text-hint);">Not set</i>'}</div></div>
+        <div style="background:#fff1f2;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:700;color:#dc2626;margin-bottom:4px;">Restricted Categories</div><div style="font-size:12px;">${g.kolRestricted?escHtml(g.kolRestricted):'<i style="color:var(--text-hint);">Not set</i>'}</div></div>
+      </div>
+      ${g.requiredHashtags?`<div style="background:var(--surface-2);border-radius:8px;padding:8px 10px;font-size:12px;"><b>Required Hashtags:</b> ${escHtml(g.requiredHashtags)}</div>`:''}
+      ${g.requiredMentions?`<div style="background:var(--surface-2);border-radius:8px;padding:8px 10px;font-size:12px;margin-top:6px;"><b>Required Mentions:</b> ${escHtml(g.requiredMentions)}</div>`:''}
+    </div>
+
+    <!-- Section 8: Campaign Assets -->
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);">🖼 8. Campaign Assets</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        ${['Packshots','Key Visuals','Videos','Images'].map((type,i)=>{const key=['packshots','keyVisuals','videos','images'][i];const items=g[key]||[];return `<div style="border:2px dashed var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;" onclick="alert('Upload ${type} — coming soon')"><div style="font-size:20px;margin-bottom:4px;">${['📦','🖼','🎬','📷'][i]}</div><div style="font-size:10px;font-weight:700;">${type}</div><div style="font-size:10px;color:var(--text-muted);">${items.length?items.length+' file(s)':'Upload'}</div></div>`;}).join('')}
+      </div>
+    </div>
+
+    <!-- Section 9: Approval Workflow -->
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);">✍️ 9. Approval Workflow</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        ${[['Marketing Approver','marketingApprover'],['Brand Manager','brandManager'],['Legal Approver','legalApprover']].map(([label,key])=>`<div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:4px;">${label}</div><div style="font-size:12px;font-weight:600;">${g[key]?escHtml(g[key]):'<i style="color:var(--text-hint);">Not set</i>'}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Section 10: Internal Agency Notes -->
+    ${g.internalNotes?`<div style="border:1px solid var(--border);background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--accent);">📌 10. Internal Agency Notes</div>
+      <div style="font-size:12px;white-space:pre-wrap;color:var(--text-muted);">${escHtml(g.internalNotes)}</div>
+    </div>`:''}
+  `;
   } else if (_brandDetailTab==='revenue') {
     const byProj=projs.filter(p=>p.budget).map(p=>({name:p.name||p.brand||p.code,budget:+p.budget||0,status:p.status,year:(p.start||p.launch||p.createdAt||'').slice(0,4)||'–'}));
     byProj.sort((a,b)=>b.budget-a.budget);
@@ -14169,6 +14308,94 @@ function openBrandDetail(brandId, tab) {
         </div>
       </div>
     </div>`);
+}
+
+function openBrandGuidelinesEditor(brandId) {
+  const b = (DB.brands||[]).find(x=>x.id===brandId);
+  if (!b) return;
+  const g = b.guidelines || {};
+  document.querySelector('.brand-guidelines-editor')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'brand-guidelines-editor';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:24px;width:min(700px,100%);max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <h2 style="margin:0;font-size:18px;">📐 Edit Brand Guidelines — ${escHtml(b.name)}</h2>
+        <button onclick="this.closest('.brand-guidelines-editor').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;">×</button>
+      </div>
+      <div style="display:grid;gap:12px;">
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Brand Positioning</label><textarea id="bge-positioning" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(g.brandPositioning||'')}</textarea></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Brand Purpose</label><textarea id="bge-purpose" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(g.brandPurpose||'')}</textarea></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Target Audience *</label><textarea id="bge-target" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(g.targetAudience||'')}</textarea></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Key Messages</label><textarea id="bge-messages" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(g.keyMessages||'')}</textarea></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Tone of Voice *</label><input id="bge-tone" value="${escHtml(g.toneOfVoice||'')}" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">✅ DO — Approved Practices</label><textarea id="bge-do" rows="4" style="width:100%;border:1.5px solid #bbf7d0;border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(g.doDont?.approved||'')}</textarea></div>
+          <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">❌ DON'T — Restricted</label><textarea id="bge-dont" rows="4" style="width:100%;border:1.5px solid #fecaca;border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(g.doDont?.restricted||'')}</textarea></div>
+        </div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Brand Book URL (PDF)</label><input id="bge-brandbook" value="${escHtml(g.brandBook||'')}" placeholder="https://..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;"></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Color Palette (comma-separated hex)</label><input id="bge-colors" value="${escHtml((g.colors||[]).join(', '))}" placeholder="#FF0000, #00FF00" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;"></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Typography</label><input id="bge-typography" value="${escHtml(g.typography||'')}" placeholder="Font family, sizes..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;"></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Allowed Claims</label><textarea id="bge-allowed" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(g.allowedClaims||'')}</textarea></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Restricted Claims</label><textarea id="bge-restricted" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(g.restrictedClaims||'')}</textarea></div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Mandatory Disclaimer</label><textarea id="bge-disclaimer" rows="3" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(g.disclaimer||'')}</textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">KOL Approved Categories</label><textarea id="bge-kol-ok" rows="3" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(g.kolApproved||'')}</textarea></div>
+          <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">KOL Restricted Categories</label><textarea id="bge-kol-no" rows="3" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(g.kolRestricted||'')}</textarea></div>
+        </div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Required Hashtags</label><input id="bge-hashtags" value="${escHtml(g.requiredHashtags||'')}" placeholder="#brand #campaign" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Marketing Approver *</label><input id="bge-mkt-approver" value="${escHtml(g.marketingApprover||'')}" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;"></div>
+          <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Brand Manager</label><input id="bge-brand-mgr" value="${escHtml(g.brandManager||'')}" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;"></div>
+          <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Legal Approver</label><input id="bge-legal" value="${escHtml(g.legalApprover||'')}" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;"></div>
+        </div>
+        <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Internal Agency Notes</label><textarea id="bge-notes" rows="3" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">${escHtml(g.internalNotes||'')}</textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
+        <button class="btn" onclick="this.closest('.brand-guidelines-editor').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveBrandGuidelines('${brandId}',this)">💾 Save Guidelines</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function saveBrandGuidelines(brandId, btn) {
+  const b = (DB.brands||[]).find(x=>x.id===brandId);
+  if (!b) return;
+  const v = id => document.getElementById(id)?.value?.trim()||'';
+  b.guidelines = {
+    brandPositioning: v('bge-positioning'),
+    brandPurpose: v('bge-purpose'),
+    targetAudience: v('bge-target'),
+    keyMessages: v('bge-messages'),
+    toneOfVoice: v('bge-tone'),
+    doDont: { approved: v('bge-do'), restricted: v('bge-dont') },
+    brandBook: v('bge-brandbook'),
+    colors: v('bge-colors').split(',').map(c=>c.trim()).filter(Boolean),
+    typography: v('bge-typography'),
+    allowedClaims: v('bge-allowed'),
+    restrictedClaims: v('bge-restricted'),
+    disclaimer: v('bge-disclaimer'),
+    kolApproved: v('bge-kol-ok'),
+    kolRestricted: v('bge-kol-no'),
+    requiredHashtags: v('bge-hashtags'),
+    marketingApprover: v('bge-mkt-approver'),
+    approvalContact: v('bge-mkt-approver'),
+    brandManager: v('bge-brand-mgr'),
+    legalApprover: v('bge-legal'),
+    internalNotes: v('bge-notes'),
+    logos: b.guidelines?.logos || [],
+    packshots: b.guidelines?.packshots || [],
+    keyVisuals: b.guidelines?.keyVisuals || [],
+    videos: b.guidelines?.videos || [],
+    images: b.guidelines?.images || [],
+    externalLinks: b.guidelines?.externalLinks || [],
+  };
+  saveDB();
+  btn?.closest('.brand-guidelines-editor')?.remove();
+  openBrandDetail(brandId, 'guidelines');
 }
 
 // ── Auth Init ─────────────────────────────────────────────
@@ -14727,8 +14954,8 @@ function openClientProfileCRM(clientId, activeTab) {
   const totalRev = linked.reduce((s,p)=>s+(+p.budget||0),0);
   const isActive = (cl.active||'active')!=='inactive';
   const brands   = cl.brands?.length?cl.brands:(cl.brand?[cl.brand]:[]);
-  const TABS = ['overview','brands','contacts','leads','opportunities','projects','revenue','activity'];
-  const tabLabels = {overview:'📊 Overview',brands:'📦 Brands',contacts:'👤 Contacts',leads:'🎯 Leads',opportunities:'💼 Opportunities',projects:'📁 Projects',revenue:'💰 Revenue',activity:'📋 Activity'};
+  const TABS = ['overview','brands','projects','revenue','activity','contacts','leads','opportunities'];
+  const tabLabels = {overview:'📊 Overview',brands:'📦 Brands',projects:'📁 Projects',revenue:'💰 Revenue',activity:'📋 Activity',contacts:'👤 Contacts',leads:'🎯 Leads',opportunities:'💼 Opportunities'};
   const tabsHtml = TABS.map(t=>`<div class="clt-detail-tab${t===activeTab?' active':''}" onclick="openClientProfileCRM('${clientId}','${t}')">${tabLabels[t]}</div>`).join('');
   let bodyHtml = '';
   if (activeTab==='overview') {
