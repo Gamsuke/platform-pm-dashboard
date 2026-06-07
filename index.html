@@ -209,6 +209,35 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .panel { display: none; padding: 20px; }
 .panel.active { display: block; }
 
+/* ── Role-Based Dashboard Widgets ── */
+.dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
+.dash-role-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; background:var(--accent-bg); color:var(--accent); letter-spacing:.5px; text-transform:uppercase; }
+.dash-grid { display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; margin-bottom:20px; }
+.dash-widget { background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.dash-widget.col-3 { grid-column: span 3; }
+.dash-widget.col-4 { grid-column: span 4; }
+.dash-widget.col-6 { grid-column: span 6; }
+.dash-widget.col-8 { grid-column: span 8; }
+.dash-widget.col-12 { grid-column: span 12; }
+@media (max-width: 1100px) { .dash-widget.col-3,.dash-widget.col-4 { grid-column: span 6; } }
+@media (max-width: 768px) { .dash-widget.col-3,.dash-widget.col-4,.dash-widget.col-6,.dash-widget.col-8 { grid-column: span 12; } }
+.dash-widget-head { display:flex; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid var(--border); background:var(--surface-2); }
+.dash-widget-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); flex:1; }
+.dash-widget-body { padding:12px 14px; }
+.dash-stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:8px; }
+.dash-stat { text-align:center; padding:8px 6px; border-radius:8px; background:var(--surface-2); }
+.dash-stat-val { font-size:22px; font-weight:800; line-height:1.1; }
+.dash-stat-lbl { font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-top:2px; letter-spacing:.3px; }
+.dash-list-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.dash-list-item:last-child { border-bottom:none; padding-bottom:0; }
+.dash-list-badge { font-size:10px; padding:2px 7px; border-radius:8px; font-weight:700; flex-shrink:0; }
+.dash-empty { color:var(--text-muted); font-size:12px; padding:20px; text-align:center; }
+.dash-progress-bar { height:5px; background:var(--border); border-radius:3px; overflow:hidden; margin-top:3px; }
+.dash-progress-fill { height:100%; border-radius:3px; transition:width .3s; }
+.dash-alert-item { display:flex; gap:8px; align-items:flex-start; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.dash-alert-item:last-child { border-bottom:none; }
+.dash-greeting { font-size:18px; font-weight:800; }
+.dash-greeting-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
 .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 18px; }
 .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; }
 .kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -764,10 +793,96 @@ details ul { padding-left: 18px; }
 .crm-kanban-card-company { font-weight:700; font-size:13px; margin-bottom:3px; }
 .crm-kanban-card-sub { color:var(--text-muted); font-size:11px; }
 .crm-kanban-count { font-size:10px; color:var(--text-hint); background:var(--surface); border-radius:8px; padding:1px 6px; }
+/* ── Clients Card View ── */
+.clients-kpi-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:12px; }
+.clients-kpi-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.clients-kpi-val { font-size:20px; font-weight:800; line-height:1.1; }
+.clients-kpi-lbl { font-size:11px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
+.clients-kpi-sub { font-size:11px; margin-top:2px; }
+.clients-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media (max-width:1300px) { .clients-grid { grid-template-columns:repeat(3,1fr); } }
+@media (max-width:900px)  { .clients-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:600px)  { .clients-grid { grid-template-columns:1fr; } }
+.client-card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:18px; cursor:pointer; transition:box-shadow .15s, border-color .15s; position:relative; display:flex; flex-direction:column; gap:0; }
+.client-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.08); border-color:rgba(66,125,218,.3); }
+.client-card-head { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+.client-logo { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; color:#fff; flex-shrink:0; font-family:inherit; }
+.client-card-name { font-size:15px; font-weight:700; line-height:1.2; }
+.client-card-industry { font-size:11px; color:var(--text-muted); margin-top:2px; }
+.client-card-menu { position:absolute; top:12px; right:12px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:16px; padding:2px 6px; border-radius:4px; }
+.client-card-menu:hover { background:var(--surface-2); }
+.client-status-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; margin-top:4px; }
+.client-status-active   { background:#dcfce7; color:#15803d; }
+.client-status-inactive { background:#f3f4f6; color:#6b7280; }
+.client-stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:10px 0; margin:0 0 10px; }
+.client-stat { text-align:center; padding:0 4px; }
+.client-stat + .client-stat { border-left:1px solid var(--border); }
+.client-stat-lbl { font-size:10px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
+.client-stat-val { font-size:16px; font-weight:800; line-height:1.1; margin-top:1px; }
+.client-stat-sub { font-size:10px; margin-top:1px; }
+.client-sparkline { margin:8px 0 10px; height:40px; }
+.client-footer { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; border-top:1px solid var(--border); padding-top:10px; margin-top:auto; }
+.client-footer-item { text-align:center; }
+.client-footer-lbl { font-size:10px; color:var(--text-muted); font-weight:600; }
+.client-footer-val { font-size:13px; font-weight:700; }
+.client-view-link { display:block; text-align:center; margin-top:10px; color:var(--accent); font-size:12px; font-weight:600; text-decoration:none; padding:6px 0; border-top:1px solid var(--border); }
+.client-view-link:hover { text-decoration:underline; }
+.health-badge { font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px; }
+.health-healthy    { background:#dcfce7; color:#15803d; }
+.health-attention  { background:#fef9c3; color:#854d0e; }
+.health-at-risk    { background:#fee2e2; color:#b91c1c; }
+.health-inactive   { background:#f3f4f6; color:#6b7280; }
+.bc-sep { color:var(--text-muted); }
+.bc-link { color:var(--accent); cursor:pointer; font-weight:600; text-decoration:none; }
+.bc-link:hover { text-decoration:underline; }
+.bc-current { color:var(--text); font-weight:600; }
 .clt-detail-tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:16px; flex-wrap:wrap; }
 .clt-detail-tab { padding:8px 14px; font-size:12px; font-weight:600; cursor:pointer; color:var(--text-muted); border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .12s; white-space:nowrap; }
 .clt-detail-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
 .clt-detail-tab:hover { color:var(--text); }
+/* ── Brand Portfolio Management ── */
+.brands-kpi-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:12px; }
+.brands-kpi-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.brands-kpi-val { font-size:20px; font-weight:800; line-height:1.1; }
+.brands-kpi-lbl { font-size:11px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
+.brands-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media (max-width:1300px) { .brands-grid { grid-template-columns:repeat(3,1fr); } }
+@media (max-width:900px)  { .brands-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:600px)  { .brands-grid { grid-template-columns:1fr; } }
+.bpf-card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:16px; cursor:pointer; transition:box-shadow .15s,border-color .15s; position:relative; display:flex; flex-direction:column; }
+.bpf-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.08); border-color:rgba(66,125,218,.3); }
+.bpf-card-menu { position:absolute; top:10px; right:10px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:16px; padding:2px 6px; border-radius:4px; }
+.bpf-card-menu:hover { background:var(--surface-2); }
+.bpf-avatar { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800; color:#fff; flex-shrink:0; }
+.bpf-stats-row { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:8px 0; margin:10px 0; }
+.bpf-stat { text-align:center; }
+.bpf-stat + .bpf-stat { border-left:1px solid var(--border); }
+.bpf-stat-lbl { font-size:10px; color:var(--text-muted); font-weight:600; text-transform:uppercase; }
+.bpf-stat-val { font-size:15px; font-weight:800; line-height:1.2; margin-top:1px; }
+.bpf-footer { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; border-top:1px solid var(--border); padding-top:8px; margin-top:auto; }
+.bpf-footer-item { text-align:center; }
+.bpf-footer-lbl { font-size:10px; color:var(--text-muted); font-weight:600; }
+.bpf-footer-val { font-size:12px; font-weight:700; margin-top:1px; }
+.bpf-view-link { display:block; text-align:center; margin-top:10px; color:var(--accent); font-size:12px; font-weight:600; padding:5px 0; border-top:1px solid var(--border); }
+.bpf-view-link:hover { text-decoration:underline; }
+.bpf-health-healthy   { background:#dcfce7; color:#15803d; }
+.bpf-health-attention { background:#fef9c3; color:#854d0e; }
+.bpf-health-at-risk   { background:#fee2e2; color:#b91c1c; }
+.bpf-health-inactive  { background:#f3f4f6; color:#6b7280; }
+.bpf-health-badge { font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px; display:inline-block; }
+/* ── Brand cards ── */
+.brand-card { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; margin-bottom:8px; cursor:pointer; transition:border-color .12s, box-shadow .12s; background:#fff; }
+.brand-card:hover { border-color:var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.brand-card-icon { width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg,var(--accent-bg),#e0e7ff); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.brand-card-name { font-weight:700; font-size:14px; }
+.brand-card-client { font-size:11px; color:var(--text-muted); margin-top:1px; }
+.brand-card-stats { margin-left:auto; text-align:right; }
+.brand-card-stat { font-size:11px; color:var(--text-muted); }
+.brand-card-stat b { color:var(--text); }
+/* ── Brand detail modal ── */
+.brand-detail-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:500; display:flex; align-items:stretch; }
+.brand-detail-panel { width:min(680px,100vw); margin-left:auto; background:#fff; overflow-y:auto; box-shadow:-4px 0 24px rgba(0,0,0,.1); }
+.brand-detail-head { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:14px; }
 </style>
 </head>
 <body>
@@ -795,6 +910,7 @@ details ul { padding-left: 18px; }
       <div class="nav-section-label">CRM</div>
       <button class="tab" data-panel="leads">🎯 Leads</button>
       <button class="tab" data-panel="clients">🏢 Clients</button>
+      <button class="tab" data-panel="brands">📦 Brands</button>
       <button class="tab" data-panel="clients" data-panel-alias="contacts">👤 Contacts</button>
       <button class="tab" data-panel="opportunities">💼 Opportunities</button>
       <!-- TEAM -->
@@ -826,7 +942,7 @@ details ul { padding-left: 18px; }
     <!-- BOTTOM: user profile -->
     <div class="sidebar-user" id="sidebar-user-section">
       <div id="notif-bell" style="display:none;position:relative;margin-bottom:6px;">
-        <button onclick="toggleNotifPanel()" style="background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 10px;cursor:pointer;color:rgba(255,255,255,1);font-size:14px;font-family:inherit;display:flex;align-items:center;gap:4px;width:100%;justify-content:flex-start;">
+        <button onclick="toggleNotifPanel()" style="background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 10px;cursor:pointer;color:rgba(255,255,255,0.8);font-size:12px;font-family:inherit;display:flex;align-items:center;gap:4px;width:100%;justify-content:flex-start;">
           🔔 Notifications <span id="notif-count" style="font-size:10px;font-weight:700;background:var(--danger);color:#fff;border-radius:8px;padding:0 5px;display:none;">0</span>
         </button>
         <div id="notif-panel" style="display:none;position:absolute;left:0;bottom:calc(100% + 8px);width:320px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;max-height:400px;overflow-y:auto;">
@@ -877,27 +993,7 @@ details ul { padding-left: 18px; }
 
   <!-- OVERVIEW -->
   <div class="panel active" id="overview">
-    <div id="overview-year-bar" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-      <span style="font-size:12px;font-weight:600;color:var(--text-muted);letter-spacing:0.3px;">📅 แสดงปี:</span>
-      <div id="year-pills" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-    </div>
-    <div class="kpi-row" id="kpi-row"></div>
-    <div class="card">
-      <h2>Key insights</h2>
-      <div id="insights"></div>
-    </div>
-    <div class="card">
-      <h2>Active projects per month</h2>
-      <div style="position: relative; height: 220px;">
-        <canvas id="monthChart" role="img" aria-label="Active projects per month"></canvas>
-      </div>
-    </div>
-    <div class="card">
-      <h2>Budget by status</h2>
-      <div style="position: relative; height: 200px;">
-        <canvas id="statusChart" role="img" aria-label="Budget by status"></canvas>
-      </div>
-    </div>
+    <div id="overview-dynamic"></div>
   </div>
 
   <!-- KANBAN -->
@@ -1048,36 +1144,116 @@ details ul { padding-left: 18px; }
 
   <!-- CLIENTS -->
   <div class="panel" id="clients">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
-        <h2 style="margin:0;">Company Contacts</h2>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="btn btn-sm" id="btn-import-clients">📥 Import</button>
-          <button class="btn btn-sm" id="btn-export-clients">📤 Export</button>
-          <button class="btn btn-sm" id="btn-sync-clients" title="ดึง Company/Brand จาก Projects มาเพิ่มใน Contacts โดยไม่ duplicate">🔄 Sync from Projects</button>
-          <button class="btn btn-primary" id="btn-add-client">+ Add Contact</button>
-        </div>
+    <!-- Breadcrumb -->
+    <div id="clients-breadcrumb" style="font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;"></div>
+
+    <!-- Page Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">Clients</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">Manage all clients and view performance overview</p>
       </div>
-      <!-- Sync banner -->
-      <div id="client-sync-banner" style="display:none;margin-bottom:10px;"></div>
-      <div class="filter-bar">
-        <input id="client-search" placeholder="Search company or contact…" style="min-width:260px;">
-      </div>
-      <div class="tbl-wrap">
-        <table class="data-table" id="client-table">
-          <thead><tr>
-            <th>บริษัท / Company</th>
-            <th>ชื่อผู้ติดต่อ</th>
-            <th>ตำแหน่ง</th>
-            <th>เบอร์โทร</th>
-            <th>Email</th>
-            <th>Projects</th>
-            <th></th>
-          </tr></thead>
-          <tbody id="client-tbody"></tbody>
-        </table>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-sm" id="btn-export-clients">⬆ Export</button>
+        <button class="btn btn-sm" id="btn-sync-clients" title="Sync from Projects">🔄 Sync</button>
+        <button class="btn btn-primary" id="btn-add-client">+ Add Client</button>
       </div>
     </div>
+
+    <!-- KPI Cards -->
+    <div id="clients-kpi-row" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;"></div>
+
+    <!-- Sync banner -->
+    <div id="client-sync-banner" style="display:none;margin-bottom:12px;"></div>
+
+    <!-- Filter Bar -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:200px;">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;">🔍</span>
+        <input id="client-search" placeholder="Search clients..." style="padding-left:30px;width:100%;box-sizing:border-box;">
+      </div>
+      <select id="clients-filter-status" onchange="renderClients()">
+        <option value="">All Status</option>
+        <option value="active">🟢 Active</option>
+        <option value="inactive">⚫ Inactive</option>
+      </select>
+      <select id="clients-filter-industry" onchange="renderClients()">
+        <option value="">All Industries</option>
+      </select>
+      <select id="clients-sort" onchange="renderClients()">
+        <option value="revenue">Sort: Revenue</option>
+        <option value="projects">Sort: Projects</option>
+        <option value="health">Sort: Health</option>
+        <option value="name">Sort: Name</option>
+      </select>
+      <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <button id="clients-view-card" onclick="setClientsView('card')" style="padding:6px 12px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:12px;font-family:inherit;">⊞ Card</button>
+        <button id="clients-view-table" onclick="setClientsView('table')" style="padding:6px 12px;border:none;background:#fff;color:var(--text-muted);cursor:pointer;font-size:12px;font-family:inherit;">☰ Table</button>
+      </div>
+    </div>
+
+    <!-- Content area (card grid or table) -->
+    <div id="clients-content"></div>
+
+    <!-- Pagination -->
+    <div id="clients-pagination" style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--text-muted);"></div>
+  </div>
+
+  <!-- BRANDS -->
+  <div class="panel" id="brands">
+    <!-- Breadcrumb -->
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+      <span class="bc-link" onclick="document.querySelector('[data-panel=clients]')?.click()">Clients</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-current">Brands</span>
+    </div>
+
+    <!-- Page Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">Brands</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">Manage all brands across clients and monitor performance, workload, revenue, and project health.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-sm" id="btn-sync-brands" onclick="migrateBrandsFromProjects();renderBrands();" title="Sync from Projects">🔄 Sync</button>
+        <button class="btn btn-primary" onclick="openBrandModal(null)">+ Add Brand</button>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div id="brands-kpi-row" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;"></div>
+
+    <!-- Filter Bar -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:180px;">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;">🔍</span>
+        <input id="brands-search" placeholder="Search brand or client…" style="padding-left:30px;width:100%;box-sizing:border-box;" oninput="renderBrands()">
+      </div>
+      <select id="brands-filter-client" onchange="renderBrands()">
+        <option value="">All Clients</option>
+      </select>
+      <select id="brands-filter-status" onchange="renderBrands()">
+        <option value="">All Status</option>
+        <option value="active">🟢 Active</option>
+        <option value="inactive">⚫ Inactive</option>
+      </select>
+      <select id="brands-sort" onchange="renderBrands()">
+        <option value="revenue">Sort: Revenue</option>
+        <option value="projects">Sort: Projects</option>
+        <option value="health">Sort: Health</option>
+        <option value="name">Sort: Name A–Z</option>
+      </select>
+      <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <button id="brands-view-card" onclick="setBrandsView('card')" style="padding:6px 12px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:12px;font-family:inherit;">⊞ Card</button>
+        <button id="brands-view-table" onclick="setBrandsView('table')" style="padding:6px 12px;border:none;background:#fff;color:var(--text-muted);cursor:pointer;font-size:12px;font-family:inherit;">☰ Table</button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="brands-content"></div>
+
+    <!-- Pagination -->
+    <div id="brands-pagination" style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--text-muted);"></div>
   </div>
 
   <!-- TEAM -->
@@ -4670,6 +4846,8 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.panel === 'capacity') renderCapacity();
     if (t.dataset.panel === 'admin') { renderUsers(); renderDataHealth(); }
     if (t.dataset.panel === 'leads') renderLeads();
+    if (t.dataset.panel === 'overview') renderOverview();
+    if (t.dataset.panel === 'brands') renderBrands();
     if (t.dataset.panel === 'opportunities') renderOpportunities();
   });
 });
@@ -7275,8 +7453,623 @@ function renderCapacity(clickedPerson) {
   </div>`;
 }
 
+// ══════════════════════════════════════════════════════════
+// ── ROLE-BASED DYNAMIC OVERVIEW DASHBOARD ─────────────────
+// ══════════════════════════════════════════════════════════
+
+const ROLE_WIDGET_MAP = {
+  admin:      ['wRevenuePipeline','wActiveProjects','wCriticalAlerts','wTeamCapacity','wTopClients','wTopBrands','wProjectsAtRisk','wActivityFeed'],
+  management: ['wRevenuePipeline','wActiveProjects','wCriticalAlerts','wTeamCapacity','wTopClients','wTopBrands','wProjectsAtRisk','wActivityFeed'],
+  account:    ['wMyAccounts','wClientFollowup','wProjectsByClient','wOpportunityPipeline','wProjectsAtRisk','wUpcomingMilestones','wWaitingClientFeedback','wActivityFeed'],
+  bd:         ['wLeadPipeline','wOpportunityPipeline','wProspectFollowup','wUpcomingClosings','wPipelineValue','wActivityFeed'],
+  pm:         ['wProjectsAtRisk','wUpcomingMilestones','wOverdueTasks','wMyTasks','wDueThisWeek','wActivityFeed'],
+  designer:   ['wMyTasks','wDueToday','wDueThisWeek','wPendingApprovals','wUpcomingMilestones','wActivityFeed'],
+  strategy:   ['wMyTasks','wDueToday','wDueThisWeek','wProjectsAtRisk','wUpcomingMilestones','wActivityFeed'],
+  media:      ['wMyTasks','wDueToday','wDueThisWeek','wUpcomingMilestones','wClientFollowup','wActivityFeed'],
+  social:     ['wMyTasks','wDueToday','wDueThisWeek','wWaitingClientFeedback','wUpcomingMilestones','wActivityFeed'],
+  hr:         ['wTeamCapacity','wOverdueTasks','wActivityFeed'],
+  accounting: ['wRevenuePipeline','wPendingInvoices','wTopClients','wActiveProjects','wActivityFeed'],
+};
+
+const WIDGET_SIZE_MAP = {
+  wRevenuePipeline:'col-8',    wActiveProjects:'col-4',
+  wProjectsAtRisk:'col-6',     wTeamCapacity:'col-6',
+  wTopClients:'col-6',         wTopBrands:'col-6',
+  wCriticalAlerts:'col-12',    wActivityFeed:'col-4',
+  wMyTasks:'col-8',            wDueToday:'col-3',
+  wDueThisWeek:'col-3',        wOverdueTasks:'col-6',
+  wUpcomingMilestones:'col-6', wClientFollowup:'col-6',
+  wOpportunityPipeline:'col-6',wLeadPipeline:'col-6',
+  wProspectFollowup:'col-6',   wUpcomingClosings:'col-6',
+  wPipelineValue:'col-6',      wPendingApprovals:'col-6',
+  wWaitingClientFeedback:'col-6',wMyAccounts:'col-4',
+  wProjectsByClient:'col-8',   wPendingInvoices:'col-6',
+};
+
+const ROLE_LABELS_MAP = {
+  admin:'Management / MD', management:'Management / MD',
+  account:'Account Management', bd:'Business Development',
+  pm:'Project Manager', designer:'Designer / Creative',
+  strategy:'Strategy', media:'Media + KOL',
+  social:'Social Content', hr:'HR',
+  accounting:'Accounting / Finance',
+};
+
+// Admin role-preview state (null = show own role)
+let _dashPreviewRole = null;
+
+const ROLE_PREVIEW_OPTIONS = [
+  { key:'admin',      label:'Management / MD',       icon:'👑' },
+  { key:'account',    label:'Account Management',    icon:'🤝' },
+  { key:'bd',         label:'Business Development',  icon:'📈' },
+  { key:'pm',         label:'Project Manager',        icon:'🗂️' },
+  { key:'designer',   label:'Designer / Creative',   icon:'🎨' },
+  { key:'strategy',   label:'Strategy',              icon:'🧠' },
+  { key:'media',      label:'Media + KOL',           icon:'📡' },
+  { key:'social',     label:'Social Content',        icon:'📱' },
+  { key:'hr',         label:'HR',                    icon:'👥' },
+  { key:'accounting', label:'Accounting / Finance',  icon:'💳' },
+];
+
+function setDashPreview(role) {
+  _dashPreviewRole = role || null;
+  renderOverview();
+}
+
+function dashWidget(icon, title, bodyHtml, size) {
+  return `<div class="dash-widget ${size||'col-6'}">
+    <div class="dash-widget-head"><span>${icon}</span><span class="dash-widget-title">${title}</span></div>
+    <div class="dash-widget-body">${bodyHtml}</div>
+  </div>`;
+}
+function dashEmpty(msg) { return `<div class="dash-empty">${msg||'ไม่มีข้อมูล'}</div>`; }
+function dashProgressBar(val, max, color) {
+  const pct = max ? Math.min(100, Math.round(val/max*100)) : 0;
+  return `<div class="dash-progress-bar"><div class="dash-progress-fill" style="width:${pct}%;background:${color||'var(--accent)'};"></div></div>`;
+}
+
+// ── Widget Renderers ───────────────────────────
+
+function wMyTasks() {
+  const nick = myNick();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().slice(0,10);
+  const tasks = (DB.tasks||[]).filter(t => !t.done && (t.assignee===nick || (t.assignees||[]).includes(nick))).slice(0,8);
+  if (!tasks.length) return dashWidget('✅','My Tasks', dashEmpty('✨ ไม่มี Task ที่รอทำ'), WIDGET_SIZE_MAP.wMyTasks);
+  const rows = tasks.map(t => {
+    const p = (DB.projects||[]).find(x=>(x.id||x.code)===t.projectId);
+    const due = t.endDate ? new Date(t.endDate) : null;
+    const isOverdue = due && due < today;
+    const isDueToday = t.endDate === todayStr;
+    const badge = isOverdue
+      ? `<span class="dash-list-badge" style="background:#fee2e2;color:#b91c1c;">⚠ เกิน</span>`
+      : isDueToday
+        ? `<span class="dash-list-badge" style="background:#fef9c3;color:#854d0e;">📅 วันนี้</span>` : '';
+    return `<div class="dash-list-item">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.title||'–')}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${escHtml(p?.code||t.projectId||'–')}</div>
+      </div>${badge}
+      <span style="font-size:11px;color:var(--text-muted);flex-shrink:0;">${t.endDate||''}</span>
+    </div>`;
+  }).join('');
+  return dashWidget('✅','My Tasks', rows, WIDGET_SIZE_MAP.wMyTasks);
+}
+
+function wDueToday() {
+  const nick = myNick();
+  const todayStr = new Date().toISOString().slice(0,10);
+  const tasks = (DB.tasks||[]).filter(t => !t.done && t.endDate===todayStr && (t.assignee===nick||(t.assignees||[]).includes(nick)));
+  const col = tasks.length ? '#dc2626' : '#16a34a';
+  const body = `<div style="text-align:center;padding:14px 0 8px;">
+    <div class="dash-stat-val" style="font-size:36px;color:${col};">${tasks.length}</div>
+    <div class="dash-stat-lbl" style="margin-bottom:8px;">Tasks due today</div>
+    ${tasks.slice(0,3).map(t=>`<div style="font-size:11px;margin-top:4px;padding:3px 8px;background:var(--surface-2);border-radius:6px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.title||'–')}</div>`).join('')}
+  </div>`;
+  return dashWidget('📅','Due Today', body, WIDGET_SIZE_MAP.wDueToday);
+}
+
+function wDueThisWeek() {
+  const nick = myNick();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const endWeek = new Date(today); endWeek.setDate(today.getDate()+7);
+  const tasks = (DB.tasks||[]).filter(t => {
+    if (t.done) return false;
+    if (t.assignee!==nick && !(t.assignees||[]).includes(nick)) return false;
+    const d = t.endDate ? new Date(t.endDate) : null;
+    return d && d >= today && d <= endWeek;
+  });
+  const body = `<div style="text-align:center;padding:14px 0 8px;">
+    <div class="dash-stat-val" style="font-size:36px;color:#d97706;">${tasks.length}</div>
+    <div class="dash-stat-lbl" style="margin-bottom:8px;">Tasks this week</div>
+    ${tasks.slice(0,3).map(t=>`<div style="font-size:11px;margin-top:4px;padding:3px 8px;background:var(--surface-2);border-radius:6px;text-align:left;display:flex;justify-content:space-between;gap:6px;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(t.title||'–')}</span><span style="color:var(--text-muted);flex-shrink:0;">${t.endDate||''}</span></div>`).join('')}
+  </div>`;
+  return dashWidget('📆','Due This Week', body, WIDGET_SIZE_MAP.wDueThisWeek);
+}
+
+function wOverdueTasks() {
+  const nick = myNick();
+  const isAdmin = SESSION?.role==='admin';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tasks = (DB.tasks||[]).filter(t => {
+    if (t.done) return false;
+    if (!isAdmin && t.assignee!==nick && !(t.assignees||[]).includes(nick)) return false;
+    const d = t.endDate ? new Date(t.endDate) : null;
+    return d && d < today;
+  }).slice(0,7);
+  if (!tasks.length) return dashWidget('⚠️','Overdue Tasks', dashEmpty('✅ ไม่มี Task เกินกำหนด'), WIDGET_SIZE_MAP.wOverdueTasks);
+  const rows = tasks.map(t => {
+    const days = Math.round((today - new Date(t.endDate)) / 86400000);
+    return `<div class="dash-list-item">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.title||'–')}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${escHtml(t.assignee||'–')}</div>
+      </div>
+      <span class="dash-list-badge" style="background:#fee2e2;color:#b91c1c;">-${days}d</span>
+    </div>`;
+  }).join('');
+  return dashWidget('⚠️','Overdue Tasks', rows, WIDGET_SIZE_MAP.wOverdueTasks);
+}
+
+function wProjectsAtRisk() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cutoff = new Date(today); cutoff.setDate(today.getDate()+14);
+  const at_risk = activeProjects().filter(p => {
+    const e = parseDate(p.end);
+    return e && e <= cutoff;
+  }).sort((a,b)=>(parseDate(a.end)||0)-(parseDate(b.end)||0)).slice(0,7);
+  if (!at_risk.length) return dashWidget('🚨','Projects At Risk', dashEmpty('✅ ไม่มี Project ที่ถึง Deadline ใน 14 วัน'), WIDGET_SIZE_MAP.wProjectsAtRisk);
+  const rows = at_risk.map(p => {
+    const e = parseDate(p.end);
+    const days = e ? Math.round((e-today)/86400000) : null;
+    const isOver = days !== null && days < 0;
+    const col = isOver ? '#b91c1c' : days <= 3 ? '#dc2626' : '#d97706';
+    return `<div class="dash-list-item">
+      <span class="code-mono" style="font-size:10px;flex-shrink:0;">${p.code||'–'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.brand||p.name||'–')}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${p.owner||'–'} · ${p.status||''}</div>
+      </div>
+      <span style="font-size:11px;font-weight:800;color:${col};flex-shrink:0;">${isOver?'⚠ '+(-days)+'d over':days+'d left'}</span>
+    </div>`;
+  }).join('');
+  return dashWidget('🚨','Projects At Risk', rows, WIDGET_SIZE_MAP.wProjectsAtRisk);
+}
+
+function wRevenuePipeline() {
+  const projs = activeProjects();
+  const working   = projs.filter(p=>p.status==='Working');
+  const proposing = projs.filter(p=>p.status==='Proposing');
+  const pitching  = projs.filter(p=>p.status==='Pitching');
+  const wBg  = working.reduce((s,p)=>s+(+p.budget||0),0);
+  const ppBg = proposing.reduce((s,p)=>s+(+p.budget||0),0);
+  const piBg = pitching.reduce((s,p)=>s+(+p.budget||0),0);
+  const total = wBg + ppBg + piBg;
+  const body = `<div class="dash-stat-row">
+    <div class="dash-stat">
+      <div class="dash-stat-val" style="color:#1b7a4b;font-size:16px;">฿${fmtMoney(wBg)}</div>
+      <div class="dash-stat-lbl">Working (${working.length})</div>
+      ${dashProgressBar(wBg, total, '#1b7a4b')}
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-val" style="color:#d4603a;font-size:16px;">฿${fmtMoney(ppBg)}</div>
+      <div class="dash-stat-lbl">Proposing (${proposing.length})</div>
+      ${dashProgressBar(ppBg, total, '#d4603a')}
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-val" style="color:#427dda;font-size:16px;">฿${fmtMoney(piBg)}</div>
+      <div class="dash-stat-lbl">Pitching (${pitching.length})</div>
+      ${dashProgressBar(piBg, total, '#427dda')}
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-val" style="font-size:16px;">฿${fmtMoney(total)}</div>
+      <div class="dash-stat-lbl">Total Pipeline</div>
+    </div>
+  </div>`;
+  return dashWidget('💰','Revenue Pipeline', body, WIDGET_SIZE_MAP.wRevenuePipeline);
+}
+
+function wActiveProjects() {
+  const projs = activeProjects();
+  const by = {};
+  const COL = {Working:'#16a34a',Proposing:'#d97706',Pitching:'#2563eb',Close:'#6b7280'};
+  projs.forEach(p=>{ by[p.status]=(by[p.status]||0)+1; });
+  const body = `<div style="text-align:center;padding:8px 0 12px;">
+    <div class="dash-stat-val" style="font-size:36px;">${projs.length}</div>
+    <div class="dash-stat-lbl">Active Projects</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px;">
+    ${Object.entries(by).map(([s,n])=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:${COL[s]||'#888'};display:inline-block;flex-shrink:0;"></span>
+      <span style="flex:1;">${s}</span><b>${n}</b>
+    </div>`).join('')}
+  </div>`;
+  return dashWidget('📁','Active Projects', body, WIDGET_SIZE_MAP.wActiveProjects);
+}
+
+function wTeamCapacity() {
+  const pm = personMonthMatrix();
+  const thisM = new Date().getMonth();
+  const entries = Object.entries(pm).map(([n,a])=>({n, load:a[thisM]||0})).sort((a,b)=>b.load-a.load);
+  const overloaded = entries.filter(e=>e.load>=5).length;
+  const available  = entries.filter(e=>e.load<3).length;
+  if (!entries.length) return dashWidget('⚡','Team Capacity', dashEmpty('ยังไม่มีข้อมูล Workload'), WIDGET_SIZE_MAP.wTeamCapacity);
+  const body = `<div class="dash-stat-row" style="margin-bottom:10px;">
+    <div class="dash-stat"><div class="dash-stat-val" style="color:#b91c1c;">${overloaded}</div><div class="dash-stat-lbl">Overloaded</div></div>
+    <div class="dash-stat"><div class="dash-stat-val" style="color:#16a34a;">${available}</div><div class="dash-stat-lbl">Available</div></div>
+    <div class="dash-stat"><div class="dash-stat-val">${entries.length}</div><div class="dash-stat-lbl">Total</div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px;">
+    ${entries.slice(0,6).map(e=>{
+      const col = e.load>=5?'#dc2626':e.load>=3?'#d97706':'#16a34a';
+      return `<div style="font-size:11px;display:flex;align-items:center;gap:6px;">
+        <span style="width:76px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(e.n)}</span>
+        <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="width:${Math.min(100,e.load/8*100)}%;height:100%;background:${col};border-radius:3px;"></div></div>
+        <span style="width:18px;text-align:right;color:${col};font-weight:700;flex-shrink:0;">${e.load}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+  return dashWidget('⚡','Team Capacity', body, WIDGET_SIZE_MAP.wTeamCapacity);
+}
+
+function wTopClients() {
+  const rev = {};
+  activeProjects().forEach(p=>{ const k=p.company||'–'; rev[k]=(rev[k]||0)+(+p.budget||0); });
+  const sorted = Object.entries(rev).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const max = sorted[0]?.[1]||1;
+  if (!sorted.length) return dashWidget('🏢','Top Clients', dashEmpty('ยังไม่มีข้อมูล'), WIDGET_SIZE_MAP.wTopClients);
+  const rows = sorted.map(([c,v])=>`<div style="margin-bottom:7px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;"><span style="font-weight:600;">${escHtml(c)}</span><b>฿${fmtMoney(v)}</b></div>
+    ${dashProgressBar(v, max, 'var(--accent)')}
+  </div>`).join('');
+  return dashWidget('🏢','Top Clients', rows, WIDGET_SIZE_MAP.wTopClients);
+}
+
+function wTopBrands() {
+  const rev = {};
+  activeProjects().forEach(p=>{ const k=p.brand||'–'; rev[k]=(rev[k]||0)+(+p.budget||0); });
+  const sorted = Object.entries(rev).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const max = sorted[0]?.[1]||1;
+  if (!sorted.length) return dashWidget('📦','Top Brands', dashEmpty('ยังไม่มีข้อมูล'), WIDGET_SIZE_MAP.wTopBrands);
+  const rows = sorted.map(([b,v])=>`<div style="margin-bottom:7px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;"><span style="font-weight:600;">${escHtml(b)}</span><b>฿${fmtMoney(v)}</b></div>
+    ${dashProgressBar(v, max, '#8b5cf6')}
+  </div>`).join('');
+  return dashWidget('📦','Top Brands', rows, WIDGET_SIZE_MAP.wTopBrands);
+}
+
+function wCriticalAlerts() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const alerts = [];
+  activeProjects().forEach(p => {
+    const e = parseDate(p.end);
+    if (!e) return;
+    const days = Math.round((e-today)/86400000);
+    if (days < 0) alerts.push({lvl:'danger', t:`⚠ เกินกำหนด: <b>${escHtml(p.brand||p.code||'')}</b> (${p.code||''}) — ช้า ${-days} วัน · ${p.owner||''}`});
+    else if (days<=7) alerts.push({lvl:'warning', t:`🔔 ใกล้ Deadline: <b>${escHtml(p.brand||p.code||'')}</b> (${p.code||''}) — เหลือ ${days} วัน · ${p.owner||''}`});
+  });
+  const pm = personMonthMatrix();
+  const thisM = new Date().getMonth();
+  Object.entries(pm).forEach(([n,a])=>{ if(a[thisM]>=5) alerts.push({lvl:'danger', t:`🔴 Overload: <b>${escHtml(n)}</b> — ${a[thisM]} projects เดือนนี้`}); });
+  if (!alerts.length) return dashWidget('🛡️','Critical Alerts', `<div style="text-align:center;padding:14px;color:var(--success);"><div style="font-size:24px;margin-bottom:4px;">✅</div><div style="font-size:13px;font-weight:600;">ทุกอย่างปกติ</div></div>`, WIDGET_SIZE_MAP.wCriticalAlerts);
+  const rows = alerts.slice(0,8).map(a=>`<div class="dash-alert-item">
+    <div style="flex:1;">${a.t}</div>
+    <span class="dash-list-badge" style="background:${a.lvl==='danger'?'#fee2e2':'#fef9c3'};color:${a.lvl==='danger'?'#b91c1c':'#854d0e'};">${a.lvl==='danger'?'Critical':'Warning'}</span>
+  </div>`).join('');
+  return dashWidget('🛡️','Critical Alerts', rows, WIDGET_SIZE_MAP.wCriticalAlerts);
+}
+
+function wActivityFeed() {
+  const acts = ((DB.activityLog||[]).slice(-30)).reverse().slice(0,8);
+  if (!acts.length) return dashWidget('📋','Activity Feed', dashEmpty('ยังไม่มี Activity'), WIDGET_SIZE_MAP.wActivityFeed);
+  const rows = acts.map(a=>`<div class="dash-list-item" style="font-size:11px;">
+    <div class="avatar" style="width:22px;height:22px;font-size:9px;flex-shrink:0;background:${avatarColor(a.user||a.personNick||'?')};">${(a.user||a.personNick||'?')[0]}</div>
+    <div style="flex:1;min-width:0;overflow:hidden;"><b>${escHtml(a.user||a.personNick||'')}</b> ${escHtml(a.action||'')}</div>
+    <span style="color:var(--text-muted);font-size:10px;flex-shrink:0;">${a.ts?new Date(a.ts).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}):''}</span>
+  </div>`).join('');
+  return dashWidget('📋','Activity Feed', rows, WIDGET_SIZE_MAP.wActivityFeed);
+}
+
+function wOpportunityPipeline() {
+  const opps = DB.opportunities||[];
+  const STAGES = ['Qualified','Proposal','Negotiation','Won'];
+  const COL = {Qualified:'#2563eb',Proposal:'#d97706',Negotiation:'#7c3aed',Won:'#16a34a'};
+  const byStage = {};
+  STAGES.forEach(s=>byStage[s]=[]);
+  opps.forEach(o=>{ if(byStage[o.stage]) byStage[o.stage].push(o); });
+  const body = opps.length ? `<div class="dash-stat-row">
+    ${STAGES.map(s=>`<div class="dash-stat">
+      <div class="dash-stat-val" style="color:${COL[s]};font-size:20px;">${byStage[s].length}</div>
+      <div class="dash-stat-lbl">${s}</div>
+      <div style="font-size:10px;color:var(--text-muted);">฿${fmtMoney(byStage[s].reduce((a,o)=>a+(+o.value||0),0))}</div>
+    </div>`).join('')}
+  </div>` : dashEmpty('ยังไม่มี Opportunities');
+  return dashWidget('💼','Opportunity Pipeline', body, WIDGET_SIZE_MAP.wOpportunityPipeline);
+}
+
+function wLeadPipeline() {
+  const leads = DB.leads||[];
+  const STATUSES = ['New','Contacted','Qualified','Converted'];
+  const COL = {New:'#6b7280',Contacted:'#2563eb',Qualified:'#d97706',Converted:'#16a34a'};
+  const byS = {};
+  STATUSES.forEach(s=>byS[s]=[]);
+  leads.forEach(l=>{ if(byS[l.status]) byS[l.status].push(l); });
+  const body = leads.length ? `
+    <div class="dash-stat-row" style="margin-bottom:10px;">
+      ${STATUSES.map(s=>`<div class="dash-stat">
+        <div class="dash-stat-val" style="color:${COL[s]};font-size:20px;">${byS[s].length}</div>
+        <div class="dash-stat-lbl">${s}</div>
+      </div>`).join('')}
+    </div>
+    <div>
+      ${leads.filter(l=>l.status==='New'||l.status==='Contacted').slice(0,4).map(l=>`<div class="dash-list-item">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(l.name||'–')}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${escHtml(l.company||'')} · ${l.owner||''}</div>
+        </div>
+        <span class="dash-list-badge" style="background:${COL[l.status]||'#eee'};color:#fff;">${l.status}</span>
+      </div>`).join('')}
+    </div>` : dashEmpty('ยังไม่มี Leads — ไปที่ 🎯 Leads เพื่อเพิ่ม');
+  return dashWidget('🎯','Lead Pipeline', body, WIDGET_SIZE_MAP.wLeadPipeline);
+}
+
+function wUpcomingMilestones() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const in30 = new Date(today); in30.setDate(today.getDate()+30);
+  const nick = myNick();
+  const isAdmin = SESSION?.role==='admin';
+  const upcoming = activeProjects().filter(p => {
+    if (!isAdmin && p.owner!==nick && p.support!==nick && !(p.teamMembers||[]).includes(nick)) return false;
+    const e = parseDate(p.end);
+    return e && e >= today && e <= in30;
+  }).sort((a,b)=>(parseDate(a.end)||0)-(parseDate(b.end)||0)).slice(0,7);
+  if (!upcoming.length) return dashWidget('🏁','Upcoming Milestones', dashEmpty('ไม่มี Project ครบกำหนดใน 30 วัน'), WIDGET_SIZE_MAP.wUpcomingMilestones);
+  const rows = upcoming.map(p=>{
+    const e = parseDate(p.end);
+    const days = Math.round((e-today)/86400000);
+    return `<div class="dash-list-item">
+      <span class="code-mono" style="font-size:10px;flex-shrink:0;">${p.code||'–'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.brand||p.name||'–')}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${p.owner||'–'}</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:${days<=7?'#d97706':'var(--text)'};flex-shrink:0;">+${days}d</span>
+    </div>`;
+  }).join('');
+  return dashWidget('🏁','Upcoming Milestones', rows, WIDGET_SIZE_MAP.wUpcomingMilestones);
+}
+
+function wClientFollowup() {
+  const nick = myNick();
+  const isAdmin = SESSION?.role==='admin';
+  const projs = activeProjects().filter(p => isAdmin || p.owner===nick || p.support===nick);
+  const needFollow = projs.filter(p => {
+    const last = p.comments?.[p.comments.length-1];
+    if (!last) return true;
+    const d = new Date(last.date||last.ts||0);
+    return (Date.now()-d) > 7*86400000;
+  }).slice(0,6);
+  if (!needFollow.length) return dashWidget('📞','Client Follow-up', dashEmpty('✅ ไม่มี Client ที่ต้อง Follow-up'), WIDGET_SIZE_MAP.wClientFollowup);
+  const rows = needFollow.map(p=>{
+    const last = p.comments?.[p.comments.length-1];
+    const d = last ? Math.round((Date.now()-new Date(last.date||last.ts||0))/86400000) : null;
+    return `<div class="dash-list-item">
+      <span class="code-mono" style="font-size:10px;flex-shrink:0;">${p.code||'–'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.company||p.brand||'–')}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${escHtml(p.brand||'')} · ${p.owner||''}</div>
+      </div>
+      <span style="font-size:11px;color:#d97706;flex-shrink:0;">${d!=null?d+'d ago':'No update'}</span>
+    </div>`;
+  }).join('');
+  return dashWidget('📞','Client Follow-up', rows, WIDGET_SIZE_MAP.wClientFollowup);
+}
+
+function wWaitingClientFeedback() {
+  const tasks = (DB.tasks||[]).filter(t => !t.done && (
+    (t.title||'').toLowerCase().includes('feedback') ||
+    (t.title||'').toLowerCase().includes('approval') ||
+    (t.title||'').toLowerCase().includes('review') ||
+    (t.title||'').toLowerCase().includes('รอ client')
+  )).slice(0,6);
+  if (!tasks.length) return dashWidget('⏳','Waiting Client Feedback', dashEmpty('ไม่มีรายการที่รอ Feedback'), WIDGET_SIZE_MAP.wWaitingClientFeedback);
+  const rows = tasks.map(t=>`<div class="dash-list-item">
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.title||'–')}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${escHtml(t.assignee||'–')}</div>
+    </div>
+    <span style="font-size:11px;color:#d97706;flex-shrink:0;">${t.endDate||'–'}</span>
+  </div>`).join('');
+  return dashWidget('⏳','Waiting Client Feedback', rows, WIDGET_SIZE_MAP.wWaitingClientFeedback);
+}
+
+function wPendingApprovals() {
+  const tasks = (DB.tasks||[]).filter(t => !t.done && (
+    (t.title||'').toLowerCase().includes('approval') ||
+    (t.title||'').toLowerCase().includes('approve') ||
+    (t.title||'').toLowerCase().includes('อนุมัต')
+  )).slice(0,6);
+  if (!tasks.length) return dashWidget('✔️','Pending Approvals', dashEmpty('ไม่มีรายการที่รอ Approve'), WIDGET_SIZE_MAP.wPendingApprovals);
+  const rows = tasks.map(t=>`<div class="dash-list-item">
+    <div style="flex:1;min-width:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.title||'–')}</div>
+    <span style="font-size:11px;color:#d97706;flex-shrink:0;">${t.endDate||'–'}</span>
+  </div>`).join('');
+  return dashWidget('✔️','Pending Approvals', rows, WIDGET_SIZE_MAP.wPendingApprovals);
+}
+
+function wMyAccounts() {
+  const nick = myNick();
+  const myProjs = activeProjects().filter(p=>p.owner===nick||p.support===nick);
+  const clients = [...new Set(myProjs.map(p=>p.company).filter(Boolean))];
+  const body = `<div style="text-align:center;padding:8px 0 12px;">
+    <div class="dash-stat-val" style="font-size:32px;">${clients.length}</div>
+    <div class="dash-stat-lbl">My Clients</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px;">
+    ${clients.slice(0,5).map(c=>{
+      const cnt = myProjs.filter(p=>p.company===c).length;
+      return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;">${escHtml(c)}</span><b>${cnt} proj</b>
+      </div>`;
+    }).join('')}
+    ${!clients.length ? '<div style="color:var(--text-muted);font-size:12px;text-align:center;">ยังไม่มี Account</div>' : ''}
+  </div>`;
+  return dashWidget('🤝','My Accounts', body, WIDGET_SIZE_MAP.wMyAccounts);
+}
+
+function wProjectsByClient() {
+  const nick = myNick();
+  const isAdmin = SESSION?.role==='admin';
+  const projs = isAdmin ? activeProjects() : activeProjects().filter(p=>p.owner===nick||p.support===nick||(p.teamMembers||[]).includes(nick));
+  const byClient = {};
+  projs.forEach(p=>{ const k=p.company||'–'; if(!byClient[k]) byClient[k]=[]; byClient[k].push(p); });
+  const sorted = Object.entries(byClient).sort((a,b)=>b[1].length-a[1].length).slice(0,4);
+  if (!sorted.length) return dashWidget('📁','Projects by Client', dashEmpty('ไม่มีข้อมูล'), WIDGET_SIZE_MAP.wProjectsByClient);
+  const rows = sorted.map(([c,ps])=>`<div style="margin-bottom:10px;">
+    <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">🏢 ${escHtml(c)}</div>
+    ${ps.slice(0,3).map(p=>`<div class="dash-list-item">
+      <span class="code-mono" style="font-size:10px;flex-shrink:0;">${p.code||'–'}</span>
+      <div style="flex:1;min-width:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.brand||p.name||'–')}</div>
+      <span style="font-size:11px;color:var(--text-muted);flex-shrink:0;">${p.end||'–'}</span>
+    </div>`).join('')}
+    ${ps.length>3?`<div style="font-size:11px;color:var(--text-muted);padding:2px 0 0;">+${ps.length-3} more</div>`:''}
+  </div>`).join('');
+  return dashWidget('📁','Projects by Client', rows, WIDGET_SIZE_MAP.wProjectsByClient);
+}
+
+function wProspectFollowup() {
+  const leads = (DB.leads||[]).filter(l=>l.status==='Contacted'||l.status==='New').slice(0,6);
+  if (!leads.length) return dashWidget('🔍','Prospect Follow-up', dashEmpty('ไม่มี Prospect ที่รอ Follow-up'), WIDGET_SIZE_MAP.wProspectFollowup);
+  const rows = leads.map(l=>`<div class="dash-list-item">
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(l.name||'–')}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${escHtml(l.company||'')} · ${l.owner||''}</div>
+    </div>
+    <span class="dash-list-badge" style="background:#dbeafe;color:#1d4ed8;">${l.status}</span>
+  </div>`).join('');
+  return dashWidget('🔍','Prospect Follow-up', rows, WIDGET_SIZE_MAP.wProspectFollowup);
+}
+
+function wUpcomingClosings() {
+  const opps = (DB.opportunities||[]).filter(o=>o.stage==='Negotiation'||o.stage==='Proposal').slice(0,6);
+  if (!opps.length) return dashWidget('🎯','Upcoming Closings', dashEmpty('ไม่มี Deal ที่ใกล้ปิด'), WIDGET_SIZE_MAP.wUpcomingClosings);
+  const rows = opps.map(o=>`<div class="dash-list-item">
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(o.name||'–')}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${escHtml(o.company||'')} · ${o.stage||''}</div>
+    </div>
+    <span style="font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;">฿${fmtMoney(+o.value||0)}</span>
+  </div>`).join('');
+  return dashWidget('🎯','Upcoming Closings', rows, WIDGET_SIZE_MAP.wUpcomingClosings);
+}
+
+function wPipelineValue() {
+  const opps = DB.opportunities||[];
+  const active = opps.filter(o=>o.stage!=='Won'&&o.stage!=='Lost');
+  const won    = opps.filter(o=>o.stage==='Won');
+  const winRate= opps.length ? Math.round(won.length/opps.length*100) : 0;
+  const body = `<div class="dash-stat-row">
+    <div class="dash-stat">
+      <div class="dash-stat-val" style="color:var(--accent);font-size:16px;">฿${fmtMoney(active.reduce((s,o)=>s+(+o.value||0),0))}</div>
+      <div class="dash-stat-lbl">Active Pipeline</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-val" style="color:#16a34a;font-size:16px;">฿${fmtMoney(won.reduce((s,o)=>s+(+o.value||0),0))}</div>
+      <div class="dash-stat-lbl">Won</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-val">${winRate}%</div>
+      <div class="dash-stat-lbl">Win Rate</div>
+    </div>
+  </div>`;
+  return dashWidget('📊','Pipeline Value', body, WIDGET_SIZE_MAP.wPipelineValue);
+}
+
+function wPendingInvoices() {
+  const body = `<div class="dash-empty" style="padding:24px;">
+    <div style="font-size:36px;margin-bottom:8px;">🧾</div>
+    <div style="font-size:12px;font-weight:600;">Invoice Module</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Coming soon</div>
+  </div>`;
+  return dashWidget('🧾','Pending Invoices', body, WIDGET_SIZE_MAP.wPendingInvoices);
+}
+
+// ── Main renderOverview ────────────────────────
+function getUserDashRole() {
+  const user = (DB.users||[]).find(u=>u.id===SESSION?.userId);
+  const r = (user?.role || SESSION?.role || '').toLowerCase().trim();
+  if (r==='admin'||r==='management'||r==='md'||r==='director') return 'admin';
+  if (r==='account'||r==='account manager'||r==='am'||r==='account management') return 'account';
+  if (r==='bd'||r==='business development'||r==='business_development'||r==='biz dev') return 'bd';
+  if (r==='pm'||r==='project manager'||r==='project_manager'||r==='producer') return 'pm';
+  if (r==='designer'||r==='creative'||r==='art director'||r==='ad'||r==='graphic designer') return 'designer';
+  if (r==='strategy'||r==='strategist'||r==='planner') return 'strategy';
+  if (r==='media'||r==='kol'||r==='media buyer'||r==='media planner') return 'media';
+  if (r==='social'||r==='content'||r==='social media'||r==='copywriter') return 'social';
+  if (r==='hr'||r==='human resource'||r==='human resources') return 'hr';
+  if (r==='accounting'||r==='finance'||r==='acc'||r==='fin'||r==='accountant') return 'accounting';
+  return 'pm';
+}
+
+const DASH_WIDGET_FN = {
+  wMyTasks, wDueToday, wDueThisWeek, wOverdueTasks, wProjectsAtRisk,
+  wRevenuePipeline, wActiveProjects, wTeamCapacity, wTopClients, wTopBrands,
+  wCriticalAlerts, wActivityFeed, wOpportunityPipeline, wLeadPipeline,
+  wUpcomingMilestones, wClientFollowup, wWaitingClientFeedback, wPendingApprovals,
+  wMyAccounts, wProjectsByClient, wProspectFollowup, wUpcomingClosings,
+  wPipelineValue, wPendingInvoices,
+};
+
+function renderOverview() {
+  const el = document.getElementById('overview-dynamic');
+  if (!el) return;
+  if (!SESSION) { el.innerHTML = '<div class="dash-empty" style="padding:40px;">กรุณา Login ก่อน</div>'; return; }
+
+  const isAdmin = SESSION?.role === 'admin';
+  const ownRole = getUserDashRole();
+  const role = (isAdmin && _dashPreviewRole) ? _dashPreviewRole : ownRole;
+  const isPreviewing = isAdmin && _dashPreviewRole && _dashPreviewRole !== ownRole;
+
+  const widgetKeys = ROLE_WIDGET_MAP[role] || ROLE_WIDGET_MAP.pm;
+  const nick = myNick();
+  const now  = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'อรุณสวัสดิ์' : hour < 18 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น';
+  const dateStr = now.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+  // Admin role-switcher pills
+  const roleSwitcher = isAdmin ? `
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px;padding:10px 14px;background:${isPreviewing?'#fffbeb':'var(--surface-2)'};border-radius:10px;border:1px solid ${isPreviewing?'#fde68a':'var(--border)'};">
+      <span style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-right:4px;">👁 Preview Role:</span>
+      ${ROLE_PREVIEW_OPTIONS.map(r => `
+        <button onclick="setDashPreview('${r.key}')"
+          style="font-size:11px;padding:3px 10px;border-radius:8px;border:1px solid ${role===r.key?'var(--accent)':'var(--border)'};background:${role===r.key?'var(--accent)':'#fff'};color:${role===r.key?'#fff':'var(--text)'};cursor:pointer;font-family:inherit;font-weight:${role===r.key?'700':'400'};transition:all .12s;">
+          ${r.icon} ${r.label}
+        </button>`).join('')}
+      ${isPreviewing ? `<button onclick="setDashPreview(null)" style="font-size:11px;padding:3px 10px;border-radius:8px;border:1px solid #fca5a5;background:#fee2e2;color:#b91c1c;cursor:pointer;font-family:inherit;font-weight:700;">✕ Exit Preview</button>` : ''}
+    </div>` : '';
+
+  el.innerHTML = `
+    <div class="dash-header">
+      <div>
+        <div class="dash-greeting">${greeting}, ${escHtml(nick)} 👋</div>
+        <div class="dash-greeting-sub">${dateStr}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        ${isPreviewing ? `<span style="font-size:11px;padding:3px 10px;border-radius:10px;background:#fef9c3;color:#854d0e;font-weight:700;border:1px solid #fde68a;">👁 Preview Mode</span>` : ''}
+        <span class="dash-role-badge">${ROLE_LABELS_MAP[role]||role}</span>
+        <button class="btn btn-sm" onclick="renderOverview()" title="Refresh dashboard">🔄</button>
+      </div>
+    </div>
+    ${roleSwitcher}
+    <div class="dash-grid" style="margin-top:12px;">
+      ${widgetKeys.map(k => (DASH_WIDGET_FN[k] ? DASH_WIDGET_FN[k]() : '')).join('')}
+    </div>`;
+}
+
 // ========== RENDER ALL ==========
 function renderAll() {
+  renderOverview();
   renderYearPicker();
   populateOwnerFilters();
   document.getElementById('prj-count').textContent = DB.projects.length;
@@ -7323,7 +8116,8 @@ function renderKPI() {
     {l:'Total budget',    v:'฿'+fmtMoney(totBg), s:'before VAT'},
     {l:'Peak month',      v: MONTH_LABELS[peakM]||'–', s:`${monthCount[peakM]} active`},
   ];
-  document.getElementById('kpi-row').innerHTML = items.map(x=>
+  const _kpiEl = document.getElementById('kpi-row'); if (!_kpiEl) return;
+  _kpiEl.innerHTML = items.map(x=>
     `<div class="kpi${x.money?' kpi-highlight':''}">
       <div class="kpi-label">${x.l}</div>
       <div class="kpi-value">${x.v}</div>
@@ -7378,7 +8172,7 @@ function renderInsights() {
   if (overload.length) h += `<div class="alert alert-danger"><b>${overload.length} คน Overload (peak ≥ 7):</b> ${overload.map(p=>`${p.n} (${p.peak} ใน ${MONTH_LABELS[p.peakM]})`).join(' · ')}</div>`;
   if (okay.length) h += `<div class="alert alert-info"><b>${okay.length} คนยังว่าง (peak &lt; 5):</b> ${okay.map(p=>`${p.n} (${p.peak})`).join(' · ')} — ใช้รับ brief ใหม่ได้</div>`;
   h += `<div class="alert alert-warning"><b>Top roles:</b> ${tops.slice(0,4).map(r=>`${r.r} peak ${r.peak} (${MONTH_LABELS[r.peakM]})`).join(' · ')}</div>`;
-  document.getElementById('insights').innerHTML = h;
+  const _insEl = document.getElementById('insights'); if (_insEl) _insEl.innerHTML = h;
 }
 
 function toggleAlerts(summaryEl) {
@@ -7394,6 +8188,7 @@ function toggleAlerts(summaryEl) {
 
 function renderAlerts() {
   const strip = document.getElementById('alerts-strip');
+  if (!strip) return;
   const alerts = [];
   const today = new Date('2026-05-15');
   // deadline alerts
@@ -7452,7 +8247,8 @@ function renderMonthChart() {
   const by = {Working:Array(12).fill(0), Proposing:Array(12).fill(0), Pitching:Array(12).fill(0)};
   a.forEach(p => monthSpan(p).forEach(m => { if (by[p.status]) by[p.status][m]++; }));
   if (charts.m) charts.m.destroy();
-  charts.m = new Chart(document.getElementById('monthChart'), {
+  const _mc = document.getElementById('monthChart'); if (!_mc) return;
+  charts.m = new Chart(_mc, {
     type: 'bar',
     data: { labels: MONTH_LABELS, datasets: [
       {label:'Working',data:by.Working,backgroundColor:'#1B7A4B'},
@@ -7470,7 +8266,8 @@ function renderStatusChart() {
   activeProjects().forEach(p => { m[p.status]=(m[p.status]||0)+(+p.budget||0); });
   if (charts.s) charts.s.destroy();
   const palette = {Working:'#1B7A4B',Proposing:'#D4603A',Pitching:'#427DDA',Close:'#9AA3B8'};
-  charts.s = new Chart(document.getElementById('statusChart'), {
+  const _sc = document.getElementById('statusChart'); if (!_sc) return;
+  charts.s = new Chart(_sc, {
     type:'bar',
     data:{labels:Object.keys(m),datasets:[{data:Object.values(m),backgroundColor:Object.keys(m).map(k=>palette[k]||'#888')}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
@@ -8135,6 +8932,11 @@ function populateProjBrandSel(company, currentBrand) {
   const brandSel = document.getElementById('f-brand-sel');
   if (!brandSel) return;
 
+  // Brands from DB.brands for this client
+  const dbBrands = (DB.brands||[])
+    .filter(b => !company || (b.clientName||'').toLowerCase() === company.toLowerCase())
+    .map(b => b.name).filter(Boolean);
+
   // Brands from matching clients
   const clientBrands = (DB.clients||[])
     .filter(c => !company || c.company === company)
@@ -8146,7 +8948,7 @@ function populateProjBrandSel(company, currentBrand) {
     .filter(p => !company || p.company === company)
     .map(p=>p.brand).filter(Boolean);
 
-  const brands = [...new Set([...clientBrands, ...projBrands])].sort();
+  const brands = [...new Set([...dbBrands, ...clientBrands, ...projBrands])].sort();
 
   brandSel.innerHTML = '<option value="">— เลือก Brand —</option>'
     + brands.map(b=>`<option value="${escHtml(b)}" ${b===currentBrand?'selected':''}>${escHtml(b)}</option>`).join('')
@@ -8565,6 +9367,13 @@ document.getElementById('prj-form').addEventListener('submit', (e) => {
   p.status = document.getElementById('f-status').value;
   p.brand = getProjFormBrand();
   p.company = getProjFormCompany();
+  // Sync brandId from DB.brands
+  const matchBrand = (DB.brands||[]).find(b =>
+    b.name.toLowerCase() === (p.brand||'').toLowerCase() &&
+    (b.clientName||'').toLowerCase() === (p.company||'').toLowerCase()
+  );
+  if (matchBrand) { p.brandId = matchBrand.id; p.clientId = matchBrand.clientId||null; }
+  else { delete p.brandId; }
   p.name = document.getElementById('f-name').value.trim();
   p.basecampUrl = document.getElementById('f-basecamp').value.trim();
   p.driveUrl = document.getElementById('f-drive').value.trim();
@@ -8764,10 +9573,10 @@ function renderManualLinks(ids) {
   });
 }
 function initClientPage() {
-  document.getElementById('client-search').addEventListener('input', renderClients);
-  document.getElementById('btn-add-client').addEventListener('click', () => openClientModal(null));
-  document.getElementById('btn-sync-clients').addEventListener('click', syncClientsFromProjects);
-  document.getElementById('cf-project-add').addEventListener('change', function() {
+  document.getElementById('client-search')?.addEventListener('input', renderClients);
+  document.getElementById('btn-add-client')?.addEventListener('click', () => openClientModal(null));
+  document.getElementById('btn-sync-clients')?.addEventListener('click', syncClientsFromProjects);
+  document.getElementById('cf-project-add')?.addEventListener('change', function() {
     if (!this.value) return;
     const cur = [...document.querySelectorAll('.manual-link-tag')].map(t=>t.dataset.pid);
     if (!cur.includes(this.value)) renderManualLinks([...cur, this.value]);
@@ -8813,6 +9622,17 @@ function initClientPage() {
     document.getElementById('client-modal').classList.remove('show');
     renderClients();
   });
+  const exportBtn = document.getElementById('btn-export-clients');
+  if (exportBtn && !exportBtn._inited) {
+    exportBtn._inited = true;
+    exportBtn.addEventListener('click', () => {
+      const data = JSON.stringify(DB.clients||[], null, 2);
+      const a = document.createElement('a');
+      a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(data);
+      a.download = 'clients_export.json';
+      a.click();
+    });
+  }
   renderClients();
 }
 // ── Brand Chip Helpers ────────────────────────────────
@@ -8930,35 +9750,338 @@ function updateBrandDatalist() {
   ])].sort();
   dl.innerHTML = brands.map(b=>`<option value="${b}">`).join('');
 }
+// ── Clients view state ────────────────────────
+let _clientsView = 'card';
+let _clientsPage = 1;
+const CLIENTS_PER_PAGE = 12;
+
+function setClientsView(v) {
+  _clientsView = v;
+  const cardBtn  = document.getElementById('clients-view-card');
+  const tableBtn = document.getElementById('clients-view-table');
+  if (cardBtn)  { cardBtn.style.background  = v==='card'  ? 'var(--accent)' : '#fff';  cardBtn.style.color  = v==='card'  ? '#fff' : 'var(--text-muted)'; }
+  if (tableBtn) { tableBtn.style.background = v==='table' ? 'var(--accent)' : '#fff'; tableBtn.style.color = v==='table' ? '#fff' : 'var(--text-muted)'; }
+  renderClients();
+}
+
+// Compute stats for a client company
+function getClientStats(company, clientId) {
+  const projs = (DB.projects||[]).filter(p => p.company===company || p.clientId===clientId);
+  const activeProjs = projs.filter(p => p.status!=='Close' && p.status!=='Pitch Lost');
+  const opps  = (DB.opportunities||[]).filter(o => o.company===company);
+  const openOpps = opps.filter(o => o.stage!=='Won' && o.stage!=='Lost');
+  const brands = (DB.brands||[]).filter(b => (b.clientName||'').toLowerCase()===(company||'').toLowerCase() || b.clientId===clientId);
+  const contacts = (DB.clients||[]).filter(c => c.company===company && c.contactName);
+
+  // Revenue YTD: projects starting this year
+  const thisYear = new Date().getFullYear().toString();
+  const ytdProjs = projs.filter(p => (p.start||p.launch||p.createdAt||'').startsWith(thisYear));
+  const revenueYTD = ytdProjs.reduce((s,p)=>s+(+p.budget||0), 0);
+  const totalRevenue = projs.reduce((s,p)=>s+(+p.budget||0), 0);
+
+  // Projects at risk (deadline in ≤14 days)
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cutoff = new Date(today); cutoff.setDate(today.getDate()+14);
+  const atRisk = activeProjs.filter(p => { const e=parseDate(p.end); return e && e<=cutoff; });
+
+  // Workload % — avg load of team on this company's projects
+  const pm = personMonthMatrix(p => p.company===company);
+  const thisM = new Date().getMonth();
+  const loads = Object.values(pm).map(a=>a[thisM]||0);
+  const avgLoad = loads.length ? loads.reduce((s,v)=>s+v,0) / loads.length : 0;
+  const workloadPct = Math.round(avgLoad / 5 * 100); // 5 proj = 100%
+
+  // Health
+  let health = 'healthy';
+  if (workloadPct > 110) health = 'at-risk';
+  else if (workloadPct > 95 || atRisk.length > 0) health = 'attention';
+
+  // Sparkline data: budget by month for last 12 months
+  const monthBudgets = Array(12).fill(0);
+  projs.forEach(p => {
+    const m = parseInt((p.start||p.launch||p.createdAt||'').slice(5,7), 10) - 1;
+    if (m >= 0 && m < 12) monthBudgets[m] += (+p.budget||0);
+  });
+
+  return { projs, activeProjs, opps, openOpps, brands, contacts, revenueYTD, totalRevenue, atRisk, workloadPct, health, monthBudgets };
+}
+
+function clientHealthBadge(health, isInactive) {
+  if (isInactive) return '<span class="health-badge health-inactive">Inactive</span>';
+  const map = { healthy:'Healthy', attention:'Attention', 'at-risk':'At Risk' };
+  const cls  = { healthy:'health-healthy', attention:'health-attention', 'at-risk':'health-at-risk' };
+  return `<span class="health-badge ${cls[health]||'health-healthy'}">${map[health]||health}</span>`;
+}
+
+function renderSparkline(data, color) {
+  const max = Math.max(...data, 1);
+  const pts = data.map((v, i) => {
+    const x = Math.round((i / (data.length-1)) * 116) + 2;
+    const y = Math.round(34 - (v/max)*30);
+    return `${x},${y}`;
+  }).join(' ');
+  const fillPts = `2,34 ${pts} 118,34`;
+  return `<svg width="100%" height="40" viewBox="0 0 120 36" preserveAspectRatio="none" style="display:block;">
+    <defs>
+      <linearGradient id="sg_${color.replace('#','')}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity=".2"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <polygon points="${fillPts}" fill="url(#sg_${color.replace('#','')})" />
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${data.map((v,i)=>{
+      if (v===0) return '';
+      const x = Math.round((i/(data.length-1))*116)+2;
+      const y = Math.round(34-(v/max)*30);
+      return `<circle cx="${x}" cy="${y}" r="2.5" fill="${color}" stroke="#fff" stroke-width="1"/>`;
+    }).join('')}
+  </svg>`;
+}
+
+function renderClientsKPI(allClients) {
+  const kpiEl = document.getElementById('clients-kpi-row');
+  if (!kpiEl) return;
+
+  const activeCount = allClients.filter(c=>(c.active||'active')!=='inactive').length;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cutoff = new Date(today); cutoff.setDate(today.getDate()+14);
+
+  const allProjs = activeProjects();
+  const thisYear = new Date().getFullYear().toString();
+  const totalRevYTD = allProjs.filter(p=>(p.start||p.launch||p.createdAt||'').startsWith(thisYear)).reduce((s,p)=>s+(+p.budget||0),0);
+  const totalActiveProjs = allProjs.length;
+  const openOpps = (DB.opportunities||[]).filter(o=>o.stage!=='Won'&&o.stage!=='Lost');
+  const openOppValue = openOpps.reduce((s,o)=>s+(+o.value||0),0);
+  const atRiskProjs = allProjs.filter(p=>{const e=parseDate(p.end);return e&&e<=cutoff;});
+  const companies = [...new Set(allProjs.map(p=>p.company).filter(Boolean))];
+  const thisM = new Date().getMonth();
+  let overloadedCompanies = 0;
+  companies.forEach(co => {
+    const pm = personMonthMatrix(p=>p.company===co);
+    const loads = Object.values(pm).map(a=>a[thisM]||0);
+    const avg = loads.length ? loads.reduce((s,v)=>s+v,0)/loads.length : 0;
+    if (avg/5*100 > 110) overloadedCompanies++;
+  });
+
+  const KPIS = [
+    { icon:'👥', bg:'#eff6ff', val: allClients.length, label:'Total Clients', sub:`${activeCount} active` },
+    { icon:'💰', bg:'#f0fdf4', val:'฿'+fmtMoney(totalRevYTD), label:'Total Revenue (YTD)', sub:'↑ This year', subColor:'#16a34a' },
+    { icon:'📁', bg:'#faf5ff', val: totalActiveProjs, label:'Active Projects', sub:'↑ 12% vs last month', subColor:'#16a34a' },
+    { icon:'🎯', bg:'#fff7ed', val:'฿'+fmtMoney(openOppValue), label:'Open Opportunities', sub:`${openOpps.length} opportunities` },
+    { icon:'🛡️', bg:'#fff1f2', val: atRiskProjs.length, label:'Projects at Risk', sub:`${[...new Set(atRiskProjs.map(p=>p.company))].length} clients` },
+    { icon:'⚠️', bg:'#fffbeb', val: overloadedCompanies, label:'Overloaded Clients', sub:'High workload' },
+  ];
+
+  const COLOR = ['#2563eb','#16a34a','#7c3aed','#d97706','#dc2626','#d97706'];
+  kpiEl.innerHTML = KPIS.map((k,i)=>`
+    <div class="clients-kpi-card">
+      <div class="clients-kpi-icon" style="background:${k.bg};font-size:20px;">${k.icon}</div>
+      <div>
+        <div class="clients-kpi-val" style="color:${COLOR[i]};">${k.val}</div>
+        <div class="clients-kpi-lbl">${k.label}</div>
+        <div class="clients-kpi-sub" style="color:${k.subColor||'var(--text-muted)'};">${k.sub||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderClientCard(c) {
+  const isInactive = (c.active||'active') === 'inactive';
+  const s = getClientStats(c.company, c.id);
+  const health = isInactive ? 'inactive' : s.health;
+  const initials = (c.company||'?').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const logoColor = avatarColor(c.company||'?');
+  const sparkColor = isInactive ? '#9aa3b8' : (health==='at-risk'?'#dc2626': health==='attention'?'#d97706':'#2563eb');
+  const workColor  = s.workloadPct > 110 ? '#dc2626' : s.workloadPct > 95 ? '#d97706' : '#16a34a';
+
+  return `<div class="client-card" onclick="openClientProfileCRM('${c.id}','overview')">
+    <button class="client-card-menu" onclick="event.stopPropagation();openClientModal('${c.id}')">⋯</button>
+    <div class="client-card-head">
+      <div class="client-logo" style="background:${logoColor};">${initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="client-card-name">${escHtml(c.company||'–')}</div>
+        <div class="client-card-industry">${escHtml(c.industry||c.position||'–')}</div>
+        <div><span class="client-status-badge ${isInactive?'client-status-inactive':'client-status-active'}">${isInactive?'Inactive':'Active'}</span></div>
+      </div>
+    </div>
+    <div class="client-stats-row">
+      <div class="client-stat">
+        <div class="client-stat-lbl">Revenue (YTD)</div>
+        <div class="client-stat-val" style="font-size:14px;">฿${fmtMoney(s.revenueYTD)}</div>
+        <div class="client-stat-sub" style="color:#16a34a;">↑ YTD</div>
+      </div>
+      <div class="client-stat">
+        <div class="client-stat-lbl">Active Projects</div>
+        <div class="client-stat-val">${s.activeProjs.length}</div>
+        <div class="client-stat-sub" style="color:#16a34a;">↑ ${s.projs.length} total</div>
+      </div>
+      <div class="client-stat">
+        <div class="client-stat-lbl">Open Opps</div>
+        <div class="client-stat-val">${s.openOpps.length}</div>
+        <div class="client-stat-sub" style="color:var(--text-muted);">฿${fmtMoney(s.openOpps.reduce((a,o)=>a+(+o.value||0),0))}</div>
+      </div>
+    </div>
+    <div class="client-sparkline">${renderSparkline(s.monthBudgets, sparkColor)}</div>
+    <div class="client-footer">
+      <div class="client-footer-item">
+        <div class="client-footer-lbl"># Brands</div>
+        <div class="client-footer-val">${s.brands.length}</div>
+      </div>
+      <div class="client-footer-item">
+        <div class="client-footer-lbl">Contacts</div>
+        <div class="client-footer-val">${s.contacts.length}</div>
+      </div>
+      <div class="client-footer-item">
+        <div class="client-footer-lbl">Workload</div>
+        <div class="client-footer-val" style="color:${workColor};">${s.workloadPct}%</div>
+      </div>
+      <div class="client-footer-item">
+        <div class="client-footer-lbl">Health</div>
+        <div class="client-footer-val">${clientHealthBadge(health, isInactive)}</div>
+      </div>
+    </div>
+    <a class="client-view-link" onclick="event.stopPropagation();openClientProfileCRM('${c.id}','overview')">View Details →</a>
+  </div>`;
+}
+
+function renderClientsTable(clients) {
+  if (!clients.length) return `<div style="text-align:center;padding:40px;color:var(--text-muted);">ยังไม่มีข้อมูล</div>`;
+  return `<div class="tbl-wrap"><table class="data-table">
+    <thead><tr>
+      <th>Company</th><th>Industry</th><th>Status</th>
+      <th>Revenue YTD</th><th>Projects</th><th>Open Opps</th>
+      <th>Brands</th><th>Contacts</th><th>Workload</th><th>Health</th><th></th>
+    </tr></thead>
+    <tbody>
+      ${clients.map(c=>{
+        const isInactive=(c.active||'active')==='inactive';
+        const s=getClientStats(c.company,c.id);
+        const h=isInactive?'inactive':s.health;
+        const wCol=s.workloadPct>110?'#dc2626':s.workloadPct>95?'#d97706':'#16a34a';
+        return `<tr style="cursor:pointer;" onclick="openClientProfileCRM('${c.id}','overview')">
+          <td><b style="color:var(--accent);">${escHtml(c.company||'–')}</b></td>
+          <td style="font-size:11px;">${escHtml(c.industry||c.position||'–')}</td>
+          <td><span class="client-status-badge ${isInactive?'client-status-inactive':'client-status-active'}">${isInactive?'Inactive':'Active'}</span></td>
+          <td style="font-weight:700;">฿${fmtMoney(s.revenueYTD)}</td>
+          <td>${s.activeProjs.length}</td>
+          <td>${s.openOpps.length}</td>
+          <td>${s.brands.length}</td>
+          <td>${s.contacts.length}</td>
+          <td style="font-weight:700;color:${wCol};">${s.workloadPct}%</td>
+          <td>${clientHealthBadge(h, isInactive)}</td>
+          <td><button class="btn btn-sm" onclick="event.stopPropagation();openClientModal('${c.id}')">Edit</button></td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+// Breadcrumb system for Client → Brand → Project → Task hierarchy
+function renderClientsBreadcrumb(trail) {
+  const el = document.getElementById('clients-breadcrumb');
+  if (!el) return;
+  if (!trail || !trail.length) {
+    el.innerHTML = `<span class="bc-current">Clients</span>`;
+    return;
+  }
+  const parts = [
+    `<span class="bc-link" onclick="renderClients()">Clients</span>`,
+    ...trail.map((seg, i) => {
+      const isLast = i === trail.length - 1;
+      return `<span class="bc-sep">›</span>${isLast
+        ? `<span class="bc-current">${escHtml(seg.label)}</span>`
+        : `<span class="bc-link" onclick="${seg.onclick||''}">${escHtml(seg.label)}</span>`}`;
+    })
+  ];
+  el.innerHTML = parts.join(' ');
+}
+
 function renderClients() {
   renderClientSyncBanner();
-  const q = (document.getElementById('client-search').value||'').toLowerCase();
-  const clients = (DB.clients||[]).filter(c =>
-    !q || `${c.company} ${c.contactName} ${c.position} ${c.email}`.toLowerCase().includes(q)
-  );
-  const tbody = document.getElementById('client-tbody');
-  if (!tbody) return;
-  tbody.innerHTML = clients.length ? clients.map(c=>{
-    const linked = (DB.projects||[]).filter(p => p.company === c.company || (c.projectIds||[]).includes(p.id||p.code));
-    const linkedTd = linked.length ? `<td style="max-width:180px;">${linked.slice(0,3).map(p=>`<span class="code-mono" style="font-size:10px;">${p.code}</span>`).join(' ')}${linked.length>3?`<span style="color:var(--text-hint);font-size:10px;"> +${linked.length-3}</span>`:''}</td>` : `<td style="color:var(--text-hint);font-size:11px;">–</td>`;
-    const actBadge = c.active==='inactive'
-      ? `<span class="clt-active-badge clt-inactive">⚫ Inactive</span>`
-      : `<span class="clt-active-badge clt-active">🟢 Active</span>`;
-    const bdStr = c.birthday ? `🎂 ${c.birthday.slice(5)}` : '';
-    return `<tr style="cursor:default;">
-    <td><b data-client-profile="${c.id}" style="cursor:pointer;color:var(--accent);text-decoration:underline dotted;" title="คลิกดู profile">${c.company||'–'}</b>${(()=>{const brands=c.brands?.length?c.brands:(c.brand?[c.brand]:[]);return brands.length?`<br>${brands.map(b=>`<span data-brand-view="${escHtml(b)}" data-brand-company="${escHtml(c.company||'')}" style="display:inline-block;font-size:11px;color:var(--ci-blue);background:rgba(66,125,218,.1);padding:1px 7px;border-radius:8px;cursor:pointer;margin:1px;" title="คลิกดู projects ของ ${escHtml(b)}">📦 ${escHtml(b)}</span>`).join('')}`:'';})()}<br>${actBadge}</td>
-    <td>${c.nickname?`<b>${c.nickname}</b><br>`:''}<span style="font-size:12px;">${c.contactName||'–'}</span>${bdStr?`<br><span style="font-size:10px;color:var(--accent);">${bdStr}</span>`:''}</td>
-    <td><span class="dept-badge">${c.position||'–'}</span></td>
-    <td>${c.phone ? `<a href="tel:${c.phone.replace(/[^0-9+]/g,'')}" style="color:inherit;">${c.phone}</a>` : '–'}</td>
-    <td>${c.email ? `<a href="mailto:${c.email}" style="color:var(--accent);">${c.email}</a>` : '–'}</td>
-    ${linkedTd}
-    <td style="white-space:nowrap;"><button class="btn btn-sm" data-client-profile="${c.id}" style="margin-right:4px;">👤</button><button class="btn btn-sm" data-client-edit="${c.id}">Edit</button></td>
-  </tr>`;
-  }).join('') :
-  `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px;">ยังไม่มี contact — กด "+ Add Contact" เพื่อเพิ่ม</td></tr>`;
-  tbody.querySelectorAll('[data-client-edit]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openClientModal(b.dataset.clientEdit); }));
-  tbody.querySelectorAll('[data-client-profile]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openClientProfile(b.dataset.clientProfile); }));
-  tbody.querySelectorAll('[data-brand-view]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openBrandProjects(b.dataset.brandView, b.dataset.brandCompany); }));
+
+  // Populate industry filter
+  const indSel = document.getElementById('clients-filter-industry');
+  if (indSel) {
+    const industries = [...new Set((DB.clients||[]).map(c=>c.industry||c.position).filter(Boolean))].sort();
+    const cur = indSel.value;
+    indSel.innerHTML = `<option value="">All Industries</option>`
+      + industries.map(i=>`<option value="${escHtml(i)}" ${i===cur?'selected':''}>${escHtml(i)}</option>`).join('');
+  }
+
+  // Render KPI row
+  renderClientsKPI(DB.clients||[]);
+
+  // Filter
+  const q       = (document.getElementById('client-search')?.value||'').toLowerCase();
+  const statusF = document.getElementById('clients-filter-status')?.value||'';
+  const indF    = document.getElementById('clients-filter-industry')?.value||'';
+  const sortBy  = document.getElementById('clients-sort')?.value||'revenue';
+
+  // Deduplicate: one record per unique company (pick the most complete record)
+  const companyMap = {};
+  (DB.clients||[]).forEach(c => {
+    const key = (c.company||'').toLowerCase().trim();
+    if (!key) return;
+    if (!companyMap[key] || (c.contactName && !companyMap[key].contactName)) companyMap[key] = c;
+  });
+  let clients = Object.values(companyMap);
+
+  // Apply filters
+  clients = clients.filter(c => {
+    if (q && !`${c.company} ${c.industry||''} ${c.position||''}`.toLowerCase().includes(q)) return false;
+    if (statusF && (c.active||'active') !== statusF) return false;
+    if (indF && (c.industry||c.position||'') !== indF) return false;
+    return true;
+  });
+
+  // Sort
+  clients = clients.slice().sort((a,b) => {
+    if (sortBy==='revenue') return getClientStats(b.company,b.id).revenueYTD - getClientStats(a.company,a.id).revenueYTD;
+    if (sortBy==='projects') return getClientStats(b.company,b.id).activeProjs.length - getClientStats(a.company,a.id).activeProjs.length;
+    if (sortBy==='health') {
+      const hOrder = {'at-risk':0,'attention':1,'healthy':2,'inactive':3};
+      return (hOrder[getClientStats(a.company,a.id).health]||2) - (hOrder[getClientStats(b.company,b.id).health]||2);
+    }
+    return (a.company||'').localeCompare(b.company||'');
+  });
+
+  // Pagination
+  const total = clients.length;
+  const totalPages = Math.max(1, Math.ceil(total / CLIENTS_PER_PAGE));
+  if (_clientsPage > totalPages) _clientsPage = 1;
+  const start = (_clientsPage - 1) * CLIENTS_PER_PAGE;
+  const paged = clients.slice(start, start + CLIENTS_PER_PAGE);
+
+  // Render content
+  const el = document.getElementById('clients-content');
+  if (!el) return;
+
+  if (_clientsView === 'card') {
+    el.innerHTML = paged.length
+      ? `<div class="clients-grid">${paged.map(renderClientCard).join('')}</div>`
+      : `<div style="text-align:center;padding:60px;color:var(--text-muted);">ยังไม่มีข้อมูล Client — กด "+ Add Client" หรือ "🔄 Sync"</div>`;
+  } else {
+    el.innerHTML = renderClientsTable(paged);
+  }
+
+  // Breadcrumb (list level)
+  renderClientsBreadcrumb([]);
+
+  // Pagination bar
+  const pagEl = document.getElementById('clients-pagination');
+  if (pagEl) {
+    pagEl.innerHTML = total ? `
+      <span>Showing ${start+1} to ${Math.min(start+CLIENTS_PER_PAGE,total)} of ${total} clients</span>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <button class="btn btn-sm" onclick="_clientsPage=Math.max(1,_clientsPage-1);renderClients();" ${_clientsPage<=1?'disabled':''}>‹</button>
+        ${Array.from({length:Math.min(totalPages,5)},(_,i)=>{
+          const p = i+1;
+          return `<button class="btn btn-sm ${p===_clientsPage?'btn-primary':''}" onclick="_clientsPage=${p};renderClients();">${p}</button>`;
+        }).join('')}
+        <button class="btn btn-sm" onclick="_clientsPage=Math.min(totalPages,_clientsPage+1);renderClients();" ${_clientsPage>=totalPages?'disabled':''}>›</button>
+      </div>
+      <span style="color:var(--text-muted);">${CLIENTS_PER_PAGE} / page</span>` : '';
+  }
 }
 
 
@@ -11567,6 +12690,7 @@ const ALL_TABS = [
   { key:'roles',     label:'Role Demand' },
   { key:'projects',  label:'Project List' },
   { key:'clients',       label:'Clients' },
+  { key:'brands',        label:'Brands' },
   { key:'leads',         label:'Leads' },
   { key:'contacts',      label:'Contacts' },
   { key:'opportunities', label:'Opportunities' },
@@ -12200,6 +13324,547 @@ async function adminResetPassword(userId) {
   alert(`รหัสผ่านใหม่สำหรับ "${user.name||user.username}":\n\n${pw}\n\n(กรุณาแจ้งให้ผู้ใช้เปลี่ยนรหัสผ่านหลังเข้าสู่ระบบ)`);
 }
 
+// ══════════════════════════════════════════════════════════
+// ── BRANDS MODULE (Client → Brand → Project → Task) ──────
+// ══════════════════════════════════════════════════════════
+
+function migrateBrandsFromProjects() {
+  if (!DB.brands) DB.brands = [];
+  let changed = false;
+  (DB.projects||[]).forEach(p => {
+    const brandName = (p.brand||'').trim();
+    const compName  = (p.company||'').trim();
+    if (!brandName) return;
+    // Find client
+    const cl = (DB.clients||[]).find(c => (c.company||'').toLowerCase() === compName.toLowerCase());
+    const clientId   = cl?.id || null;
+    const clientName = cl?.company || compName;
+    // Find or create brand
+    let brand = DB.brands.find(b =>
+      b.name.toLowerCase() === brandName.toLowerCase() &&
+      (clientId ? b.clientId === clientId : (b.clientName||'').toLowerCase() === compName.toLowerCase())
+    );
+    if (!brand) {
+      brand = { id:'brand_'+Date.now()+'_'+Math.random().toString(36).slice(2,5), clientId, clientName, name: brandName, description:'', status:'active', createdAt: new Date().toISOString() };
+      DB.brands.push(brand);
+      changed = true;
+    }
+    if (!p.brandId) { p.brandId = brand.id; changed = true; }
+    if (!p.clientId && clientId) { p.clientId = clientId; changed = true; }
+  });
+  if (changed) saveDB();
+}
+
+function getUniqueClients() {
+  return [...new Set((DB.clients||[]).map(c=>c.company).filter(Boolean))].sort();
+}
+
+function getBrandProjects(brandId) {
+  const brand = (DB.brands||[]).find(b=>b.id===brandId);
+  if (!brand) return [];
+  return (DB.projects||[]).filter(p =>
+    p.brandId === brandId ||
+    (p.brand && p.brand.toLowerCase() === brand.name.toLowerCase() &&
+     (!p.company || p.company.toLowerCase() === (brand.clientName||'').toLowerCase()))
+  );
+}
+
+function getBrandTasks(brandId) {
+  const projs = getBrandProjects(brandId).map(p=>p.id||p.code);
+  return (DB.tasks||[]).filter(t => projs.includes(t.projectId));
+}
+
+function getBrandRevenue(brandId) {
+  return getBrandProjects(brandId).reduce((s,p)=>s+(+p.budget||0),0);
+}
+
+function openBrandModal(id) {
+  const modal = document.getElementById('brand-modal');
+  const clientSel = document.getElementById('bf-client');
+  if (clientSel) {
+    const clients = getUniqueClients();
+    clientSel.innerHTML = `<option value="">— เลือก Client —</option>${clients.map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('')}`;
+  }
+  const delBtn = document.getElementById('bf-delete');
+  if (id) {
+    const b = (DB.brands||[]).find(x=>x.id===id);
+    if (!b) return;
+    document.getElementById('brand-modal-title').textContent = 'Edit Brand';
+    document.getElementById('bf-id').value = b.id;
+    document.getElementById('bf-name').value = b.name||'';
+    document.getElementById('bf-desc').value = b.description||'';
+    document.getElementById('bf-status').value = b.status||'active';
+    if (clientSel) clientSel.value = b.clientName||'';
+    if (delBtn) delBtn.style.display = '';
+  } else {
+    document.getElementById('brand-modal-title').textContent = 'Add Brand';
+    document.getElementById('bf-id').value = '';
+    document.getElementById('bf-name').value = '';
+    document.getElementById('bf-desc').value = '';
+    document.getElementById('bf-status').value = 'active';
+    if (clientSel) clientSel.value = '';
+    if (delBtn) delBtn.style.display = 'none';
+  }
+  modal.classList.add('show');
+}
+
+function saveBrand() {
+  const name = document.getElementById('bf-name').value.trim();
+  const clientName = document.getElementById('bf-client').value;
+  if (!name) { alert('กรุณากรอก Brand Name'); return; }
+  if (!clientName) { alert('กรุณาเลือก Client'); return; }
+  if (!DB.brands) DB.brands = [];
+  const id = document.getElementById('bf-id').value || ('brand_'+Date.now()+'_'+Math.random().toString(36).slice(2,5));
+  let b = DB.brands.find(x=>x.id===id);
+  const cl = (DB.clients||[]).find(c=>(c.company||'').toLowerCase()===clientName.toLowerCase());
+  if (!b) { b={id, createdAt:new Date().toISOString()}; DB.brands.push(b); }
+  b.name        = name;
+  b.clientId    = cl?.id||null;
+  b.clientName  = clientName;
+  b.description = document.getElementById('bf-desc').value.trim();
+  b.status      = document.getElementById('bf-status').value;
+  (DB.projects||[]).forEach(p => {
+    if ((p.brand||'').toLowerCase()===name.toLowerCase() &&
+        (p.company||'').toLowerCase()===clientName.toLowerCase()) {
+      p.brandId  = id;
+      p.clientId = cl?.id||null;
+    }
+  });
+  saveDB(true);
+  document.getElementById('brand-modal').classList.remove('show');
+  renderBrands();
+}
+
+function deleteBrand() {
+  const id = document.getElementById('bf-id').value;
+  const b  = (DB.brands||[]).find(x=>x.id===id);
+  if (!b || !confirm(`ลบ Brand "${b.name}"?\n\nProjects ที่เชื่อมกับ Brand นี้จะยังคงอยู่ แต่จะไม่มี Brand link`)) return;
+  DB.brands = (DB.brands||[]).filter(x=>x.id!==id);
+  (DB.projects||[]).forEach(p => { if (p.brandId===id) { delete p.brandId; delete p.clientId; } });
+  saveDB(true);
+  document.getElementById('brand-modal').classList.remove('show');
+  renderBrands();
+}
+
+// ── Brand view state ─────────────────────────
+let _brandsView = 'card';
+let _brandsPage = 1;
+const BRANDS_PER_PAGE = 12;
+
+function setBrandsView(v) {
+  _brandsView = v;
+  const cardBtn  = document.getElementById('brands-view-card');
+  const tableBtn = document.getElementById('brands-view-table');
+  if (cardBtn)  { cardBtn.style.background  = v==='card'  ? 'var(--accent)' : '#fff'; cardBtn.style.color  = v==='card'  ? '#fff' : 'var(--text-muted)'; }
+  if (tableBtn) { tableBtn.style.background = v==='table' ? 'var(--accent)' : '#fff'; tableBtn.style.color = v==='table' ? '#fff' : 'var(--text-muted)'; }
+  renderBrands();
+}
+
+// Compute full stats for a brand
+function getBrandStats(brandId) {
+  const b = (DB.brands||[]).find(x=>x.id===brandId);
+  if (!b) return {};
+  const projs    = getBrandProjects(brandId);
+  const tasks    = getBrandTasks(brandId);
+  const openTasks= tasks.filter(t=>!t.done);
+  const today    = new Date(); today.setHours(0,0,0,0);
+  const cutoff   = new Date(today); cutoff.setDate(today.getDate()+14);
+  const thisYear = new Date().getFullYear().toString();
+
+  const activeProjs = projs.filter(p=>p.status!=='Close'&&p.status!=='Pitch Lost');
+  const ytdProjs    = projs.filter(p=>(p.start||p.launch||p.createdAt||'').startsWith(thisYear));
+  const revenueYTD  = ytdProjs.reduce((s,p)=>s+(+p.budget||0),0);
+  const totalRev    = projs.reduce((s,p)=>s+(+p.budget||0),0);
+  const atRisk      = activeProjs.filter(p=>{const e=parseDate(p.end);return e&&e<=cutoff;});
+
+  // Open opportunities for this brand (match by brand name or project)
+  const projIds = projs.map(p=>p.id||p.code);
+  const openOpps = (DB.opportunities||[]).filter(o =>
+    o.stage!=='Won' && o.stage!=='Lost' && (
+      (o.brand||'').toLowerCase()===(b.name||'').toLowerCase() ||
+      (o.company||'').toLowerCase()===(b.clientName||'').toLowerCase()
+    )
+  );
+
+  // Workload: personMonthMatrix filtered to brand's projects
+  const brandProjIds = new Set(projIds);
+  const pm = personMonthMatrix(p => brandProjIds.has(p.id||p.code));
+  const thisM = new Date().getMonth();
+  const loads = Object.values(pm).map(a=>a[thisM]||0);
+  const avgLoad = loads.length ? loads.reduce((s,v)=>s+v,0)/loads.length : 0;
+  const workloadPct = Math.round(avgLoad/5*100);
+
+  // Health
+  let health = 'healthy';
+  if ((b.status||'active')==='inactive') health = 'inactive';
+  else if (workloadPct>110 || atRisk.length>1) health = 'at-risk';
+  else if (workloadPct>90 || atRisk.length>0) health = 'attention';
+
+  // Related contacts (CRM reference only — contacts at the client company who mention this brand)
+  const relatedContacts = (DB.clients||[]).filter(c =>
+    c.contactName && (
+      (c.company||'').toLowerCase()===(b.clientName||'').toLowerCase() ||
+      (c.brands||[]).some(br=>br.toLowerCase()===(b.name||'').toLowerCase()) ||
+      (c.brand||'').toLowerCase()===(b.name||'').toLowerCase()
+    )
+  );
+
+  // Last activity
+  const acts = (DB.activityLog||[]).filter(a=>projIds.includes(a.projectId));
+  const lastAct = acts.length ? acts[acts.length-1] : null;
+
+  // Sparkline: monthly budget distribution
+  const monthBudgets = Array(12).fill(0);
+  projs.forEach(p=>{
+    const m=parseInt((p.start||p.launch||p.createdAt||'').slice(5,7),10)-1;
+    if(m>=0&&m<12) monthBudgets[m]+=(+p.budget||0);
+  });
+
+  return { projs, activeProjs, tasks, openTasks, revenueYTD, totalRev, atRisk, openOpps, workloadPct, health, relatedContacts, lastAct, monthBudgets };
+}
+
+function brandHealthBadge(health) {
+  const cls={healthy:'bpf-health-healthy',attention:'bpf-health-attention','at-risk':'bpf-health-at-risk',inactive:'bpf-health-inactive'};
+  const lbl={healthy:'Healthy',attention:'Attention','at-risk':'At Risk',inactive:'Inactive'};
+  return `<span class="bpf-health-badge ${cls[health]||'bpf-health-healthy'}">${lbl[health]||health}</span>`;
+}
+
+function renderBrandsKPI(allBrands) {
+  const el = document.getElementById('brands-kpi-row');
+  if (!el) return;
+  const thisYear = new Date().getFullYear().toString();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cutoff = new Date(today); cutoff.setDate(today.getDate()+14);
+  let totalRevYTD=0, totalActiveProjs=0, totalOpenTasks=0, totalOpenOpps=0, brandsAtRisk=0;
+  allBrands.forEach(b=>{
+    const s=getBrandStats(b.id);
+    totalRevYTD    += s.revenueYTD||0;
+    totalActiveProjs+= (s.activeProjs||[]).length;
+    totalOpenTasks += (s.openTasks||[]).length;
+    totalOpenOpps  += (s.openOpps||[]).length;
+    if (s.health==='at-risk') brandsAtRisk++;
+  });
+  const KPIS=[
+    {icon:'📦',bg:'#eff6ff',val:allBrands.length,label:'Total Brands',sub:`${allBrands.filter(b=>b.status!=='inactive').length} active`,col:'#2563eb'},
+    {icon:'💰',bg:'#f0fdf4',val:'฿'+fmtMoney(totalRevYTD),label:'Revenue YTD',sub:'This year',col:'#16a34a'},
+    {icon:'📁',bg:'#faf5ff',val:totalActiveProjs,label:'Active Projects',sub:'Across all brands',col:'#7c3aed'},
+    {icon:'✅',bg:'#fff7ed',val:totalOpenTasks,label:'Open Tasks',sub:'Not yet done',col:'#d97706'},
+    {icon:'💼',bg:'#f0f9ff',val:totalOpenOpps,label:'Open Opportunities',sub:'Active pipeline',col:'#0891b2'},
+    {icon:'🚨',bg:'#fff1f2',val:brandsAtRisk,label:'Brands At Risk',sub:'Deadline ≤14d or overloaded',col:'#dc2626'},
+  ];
+  el.innerHTML=KPIS.map(k=>`
+    <div class="brands-kpi-card">
+      <div class="brands-kpi-icon" style="background:${k.bg};">${k.icon}</div>
+      <div>
+        <div class="brands-kpi-val" style="color:${k.col};">${k.val}</div>
+        <div class="brands-kpi-lbl">${k.label}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">${k.sub}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderBrandCard(b) {
+  const s = getBrandStats(b.id);
+  const isInactive = (b.status||'active')==='inactive';
+  const initials = (b.name||'?').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+  const logoColor = avatarColor(b.name||'?');
+  const workColor = s.workloadPct>110?'#dc2626':s.workloadPct>90?'#d97706':'#16a34a';
+  const lastActStr = s.lastAct ? new Date(s.lastAct.ts||0).toLocaleDateString('th-TH',{day:'numeric',month:'short'}) : '–';
+
+  return `<div class="bpf-card" onclick="openBrandDetail('${b.id}')">
+    <button class="bpf-card-menu" onclick="event.stopPropagation();openBrandModal('${b.id}')">⋯</button>
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding-right:24px;">
+      <div class="bpf-avatar" style="background:${logoColor};">${initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(b.name||'–')}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">🏢 ${escHtml(b.clientName||'–')}</div>
+        <div style="margin-top:4px;">${brandHealthBadge(s.health)}</div>
+      </div>
+    </div>
+    <div class="bpf-stats-row">
+      <div class="bpf-stat">
+        <div class="bpf-stat-lbl">Revenue YTD</div>
+        <div class="bpf-stat-val" style="font-size:12px;color:#16a34a;">฿${fmtMoney(s.revenueYTD)}</div>
+      </div>
+      <div class="bpf-stat">
+        <div class="bpf-stat-lbl">Projects</div>
+        <div class="bpf-stat-val">${s.activeProjs.length}</div>
+      </div>
+      <div class="bpf-stat">
+        <div class="bpf-stat-lbl">Open Tasks</div>
+        <div class="bpf-stat-val">${s.openTasks.length}</div>
+      </div>
+    </div>
+    <div class="bpf-footer">
+      <div class="bpf-footer-item">
+        <div class="bpf-footer-lbl">Opps</div>
+        <div class="bpf-footer-val">${s.openOpps.length}</div>
+      </div>
+      <div class="bpf-footer-item">
+        <div class="bpf-footer-lbl">Workload</div>
+        <div class="bpf-footer-val" style="color:${workColor};">${s.workloadPct}%</div>
+      </div>
+      <div class="bpf-footer-item">
+        <div class="bpf-footer-lbl">Contacts</div>
+        <div class="bpf-footer-val">${s.relatedContacts.length}</div>
+      </div>
+      <div class="bpf-footer-item">
+        <div class="bpf-footer-lbl">Last Act.</div>
+        <div class="bpf-footer-val" style="font-size:10px;">${lastActStr}</div>
+      </div>
+    </div>
+    <div class="bpf-view-link" onclick="event.stopPropagation();openBrandDetail('${b.id}')">View Brand →</div>
+  </div>`;
+}
+
+function renderBrandsTable(brands) {
+  if (!brands.length) return `<div style="text-align:center;padding:40px;color:var(--text-muted);">ยังไม่มี Brand</div>`;
+  return `<div class="tbl-wrap"><table class="data-table">
+    <thead><tr>
+      <th>Brand</th><th>Client</th><th>Status</th>
+      <th>Revenue YTD</th><th>Projects</th><th>Open Tasks</th>
+      <th>Opps</th><th>Workload</th><th>Health</th><th></th>
+    </tr></thead>
+    <tbody>${brands.map(b=>{
+      const s=getBrandStats(b.id);
+      const wc=s.workloadPct>110?'#dc2626':s.workloadPct>90?'#d97706':'#16a34a';
+      return `<tr style="cursor:pointer;" onclick="openBrandDetail('${b.id}')">
+        <td><b style="color:var(--accent);">${escHtml(b.name||'–')}</b>${b.description?`<div style="font-size:11px;color:var(--text-muted);">${escHtml(b.description)}</div>`:''}</td>
+        <td style="font-size:12px;">${escHtml(b.clientName||'–')}</td>
+        <td><span class="bpf-health-badge ${b.status==='inactive'?'bpf-health-inactive':'bpf-health-healthy'}">${b.status==='inactive'?'Inactive':'Active'}</span></td>
+        <td style="font-weight:700;color:#16a34a;">฿${fmtMoney(s.revenueYTD)}</td>
+        <td>${s.activeProjs.length}</td>
+        <td>${s.openTasks.length}</td>
+        <td>${s.openOpps.length}</td>
+        <td style="font-weight:700;color:${wc};">${s.workloadPct}%</td>
+        <td>${brandHealthBadge(s.health)}</td>
+        <td><button class="btn btn-sm" onclick="event.stopPropagation();openBrandModal('${b.id}')">Edit</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderBrands() {
+  // Populate client filter
+  const clientSel = document.getElementById('brands-filter-client');
+  if (clientSel) {
+    const clients = getUniqueClients();
+    const cur = clientSel.value;
+    clientSel.innerHTML = `<option value="">All Clients</option>${clients.map(c=>`<option value="${escHtml(c)}" ${c===cur?'selected':''}>${escHtml(c)}</option>`).join('')}`;
+  }
+
+  const q       = (document.getElementById('brands-search')?.value||'').toLowerCase();
+  const clientF = (document.getElementById('brands-filter-client')?.value||'').toLowerCase();
+  const statusF = document.getElementById('brands-filter-status')?.value||'';
+  const sortBy  = document.getElementById('brands-sort')?.value||'revenue';
+
+  let brands = (DB.brands||[]).filter(b => {
+    if (q && !`${b.name} ${b.clientName}`.toLowerCase().includes(q)) return false;
+    if (clientF && (b.clientName||'').toLowerCase()!==clientF) return false;
+    if (statusF && (b.status||'active')!==statusF) return false;
+    return true;
+  });
+
+  // Sort
+  brands = brands.slice().sort((a,b_) => {
+    if (sortBy==='revenue') return getBrandRevenue(b_.id)-getBrandRevenue(a.id);
+    if (sortBy==='projects') return getBrandProjects(b_.id).length-getBrandProjects(a.id).length;
+    if (sortBy==='health') {
+      const o={'at-risk':0,'attention':1,'healthy':2,'inactive':3};
+      return (o[getBrandStats(a.id).health]||2)-(o[getBrandStats(b_.id).health]||2);
+    }
+    return (a.name||'').localeCompare(b_.name||'');
+  });
+
+  // KPI row uses all brands (before pagination filter)
+  renderBrandsKPI(DB.brands||[]);
+
+  // Pagination
+  const total=brands.length;
+  const totalPages=Math.max(1,Math.ceil(total/BRANDS_PER_PAGE));
+  if (_brandsPage>totalPages) _brandsPage=1;
+  const start=(_brandsPage-1)*BRANDS_PER_PAGE;
+  const paged=brands.slice(start, start+BRANDS_PER_PAGE);
+
+  const el=document.getElementById('brands-content');
+  if (!el) return;
+  if (_brandsView==='card') {
+    el.innerHTML = paged.length
+      ? `<div class="brands-grid">${paged.map(renderBrandCard).join('')}</div>`
+      : `<div style="text-align:center;padding:60px;color:var(--text-muted);">ยังไม่มี Brand — กด "+ Add Brand" หรือ "🔄 Sync"</div>`;
+  } else {
+    el.innerHTML = renderBrandsTable(paged);
+  }
+
+  // Pagination bar
+  const pagEl=document.getElementById('brands-pagination');
+  if (pagEl && total>0) {
+    pagEl.innerHTML=`
+      <span>Showing ${start+1} to ${Math.min(start+BRANDS_PER_PAGE,total)} of ${total} brands</span>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <button class="btn btn-sm" onclick="_brandsPage=Math.max(1,_brandsPage-1);renderBrands();" ${_brandsPage<=1?'disabled':''}>‹</button>
+        ${Array.from({length:Math.min(totalPages,5)},(_,i)=>`<button class="btn btn-sm ${i+1===_brandsPage?'btn-primary':''}" onclick="_brandsPage=${i+1};renderBrands();">${i+1}</button>`).join('')}
+        <button class="btn btn-sm" onclick="_brandsPage=Math.min(totalPages,_brandsPage+1);renderBrands();" ${_brandsPage>=totalPages?'disabled':''}>›</button>
+      </div>
+      <span>${BRANDS_PER_PAGE} / page</span>`;
+  } else if (pagEl) { pagEl.innerHTML=''; }
+}
+
+// ── Brand Detail slide-in panel ───────────────
+let _brandDetailTab = 'overview';
+function openBrandDetail(brandId, tab) {
+  _brandDetailTab = tab||'overview';
+  document.querySelector('.brand-detail-modal')?.remove();
+  const b = (DB.brands||[]).find(x=>x.id===brandId);
+  if (!b) return;
+  const s = getBrandStats(brandId);
+  const {projs, activeProjs, tasks, openTasks, revenueYTD, totalRev, atRisk, openOpps, workloadPct, health, relatedContacts, lastAct, monthBudgets} = s;
+
+  const TABS = ['overview','projects','tasks','revenue','activity','files','contacts'];
+  const tabLabels = {
+    overview:'📊 Overview', projects:'📁 Projects', tasks:'✅ Tasks',
+    revenue:'💰 Revenue', activity:'📋 Activity', files:'📎 Files', contacts:'👤 Related Contacts'
+  };
+  const tabsHtml = TABS.map(t=>`<div class="clt-detail-tab${t===_brandDetailTab?' active':''}" onclick="openBrandDetail('${brandId}','${t}')">${tabLabels[t]}</div>`).join('');
+
+  let bodyHtml = '';
+
+  if (_brandDetailTab==='overview') {
+    const wColor = workloadPct>110?'#dc2626':workloadPct>90?'#d97706':'#16a34a';
+    bodyHtml = `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Projects</div><div style="font-size:22px;font-weight:800;">${projs.length}</div><div style="font-size:10px;color:var(--text-muted);">${activeProjs.length} active</div></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Open Tasks</div><div style="font-size:22px;font-weight:800;">${openTasks.length}</div><div style="font-size:10px;color:var(--text-muted);">${tasks.length} total</div></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Revenue YTD</div><div style="font-size:16px;font-weight:800;color:#16a34a;">฿${fmtMoney(revenueYTD)}</div><div style="font-size:10px;color:var(--text-muted);">฿${fmtMoney(totalRev)} total</div></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Workload</div><div style="font-size:22px;font-weight:800;color:${wColor};">${workloadPct}%</div><div style="font-size:10px;color:var(--text-muted);">${brandHealthBadge(health)}</div></div>
+      </div>
+      ${atRisk.length?`<div style="background:#fff1f2;border:1px solid #fecaca;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;"><b style="color:#dc2626;">🚨 ${atRisk.length} Project(s) At Risk</b> — deadline ≤14 days: ${atRisk.map(p=>`<b>${p.code||p.brand}</b>`).join(', ')}</div>`:''}
+      ${b.description?`<div style="padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;margin-bottom:12px;color:var(--text-muted);">${escHtml(b.description)}</div>`:''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        <button class="btn btn-sm btn-primary" onclick="openBrandModal('${brandId}')">✏ Edit Brand</button>
+        <button class="btn btn-sm" onclick="this.closest('.brand-detail-modal').remove();openBrandDetail('${brandId}','projects')">📁 View Projects</button>
+      </div>`;
+  } else if (_brandDetailTab==='projects') {
+    bodyHtml = projs.length ? projs.map(p=>{
+      const e=parseDate(p.end);
+      const today=new Date();today.setHours(0,0,0,0);
+      const days=e?Math.round((e-today)/86400000):null;
+      const isRisk=days!==null&&days<=14;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid ${isRisk?'#fecaca':'var(--border)'};border-radius:8px;margin-bottom:6px;background:${isRisk?'#fff8f8':'#fff'};">
+        <span class="code-mono" style="font-size:10px;flex-shrink:0;">${p.code||'–'}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:13px;">${escHtml(p.name||p.brand||'–')}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${p.status||''} · ${p.owner||''} · ฿${fmtMoney(+p.budget||0)}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:11px;font-weight:700;color:${isRisk?'#dc2626':'var(--text-muted)'};">${days!==null?(days<0?'⚠ '+(-days)+'d over':days+'d left'):'–'}</div>
+          <span style="font-size:10px;padding:2px 6px;border-radius:6px;background:var(--surface-2);">${p.status}</span>
+        </div>
+      </div>`;
+    }).join('') : '<div style="text-align:center;padding:30px;color:var(--text-muted);">ยังไม่มี Projects</div>';
+  } else if (_brandDetailTab==='tasks') {
+    const overdue=openTasks.filter(t=>{const d=t.endDate?new Date(t.endDate):null;const today=new Date();today.setHours(0,0,0,0);return d&&d<today;});
+    bodyHtml = `
+      ${overdue.length?`<div style="background:#fff1f2;border-left:3px solid #dc2626;padding:8px 12px;border-radius:6px;margin-bottom:10px;font-size:12px;"><b style="color:#dc2626;">⚠ ${overdue.length} task(s) overdue</b></div>`:''}
+      ${tasks.length?`<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Task</th><th>Project</th><th>Assignee</th><th>Status</th><th>Due</th></tr></thead><tbody>
+        ${tasks.map(t=>{
+          const p=(DB.projects||[]).find(x=>(x.id||x.code)===t.projectId);
+          const due=t.endDate?new Date(t.endDate):null;
+          const today=new Date();today.setHours(0,0,0,0);
+          const isOd=due&&!t.done&&due<today;
+          return `<tr style="${isOd?'background:#fff8f8;':''}">
+            <td>${escHtml(t.title||'–')}</td>
+            <td style="font-size:11px;">${escHtml(p?.code||'–')}</td>
+            <td>${escHtml(t.assignee||'–')}</td>
+            <td>${t.done?'<span style="color:#16a34a;">✅ Done</span>':'<span style="color:#d97706;">⬜ Open</span>'}</td>
+            <td style="font-size:11px;color:${isOd?'#dc2626':'inherit'};font-weight:${isOd?'700':'400'};">${t.endDate||'–'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody></table></div>` : '<div style="text-align:center;padding:30px;color:var(--text-muted);">ยังไม่มี Tasks</div>'}`;
+  } else if (_brandDetailTab==='revenue') {
+    const byProj=projs.filter(p=>p.budget).map(p=>({name:p.name||p.brand||p.code,budget:+p.budget||0,status:p.status,year:(p.start||p.launch||p.createdAt||'').slice(0,4)||'–'}));
+    byProj.sort((a,b)=>b.budget-a.budget);
+    const max=byProj[0]?.budget||1;
+    const statusColor={Working:'#16a34a',Proposing:'#d97706',Pitching:'#2563eb',Close:'#9aa3b8'};
+    bodyHtml=`
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;">
+        <div><b style="font-size:16px;">฿${fmtMoney(totalRev)}</b> <span style="font-size:12px;color:var(--text-muted);">Total Revenue</span></div>
+        <div><b style="color:#16a34a;">฿${fmtMoney(revenueYTD)}</b> <span style="font-size:11px;color:var(--text-muted);">YTD</span></div>
+      </div>
+      ${byProj.length?byProj.map(p=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span style="width:8px;height:8px;border-radius:50%;background:${statusColor[p.status]||'#888'};display:inline-block;flex-shrink:0;"></span>
+          <span style="flex:1;font-size:12px;font-weight:600;">${escHtml(p.name)}</span>
+          <span style="font-size:11px;color:var(--text-muted);">${p.year}</span>
+          <div style="width:100px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="width:${Math.round(p.budget/max*100)}%;height:100%;background:var(--accent);border-radius:3px;"></div></div>
+          <span style="font-size:12px;font-weight:700;width:80px;text-align:right;">฿${fmtMoney(p.budget)}</span>
+        </div>`).join(''):'<div style="text-align:center;padding:20px;color:var(--text-muted);">ยังไม่มีข้อมูล Revenue</div>'}`;
+  } else if (_brandDetailTab==='activity') {
+    const projIds=projs.map(p=>p.id||p.code);
+    const acts=(DB.activityLog||[]).filter(a=>projIds.includes(a.projectId)).slice(-30).reverse();
+    bodyHtml=acts.length?acts.map(a=>`
+      <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:${avatarColor(a.user||'?')};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">${(a.user||'?')[0]}</div>
+        <div style="flex:1;"><b>${escHtml(a.user||'')}</b> ${escHtml(a.action||'')}</div>
+        <span style="font-size:10px;color:var(--text-muted);flex-shrink:0;">${a.ts?new Date(a.ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):''}</span>
+      </div>`).join(''):'<div style="text-align:center;padding:30px;color:var(--text-muted);">ยังไม่มี Activity</div>';
+  } else if (_brandDetailTab==='files') {
+    // Collect file attachments from project comments and tasks
+    const projIds=projs.map(p=>p.id||p.code);
+    const fileAtts=[];
+    projs.forEach(p=>(p.comments||[]).forEach(c=>(c.attachments||[]).forEach(a=>fileAtts.push({...a,_from:p.code||p.brand,_date:c.date||c.ts}))));
+    (DB.tasks||[]).filter(t=>projIds.includes(t.projectId)).forEach(t=>(t.noteAtts||[]).forEach(a=>fileAtts.push({...a,_from:t.title,_date:t.updatedAt||t.createdAt})));
+    bodyHtml=fileAtts.length
+      ?`<div class="comment-atts">${fileAtts.slice(0,20).map(a=>`<div class="comment-att" onclick="openAttPreview(${JSON.stringify(a).replace(/"/g,'&quot;')})">
+          ${a.mime?.startsWith('image/')?`<img src="${a.dataUrl}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;">`:`<span>${rteFileIcon(a.name,a.mime)}</span>`}
+          <span style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(a.name||'file')}</span>
+        </div>`).join('')}</div>`
+      :'<div style="text-align:center;padding:30px;color:var(--text-muted);">ยังไม่มีไฟล์แนบ — อัปโหลดผ่าน Comments หรือ Note ใน Task</div>';
+  } else if (_brandDetailTab==='contacts') {
+    bodyHtml=relatedContacts.length
+      ?`<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">📌 Synced reference from CRM — ${relatedContacts.length} contact(s) at ${escHtml(b.clientName||'this client')}</div>
+        ${relatedContacts.map(c=>`<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:${avatarColor(c.contactName||'?')};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;">${(c.contactName||'?').slice(0,2).toUpperCase()}</div>
+          <div><div style="font-weight:600;font-size:13px;">${escHtml(c.contactName||'–')}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${escHtml(c.position||'')}${c.email?' · '+escHtml(c.email):''}</div></div>
+        </div>`).join('')}`
+      :`<div style="text-align:center;padding:30px;color:var(--text-muted);">
+          <div style="font-size:32px;margin-bottom:8px;">👤</div>
+          <div style="font-size:12px;font-weight:600;">ยังไม่มี Related Contacts</div>
+          <div style="font-size:11px;color:var(--text-hint);margin-top:4px;">เพิ่ม Contact ที่ Client <b>${escHtml(b.clientName||'–')}</b> และระบุ Brand ให้ตรงกัน</div>
+        </div>`;
+  }
+
+  // Breadcrumb for detail
+  const bcHtml=`<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:4px;">
+    <span class="bc-link" onclick="this.closest('.brand-detail-modal').remove()">Clients</span>
+    <span class="bc-sep">›</span>
+    <span class="bc-link" onclick="this.closest('.brand-detail-modal').remove()">${escHtml(b.clientName||'Brands')}</span>
+    <span class="bc-sep">›</span>
+    <span class="bc-current">${escHtml(b.name||'Brand')}</span>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="brand-detail-modal" onclick="if(event.target===this)this.remove()">
+      <div class="brand-detail-panel">
+        <div class="brand-detail-head">
+          <div class="bpf-avatar" style="background:${avatarColor(b.name||'?')};width:48px;height:48px;font-size:18px;">${(b.name||'?').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'}</div>
+          <div style="flex:1;min-width:0;">
+            ${bcHtml}
+            <div style="font-size:18px;font-weight:800;">${escHtml(b.name||'–')}</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:1px;">🏢 ${escHtml(b.clientName||'–')}</div>
+            <div style="margin-top:4px;">${brandHealthBadge(health)}</div>
+          </div>
+          <button class="modal-close" onclick="this.closest('.brand-detail-modal').remove()">×</button>
+        </div>
+        <div style="padding:16px 24px;">
+          <div class="clt-detail-tabs">${tabsHtml}</div>
+          <div style="padding-top:4px;">${bodyHtml}</div>
+        </div>
+      </div>
+    </div>`);
+}
+
 // ── Auth Init ─────────────────────────────────────────────
 (async function initAuth() {
   loadSession();
@@ -12288,6 +13953,8 @@ async function adminResetPassword(userId) {
   // Render users when admin tab is opened
   document.querySelector('[data-panel="admin"]')?.addEventListener('click', renderUsers);
   document.querySelector('[data-panel="profile"]')?.addEventListener('click', initProfile);
+  // Migrate brands from projects
+  migrateBrandsFromProjects();
 })();
 
 // ══════════════════════════════════════════════════════════
@@ -12735,6 +14402,8 @@ function openClientProfileCRM(clientId, activeTab) {
   activeTab = activeTab||'overview';
   const cl = (DB.clients||[]).find(x=>x.id===clientId);
   if (!cl) return;
+  // Update breadcrumb
+  renderClientsBreadcrumb([{label: cl.company||'–', onclick:`openClientProfileCRM('${clientId}','overview')`}]);
   const linked   = (DB.projects||[]).filter(p=>p.company===cl.company||(cl.projectIds||[]).includes(p.id||p.code));
   const leads    = (DB.leads||[]).filter(l=>l.company===cl.company||(cl.leadIds||[]).includes(l.id));
   const opps     = (DB.opportunities||[]).filter(o=>o.company===cl.company);
@@ -12763,13 +14432,26 @@ function openClientProfileCRM(clientId, activeTab) {
         <button class="btn btn-sm" onclick="openLeadModal(null);setTimeout(()=>document.getElementById('lf-company').value='${escHtml(cl.company)}',50)">+ Lead</button>
       </div>`;
   } else if (activeTab==='brands') {
-    bodyHtml = brands.length
-      ? brands.map(b=>`<div style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">
-          <span style="font-size:24px;">📦</span>
-          <div><div style="font-weight:600;">${escHtml(b)}</div>
-          <div style="font-size:11px;color:var(--text-muted);">${(DB.projects||[]).filter(p=>p.brand===b).length} projects</div></div>
-        </div>`).join('')
-      : `<div style="color:var(--text-muted);padding:20px;text-align:center;">ยังไม่มี Brand</div>`;
+    const clientBrands = (DB.brands||[]).filter(b => b.clientId === cl.id || (b.clientName||'').toLowerCase() === (cl.company||'').toLowerCase());
+    bodyHtml = clientBrands.length
+      ? clientBrands.map(b=>{
+          const projs = getBrandProjects(b.id);
+          const rev   = getBrandRevenue(b.id);
+          return `<div class="brand-card" onclick="openBrandDetail('${b.id}')">
+            <div class="brand-card-icon">📦</div>
+            <div style="flex:1;">
+              <div class="brand-card-name">${escHtml(b.name)}</div>
+              ${b.description?`<div style="font-size:11px;color:var(--text-hint);">${escHtml(b.description)}</div>`:''}
+            </div>
+            <div class="brand-card-stats">
+              <div class="brand-card-stat"><b>${projs.length}</b> projects</div>
+              ${rev?`<div class="brand-card-stat" style="color:var(--accent);">฿${fmtMoney(rev)}</div>`:''}
+            </div>
+            <button class="btn btn-sm" onclick="event.stopPropagation();openBrandModal('${b.id}')">Edit</button>
+          </div>`;
+        }).join('')
+      : `<div style="color:var(--text-muted);padding:20px;text-align:center;">ยังไม่มี Brand ใน DB — กด Sync</div>`;
+    bodyHtml += `<button class="btn btn-sm btn-primary" style="margin-top:8px;" onclick="openBrandModal(null);setTimeout(()=>{const s=document.getElementById('bf-client');if(s)s.value='${escHtml(cl.company||'')}';},50)">+ Add Brand</button>`;
   } else if (activeTab==='contacts') {
     const allContacts = (DB.clients||[]).filter(c=>c.company===cl.company && c.contactName);
     bodyHtml = allContacts.length
@@ -12939,6 +14621,34 @@ function openClientProfileCRM(clientId, activeTab) {
       <button class="btn" onclick="document.getElementById('opp-modal').classList.remove('show')">Cancel</button>
       <button class="btn btn-danger" id="of-delete" onclick="deleteOpp()" style="display:none;margin-right:auto;">🗑 Delete</button>
       <button class="btn btn-primary" onclick="saveOpp()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- BRAND MODAL -->
+<div class="modal" id="brand-modal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-head">
+      <h2 id="brand-modal-title">Add Brand</h2>
+      <button class="modal-close" onclick="document.getElementById('brand-modal').classList.remove('show')">&times;</button>
+    </div>
+    <div class="form-grid" style="padding:16px;">
+      <input type="hidden" id="bf-id">
+      <div class="form-field full"><label>Brand Name *</label><input id="bf-name" placeholder="เช่น Bear Brand, Nescafe, Maggi"></div>
+      <div class="form-field full"><label>Client / Company *</label>
+        <select id="bf-client">
+          <option value="">— เลือก Client —</option>
+        </select>
+      </div>
+      <div class="form-field full"><label>Description</label><input id="bf-desc" placeholder="คำอธิบาย brand"></div>
+      <div class="form-field"><label>Status</label>
+        <select id="bf-status"><option value="active">🟢 Active</option><option value="inactive">⚫ Inactive</option></select>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border);">
+      <button class="btn" onclick="document.getElementById('brand-modal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-danger" id="bf-delete" style="display:none;margin-right:auto;" onclick="deleteBrand()">🗑 Delete</button>
+      <button class="btn btn-primary" onclick="saveBrand()">บันทึก</button>
     </div>
   </div>
 </div>
