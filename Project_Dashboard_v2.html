@@ -5221,6 +5221,16 @@ function nextCode(pfpg, launchYear) {
 const _tabInited = new Set();
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
+    // If detail view is active, close it and restore main-area first
+    const dv = document.getElementById('detail-view');
+    const ma = document.querySelector('.main-area');
+    if (dv && dv.classList.contains('active')) {
+      dv.classList.remove('active');
+      dv.innerHTML = '';
+      if (ma) ma.style.display = '';
+      // Clear hash without triggering hashchange
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
     t.classList.add('active');
