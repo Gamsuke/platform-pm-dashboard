@@ -590,20 +590,216 @@ details ul { padding-left: 18px; }
 .mongo-cfg h3 { margin:0 0 12px; font-size:13px; font-weight:600; }
 
 /* ── Auth Login Overlay ── */
-.auth-overlay { position:fixed; inset:0; background:linear-gradient(135deg, var(--ci-navy) 0%, #1A3A7A 50%, #002169 100%); display:flex; align-items:center; justify-content:center; z-index:9999; }
+/* ── Platform ONE Login ── */
+.auth-overlay {
+  position:fixed; inset:0; z-index:9999;
+  background:#0F172A;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+.auth-overlay::before {
+  content:'';
+  position:absolute; inset:0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events:none;
+}
+/* Glow orbs */
+.auth-overlay::after {
+  content:'';
+  position:absolute;
+  width:600px; height:600px;
+  top:-15%; left:-10%;
+  background:radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%);
+  pointer-events:none;
+  border-radius:50%;
+}
+.auth-overlay .glow-r {
+  position:absolute;
+  width:500px; height:500px;
+  bottom:-10%; right:-8%;
+  background:radial-gradient(circle, rgba(99,60,180,0.15) 0%, transparent 70%);
+  pointer-events:none;
+  border-radius:50%;
+}
 .auth-overlay.hidden { display:none; }
-.auth-box { background:#fff; border:none; border-radius:20px; padding:40px 36px; width:380px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.35); }
-.auth-logo { text-align:center; margin-bottom:24px; }
-.auth-logo h2 { font-size:20px; font-weight:700; margin:10px 0 4px; color:var(--ci-navy); }
-.auth-logo p { font-size:13px; color:var(--text-muted); margin:0; }
+
+.auth-box {
+  position:relative; z-index:2;
+  width:420px; max-width:94vw;
+  display:flex; flex-direction:column; align-items:center; gap:20px;
+  animation: p1FadeUp 0.5s ease both;
+}
+@keyframes p1FadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* Brand header */
+.auth-brand {
+  text-align:center;
+}
+.auth-brand-logo {
+  display:inline-flex; align-items:center; gap:10px;
+  margin-bottom:10px;
+}
+.auth-brand-icon {
+  width:40px; height:40px; border-radius:10px;
+  background:#2563EB;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 20px rgba(37,99,235,0.5);
+  flex-shrink:0;
+}
+.auth-brand-name {
+  text-align:left;
+}
+.auth-brand-name h1 {
+  font-size:20px; font-weight:900; letter-spacing:-0.5px;
+  color:#fff; line-height:1; margin:0;
+}
+.auth-brand-name h1 span { color:#60A5FA; }
+.auth-brand-name p {
+  font-size:10px; font-weight:500; letter-spacing:3px;
+  text-transform:uppercase; color:rgba(255,255,255,0.35);
+  margin:3px 0 0;
+}
+.auth-brand-statement {
+  margin-top:6px;
+}
+.auth-brand-statement p {
+  font-size:12px; font-weight:500;
+  color:rgba(255,255,255,0.4);
+  margin:2px 0; line-height:1.5;
+}
+
+/* Login card */
+.auth-card {
+  width:100%;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px;
+  padding:32px 30px;
+  box-shadow:0 25px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter:blur(12px);
+}
+.auth-card-head { text-align:center; margin-bottom:22px; }
+.auth-card-head h2 { font-size:16px; font-weight:600; color:#fff; margin:0 0 4px; }
+.auth-card-head p { font-size:12px; color:rgba(255,255,255,0.45); margin:0; }
+
+/* Fields */
 .auth-field { margin-bottom:14px; }
-.auth-field label { display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.3px; }
-.auth-field input { width:100%; padding:11px 13px; border:1.5px solid var(--border-strong); border-radius:8px; font-size:14px; font-family:inherit; background:#fff; color:var(--text); }
-.auth-field input:focus { outline:none; border-color:var(--ci-blue); box-shadow:0 0 0 3px rgba(66,125,218,0.15); }
-.auth-error-box { background:var(--danger-bg); border:1px solid rgba(184,50,48,0.3); color:var(--danger); border-radius:8px; padding:8px 12px; font-size:13px; margin-bottom:12px; }
-.auth-btn { width:100%; padding:12px; background:var(--ci-navy); color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; margin-top:6px; letter-spacing:0.3px; transition:background 0.15s; }
-.auth-btn:hover { background:#002F8F; }
-.auth-btn:disabled { opacity:0.6; cursor:not-allowed; }
+.auth-field label {
+  display:block; font-size:11px; font-weight:600;
+  color:rgba(255,255,255,0.5); margin-bottom:6px;
+  text-transform:uppercase; letter-spacing:0.5px;
+}
+.auth-field input {
+  width:100%; padding:11px 14px;
+  background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.12);
+  border-radius:10px;
+  font-size:14px; font-family:inherit;
+  color:#fff;
+  box-sizing:border-box;
+  transition:border-color 0.15s, box-shadow 0.15s;
+}
+.auth-field input::placeholder { color:rgba(255,255,255,0.25); }
+.auth-field input:focus {
+  outline:none;
+  border-color:#2563EB;
+  box-shadow:0 0 0 3px rgba(37,99,235,0.25);
+  background:rgba(255,255,255,0.08);
+}
+
+/* Error */
+.auth-error-box {
+  background:rgba(220,38,38,0.12);
+  border:1px solid rgba(220,38,38,0.3);
+  color:#FCA5A5;
+  border-radius:10px; padding:10px 14px;
+  font-size:12px; margin-bottom:14px;
+}
+
+/* Login button */
+.auth-btn {
+  width:100%; padding:13px;
+  background:linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%);
+  color:#fff; border:none; border-radius:10px;
+  font-size:14px; font-weight:700;
+  cursor:pointer; font-family:inherit; margin-top:6px;
+  letter-spacing:0.2px;
+  box-shadow:0 4px 15px rgba(37,99,235,0.4);
+  transition:all 0.15s;
+}
+.auth-btn:hover { background:linear-gradient(135deg,#3B82F6 0%,#2563EB 100%); box-shadow:0 6px 20px rgba(37,99,235,0.5); transform:translateY(-1px); }
+.auth-btn:active { transform:translateY(0); }
+.auth-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+.auth-divider {
+  display:flex; align-items:center; gap:10px;
+  margin:16px 0;
+}
+.auth-divider::before, .auth-divider::after {
+  content:''; flex:1;
+  height:1px; background:rgba(255,255,255,0.08);
+}
+.auth-divider span { font-size:11px; color:rgba(255,255,255,0.25); }
+
+.auth-footer-note {
+  text-align:center; font-size:11px;
+  color:rgba(255,255,255,0.3); line-height:1.6;
+  margin-top:4px;
+}
+.auth-footer-note span { color:#60A5FA; font-weight:500; }
+
+/* Snapshot section */
+.auth-snapshot { width:100%; }
+.auth-snapshot-title {
+  font-size:10px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase;
+  color:rgba(255,255,255,0.3);
+  text-align:center; margin-bottom:10px;
+}
+.auth-snapshot-grid {
+  display:grid; grid-template-columns:repeat(5,1fr); gap:8px;
+}
+.auth-snapshot-card {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; padding:12px 8px;
+  text-align:center;
+}
+.auth-snapshot-card .snap-val {
+  font-size:16px; font-weight:700; color:#fff;
+  line-height:1.2;
+}
+.auth-snapshot-card .snap-lbl {
+  font-size:9px; color:rgba(255,255,255,0.35);
+  margin-top:3px; line-height:1.3;
+}
+.auth-snapshot-card .snap-icon {
+  font-size:16px; margin-bottom:4px;
+  display:block;
+}
+
+/* Bottom copyright */
+.auth-copy {
+  font-size:11px; color:rgba(255,255,255,0.2);
+  text-align:center;
+}
+
+/* Security badge */
+.auth-secure {
+  display:flex; align-items:center; justify-content:center;
+  gap:5px; margin-top:10px;
+  font-size:10px; color:rgba(255,255,255,0.2);
+}
+
+@media (max-width:480px) {
+  .auth-snapshot-grid { grid-template-columns:repeat(3,1fr); }
+  .auth-snapshot-grid .auth-snapshot-card:nth-child(4),
+  .auth-snapshot-grid .auth-snapshot-card:nth-child(5) { display:none; }
+}
 
 /* ── Topbar user chip ── */
 .topbar-user { display:flex; align-items:center; gap:8px; padding:4px 10px; border:1px solid rgba(255,255,255,0.25); border-radius:8px; background:rgba(255,255,255,0.12); }
@@ -2493,32 +2689,108 @@ details ul { padding-left: 18px; }
   </div>
 </div>
 
-<!-- LOGIN OVERLAY -->
+<!-- LOGIN OVERLAY — Platform ONE -->
 <div class="auth-overlay" id="auth-overlay">
+  <div class="glow-r"></div>
   <div class="auth-box">
-    <!-- Loading state -->
+
+    <!-- Loading state (hidden by default) -->
     <div id="auth-loading" style="display:none;"></div>
-    <!-- Login form — visible by default, JS hides it when app loads -->
+
+    <!-- Login form -->
     <div id="auth-form" style="display:block;">
-      <div class="auth-logo">
-        <div style="font-size:40px;line-height:1;">🏢</div>
-        <h2>Platform Group</h2>
-        <p>Project Management Dashboard</p>
+
+      <!-- Brand Header -->
+      <div class="auth-brand">
+        <div class="auth-brand-logo">
+          <div class="auth-brand-icon">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <rect x="2" y="2" width="7" height="7" rx="1.5" fill="white"/>
+              <rect x="13" y="2" width="7" height="7" rx="1.5" fill="white" fill-opacity="0.6"/>
+              <rect x="2" y="13" width="7" height="7" rx="1.5" fill="white" fill-opacity="0.6"/>
+              <rect x="13" y="13" width="7" height="7" rx="1.5" fill="white"/>
+            </svg>
+          </div>
+          <div class="auth-brand-name">
+            <h1>PLATFORM <span>ONE</span></h1>
+            <p>Data-Driven &amp; Growth</p>
+          </div>
+        </div>
+        <div class="auth-brand-statement">
+          <p>One Platform. One Source of Truth. Unlimited Growth.</p>
+        </div>
       </div>
-      <div class="auth-error-box" id="auth-error" style="display:none;"></div>
-      <div class="auth-field">
-        <label>Username</label>
-        <input id="auth-username" type="text" placeholder="กรอก username" autocomplete="username">
+
+      <!-- Login Card -->
+      <div class="auth-card">
+        <div class="auth-card-head">
+          <h2>Welcome back</h2>
+          <p>Project Management Dashboard</p>
+        </div>
+
+        <div class="auth-error-box" id="auth-error" style="display:none;"></div>
+
+        <div class="auth-field">
+          <label>Username</label>
+          <input id="auth-username" type="text" placeholder="กรอก username" autocomplete="username">
+        </div>
+        <div class="auth-field">
+          <label>Password</label>
+          <input id="auth-password" type="password" placeholder="กรอก password" autocomplete="current-password">
+        </div>
+        <button class="auth-btn" id="auth-login-btn">เข้าสู่ระบบ</button>
+
+        <div class="auth-divider"><span>secured connection</span></div>
+
+        <p class="auth-footer-note">
+          For authorized <span>@platform.co.th</span> users only.<br>
+          <span id="auth-default-hint" style="display:none;color:rgba(255,255,255,0.3);">Default: admin / 1234</span>
+        </p>
+
+        <div class="auth-secure">
+          <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+          256-bit encrypted · Zero-trust access
+        </div>
       </div>
-      <div class="auth-field">
-        <label>Password</label>
-        <input id="auth-password" type="password" placeholder="กรอก password" autocomplete="current-password">
+
+      <!-- Business Snapshot -->
+      <div class="auth-snapshot">
+        <div class="auth-snapshot-title">Today's Snapshot</div>
+        <div class="auth-snapshot-grid">
+          <div class="auth-snapshot-card">
+            <span class="snap-icon">📁</span>
+            <div class="snap-val">42</div>
+            <div class="snap-lbl">Active Projects</div>
+          </div>
+          <div class="auth-snapshot-card">
+            <span class="snap-icon">✅</span>
+            <div class="snap-val">1,284</div>
+            <div class="snap-lbl">Open Tasks</div>
+          </div>
+          <div class="auth-snapshot-card">
+            <span class="snap-icon">⏳</span>
+            <div class="snap-val">8</div>
+            <div class="snap-lbl">Pending Approvals</div>
+          </div>
+          <div class="auth-snapshot-card">
+            <span class="snap-icon">👥</span>
+            <div class="snap-val">87%</div>
+            <div class="snap-lbl">Team Utilization</div>
+          </div>
+          <div class="auth-snapshot-card">
+            <span class="snap-icon">💰</span>
+            <div class="snap-val">฿14.8M</div>
+            <div class="snap-lbl">Revenue MTD</div>
+          </div>
+        </div>
       </div>
-      <button class="auth-btn" id="auth-login-btn">เข้าสู่ระบบ</button>
-      <div id="auth-default-hint" style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-hint);display:none;">Default: admin / 1234 (เปลี่ยนหลัง login ครั้งแรก)</div>
-    </div>
-  </div>
-</div>
+
+      <!-- Copyright -->
+      <div class="auth-copy">© 2026 Platform ONE · platform.co.th</div>
+
+    </div><!-- end auth-form -->
+  </div><!-- end auth-box -->
+</div><!-- end auth-overlay -->
 
 <!-- CHANGE PASSWORD MODAL -->
 <div class="modal" id="chpw-modal">
@@ -13966,7 +14238,7 @@ function openBrandDetail(brandId, tab) {
   })();
   // แสดง hint "Default: admin/1234" เฉพาะกรณีไม่มี cloud หรือ user เดียว
   const onlyDefault = (DB.users||[]).length === 1 && (DB.users||[])[0]?.id === 'u_admin_default';
-  document.getElementById('auth-default-hint').style.display = onlyDefault ? '' : 'none';
+  const _dh = document.getElementById('auth-default-hint'); if (_dh) _dh.style.display = onlyDefault ? 'inline' : 'none';
 
   // ── 3. ตรวจ session ว่า user ยังอยู่ใน DB หรือเปล่า ──
   if (SESSION) {
