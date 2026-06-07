@@ -11505,8 +11505,6 @@ async function mongoPull() {
     const res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', {
       method: 'GET', headers: apiHeaders(cfg)
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
     if (data && data.projects) {
       // ป้องกัน overwrite ถ้า local ใหม่กว่า cloud
       const localTs = DB.updatedAt || '';
@@ -11569,14 +11567,14 @@ async function mongoLoadDB() {
     // Timeout 6s — Render free tier อาจนอนหลับ อย่ารอนาน
     const controller = new AbortController();
     const tid = setTimeout(() => controller.abort(), 6000);
-    let res;
+    let res, data;
     try {
       res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', {
         method: 'GET', headers: apiHeaders(cfg), signal: controller.signal
       });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      data = await res.json(); // ยังอยู่ใน abort scope — ถ้า body ช้า ก็ถูก abort ด้วย
     } finally { clearTimeout(tid); }
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
     if (data && data.projects) {
       DB = data;
       localStorage.setItem(STORE_KEY, JSON.stringify(DB));
@@ -13937,6 +13935,7 @@ function openBrandDetail(brandId, tab) {
 
 // ── Auth Init ─────────────────────────────────────────────
 (async function initAuth() {
+  try {
   loadSession();
 
   // ── 1. Pull จาก cloud ก่อน เพื่อให้ได้ user list ล่าสุด ──
@@ -14042,6 +14041,14 @@ function openBrandDetail(brandId, tab) {
   document.querySelector('[data-panel="profile"]')?.addEventListener('click', initProfile);
   // Migrate brands from projects
   migrateBrandsFromProjects();
+  } catch(e) {
+    console.error('[initAuth] uncaught error:', e);
+    const al = document.getElementById('auth-loading');
+    const af = document.getElementById('auth-form');
+    if (al) al.style.display = 'none';
+    if (af) af.style.display = '';
+    showLogin();
+  }
 })();
 
 // ══════════════════════════════════════════════════════════
