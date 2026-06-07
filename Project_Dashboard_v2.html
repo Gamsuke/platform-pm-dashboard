@@ -4930,7 +4930,7 @@ function downloadCSV(csvText, filename) {
 // ── Clients Import / Export ────────────────────────────────
 const CLIENT_COLS = ['id','company','brand','juristicId','contactName','position','phone','email','birthday','address','active','note'];
 
-document.getElementById('btn-export-clients').addEventListener('click', () => {
+document.getElementById('btn-export-clients')?.addEventListener('click', () => {
   const date = new Date().toISOString().slice(0,10);
   const rows = (DB.clients || []).map(c => ({
     id: c.id||'', company: c.company||'', brand: c.brand||'',
@@ -4942,7 +4942,7 @@ document.getElementById('btn-export-clients').addEventListener('click', () => {
   downloadCSV(toCSV(rows, CLIENT_COLS), `clients_${date}.csv`);
 });
 
-document.getElementById('btn-import-clients').addEventListener('click', () => {
+document.getElementById('btn-import-clients')?.addEventListener('click', () => {
   const input = document.createElement('input');
   input.type = 'file'; input.accept = '.csv';
   input.onchange = async (e) => {
@@ -4976,7 +4976,7 @@ document.getElementById('btn-import-clients').addEventListener('click', () => {
 // ── Team Import / Export ───────────────────────────────────
 const TEAM_COLS = ['id','name','nickname','dept','role','email','phone','birthday','status'];
 
-document.getElementById('btn-export-team').addEventListener('click', () => {
+document.getElementById('btn-export-team')?.addEventListener('click', () => {
   const date = new Date().toISOString().slice(0,10);
   const rows = (DB.team || []).map(m => ({
     id: m.id||'', name: m.name||'', nickname: m.nickname||'',
@@ -4987,7 +4987,7 @@ document.getElementById('btn-export-team').addEventListener('click', () => {
   downloadCSV(toCSV(rows, TEAM_COLS), `team_${date}.csv`);
 });
 
-document.getElementById('btn-import-team').addEventListener('click', () => {
+document.getElementById('btn-import-team')?.addEventListener('click', () => {
   const input = document.createElement('input');
   input.type = 'file'; input.accept = '.csv';
   input.onchange = async (e) => {
@@ -6974,7 +6974,7 @@ function _thTaskRow(t, today, showAssignee) {
     <td style="padding:7px 8px;font-size:11px;color:${dlColor};white-space:nowrap;">${range}</td>
     <td style="padding:7px 8px;"><span style="font-size:11px;font-weight:600;color:${statusC};">${status} ${statusTxt}</span></td>
     <td style="padding:7px 8px;">
-      ${canEdit?`<button class="btn btn-sm" onclick="(function(){openMyTaskModal('${t.id}');document.getElementById('my-task-modal').addEventListener('remove',()=>{renderTasksHub();},{once:true});})()" style="font-size:10px;">✏</button>`:''}
+      ${canEdit?`<button class="btn btn-sm" onclick="(function(){openMyTaskModal('${t.id}');document.getElementById('my-task-modal')?.addEventListener('remove',()=>{renderTasksHub();},{once:true});})()" style="font-size:10px;">✏</button>`:''}
     </td>
   </tr>`;
 }
@@ -7276,10 +7276,10 @@ function saveCostLines(lines) { DB.costLines = lines; saveDB(); }
 function renderCostRecord() {
   if (!renderCostRecord._init) {
     renderCostRecord._init = true;
-    document.getElementById('cr-filter-project').addEventListener('change', renderCostRecord);
-    document.getElementById('cr-filter-status').addEventListener('change', renderCostRecord);
-    document.getElementById('cr-search').addEventListener('input', renderCostRecord);
-    document.getElementById('cr-modal').addEventListener('click', e => { if (e.target.id==='cr-modal') closeCRModal(); });
+    document.getElementById('cr-filter-project')?.addEventListener('change', renderCostRecord);
+    document.getElementById('cr-filter-status')?.addEventListener('change', renderCostRecord);
+    document.getElementById('cr-search')?.addEventListener('input', renderCostRecord);
+    document.getElementById('cr-modal')?.addEventListener('click', e => { if (e.target.id==='cr-modal') closeCRModal(); });
   }
   const lines = getCostLines();
   const projects = DB.projects || [];
@@ -7469,9 +7469,9 @@ function initTrainingHub() {
   if (_thInited) { renderTrainingHub(); return; }
   _thInited = true;
   // Search
-  document.getElementById('th-search').addEventListener('input', renderTrainingHub);
+  document.getElementById('th-search')?.addEventListener('input', renderTrainingHub);
   // Category pills
-  document.getElementById('th-cat-pills').addEventListener('click', e => {
+  document.getElementById('th-cat-pills')?.addEventListener('click', e => {
     const pill = e.target.closest('.th-cat-pill');
     if (!pill) return;
     document.querySelectorAll('.th-cat-pill').forEach(p => p.classList.remove('active'));
@@ -7479,12 +7479,12 @@ function initTrainingHub() {
     renderTrainingHub();
   });
   // Add button
-  document.getElementById('btn-add-training').addEventListener('click', () => openThModal(null));
+  document.getElementById('btn-add-training')?.addEventListener('click', () => openThModal(null));
   // Modal close/cancel
-  document.getElementById('th-modal-close').addEventListener('click', () => document.getElementById('th-modal').classList.remove('show'));
-  document.getElementById('th-cancel').addEventListener('click', () => document.getElementById('th-modal').classList.remove('show'));
+  document.getElementById('th-modal-close')?.addEventListener('click', () => document.getElementById('th-modal').classList.remove('show'));
+  document.getElementById('th-cancel')?.addEventListener('click', () => document.getElementById('th-modal').classList.remove('show'));
   // YouTube preview on input
-  document.getElementById('th-youtube').addEventListener('input', function() {
+  document.getElementById('th-youtube')?.addEventListener('input', function() {
     const thumb = ytThumb(this.value);
     const preview = document.getElementById('th-yt-preview');
     const img = document.getElementById('th-yt-thumb');
@@ -7492,7 +7492,7 @@ function initTrainingHub() {
     else { preview.style.display = 'none'; }
   });
   // Delete
-  document.getElementById('th-delete').addEventListener('click', () => {
+  document.getElementById('th-delete')?.addEventListener('click', () => {
     const id = document.getElementById('th-id').value;
     if (!id) return;
     if (!confirm('ลบรายการนี้?')) return;
@@ -7502,7 +7502,7 @@ function initTrainingHub() {
     renderTrainingHub();
   });
   // Form submit
-  document.getElementById('th-form').addEventListener('submit', e => {
+  document.getElementById('th-form')?.addEventListener('submit', e => {
     e.preventDefault();
     const id = document.getElementById('th-id').value || ('th-' + Math.random().toString(36).slice(2,9));
     if (!DB.trainingHub) DB.trainingHub = [];
@@ -9143,16 +9143,16 @@ function toggleLossSection(status) {
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
 // Show/hide loss section when status changes
-document.getElementById('f-basecamp').addEventListener('input', function() {
+document.getElementById('f-basecamp')?.addEventListener('input', function() {
   const link = document.getElementById('f-basecamp-link');
   if (this.value) { link.href = this.value; link.style.display = ''; } else { link.style.display = 'none'; }
 });
-document.getElementById('f-drive').addEventListener('input', function() {
+document.getElementById('f-drive')?.addEventListener('input', function() {
   const link = document.getElementById('f-drive-link');
   if (this.value) { link.href = this.value; link.style.display = ''; } else { link.style.display = 'none'; }
 });
 // qt-link listener removed (now uses qtList)
-document.getElementById('f-status').addEventListener('change', function() {
+document.getElementById('f-status')?.addEventListener('change', function() {
   toggleLossSection(this.value);
 });
 
@@ -9279,7 +9279,7 @@ function getProjFormCompany() {
 }
 
 // Brand input → auto-fill Company from Contacts DB
-document.getElementById('f-brand').addEventListener('input', function() {
+document.getElementById('f-brand')?.addEventListener('input', function() {
   const typed = this.value.trim();
   const hint = document.getElementById('f-brand-hint');
   if (!typed) { if (hint) hint.textContent = ''; return; }
@@ -9628,7 +9628,7 @@ function openAttPreview(att) {
 
 // (btn-add-comment removed — now handled inline by rteSubmitComment)
 
-document.getElementById('prj-form').addEventListener('submit', (e) => {
+document.getElementById('prj-form')?.addEventListener('submit', (e) => {
   e.preventDefault();
   const id = document.getElementById('f-id').value;
   const isNew = document.getElementById('modal').dataset.isNew === '1';
@@ -9694,7 +9694,7 @@ document.getElementById('prj-form').addEventListener('submit', (e) => {
   renderAll();
 });
 
-document.getElementById('btn-delete').addEventListener('click', () => {
+document.getElementById('btn-delete')?.addEventListener('click', () => {
   const id = document.getElementById('modal').dataset.id;
   const p = DB.projects.find(x => (x.id||x.code) === id);
   if (!p) { closeModal(); return; }
@@ -9817,7 +9817,7 @@ async function lookupDBD() {
           ✅ กรอกข้อมูลลงฟอร์มอัตโนมัติ
         </button>
       </div>`;
-    document.getElementById('btn-dbd-fill').addEventListener('click', fillFromDBD);
+    document.getElementById('btn-dbd-fill')?.addEventListener('click', fillFromDBD);
   } catch(err) {
     document.getElementById('dbd-result').innerHTML = `<div class="dbd-error">❌ ${err.message}</div>`;
   }
@@ -9861,11 +9861,11 @@ function initClientPage() {
     if (!cur.includes(this.value)) renderManualLinks([...cur, this.value]);
     this.value = '';
   });
-  document.getElementById('btn-dbd-lookup').addEventListener('click', lookupDBD);
-  document.getElementById('cf-juristic-id').addEventListener('keydown', e => { if (e.key==='Enter') { e.preventDefault(); lookupDBD(); } });
-  document.getElementById('client-modal-close').addEventListener('click', () => document.getElementById('client-modal').classList.remove('show'));
-  document.getElementById('client-modal-cancel').addEventListener('click', () => document.getElementById('client-modal').classList.remove('show'));
-  document.getElementById('client-form').addEventListener('submit', (e) => {
+  document.getElementById('btn-dbd-lookup')?.addEventListener('click', lookupDBD);
+  document.getElementById('cf-juristic-id')?.addEventListener('keydown', e => { if (e.key==='Enter') { e.preventDefault(); lookupDBD(); } });
+  document.getElementById('client-modal-close')?.addEventListener('click', () => document.getElementById('client-modal').classList.remove('show'));
+  document.getElementById('client-modal-cancel')?.addEventListener('click', () => document.getElementById('client-modal').classList.remove('show'));
+  document.getElementById('client-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = document.getElementById('cf-id').value || ('cl-' + Math.random().toString(36).slice(2,9));
     if (!DB.clients) DB.clients = [];
@@ -9892,7 +9892,7 @@ function initClientPage() {
     renderClients();
     updateCompanyDatalist();
   });
-  document.getElementById('cf-delete').addEventListener('click', () => {
+  document.getElementById('cf-delete')?.addEventListener('click', () => {
     const id = document.getElementById('cf-id').value;
     if (!id) return;
     if (!confirm('ลบ contact นี้?')) return;
@@ -10779,14 +10779,14 @@ function initTeamPage() {
     ALL_DEPTS.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; df.appendChild(o); });
     df.addEventListener('input', renderTeam);
   }
-  document.getElementById('team-search').addEventListener('input', renderTeam);
-  document.getElementById('team-status-filter').addEventListener('change', renderTeam);
-  document.getElementById('btn-add-member').addEventListener('click', () => openTeamModal(null));
-  document.getElementById('team-modal-close').addEventListener('click', () => document.getElementById('team-modal').classList.remove('show'));
-  document.getElementById('mpp-close').addEventListener('click', closeMemberProfile);
-  document.getElementById('member-profile-modal').addEventListener('click', e => { if (e.target.id==='member-profile-modal') closeMemberProfile(); });
-  document.getElementById('team-modal-cancel').addEventListener('click', () => document.getElementById('team-modal').classList.remove('show'));
-  document.getElementById('team-form').addEventListener('submit', (e) => {
+  document.getElementById('team-search')?.addEventListener('input', renderTeam);
+  document.getElementById('team-status-filter')?.addEventListener('change', renderTeam);
+  document.getElementById('btn-add-member')?.addEventListener('click', () => openTeamModal(null));
+  document.getElementById('team-modal-close')?.addEventListener('click', () => document.getElementById('team-modal').classList.remove('show'));
+  document.getElementById('mpp-close')?.addEventListener('click', closeMemberProfile);
+  document.getElementById('member-profile-modal')?.addEventListener('click', e => { if (e.target.id==='member-profile-modal') closeMemberProfile(); });
+  document.getElementById('team-modal-cancel')?.addEventListener('click', () => document.getElementById('team-modal').classList.remove('show'));
+  document.getElementById('team-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = document.getElementById('tf-id').value || ('tm-' + Math.random().toString(36).slice(2,9));
     if (!DB.team) DB.team = [];
@@ -10819,7 +10819,7 @@ function initTeamPage() {
     renderTeam();
     populateOwnerFilters();
   });
-  document.getElementById('tf-delete').addEventListener('click', () => {
+  document.getElementById('tf-delete')?.addEventListener('click', () => {
     const id = document.getElementById('tf-id').value;
     if (!id) return;
     if (!confirm('ลบสมาชิกคนนี้? ชื่อจะถูกลบออกจากทุก project ด้วย')) return;
@@ -11395,12 +11395,12 @@ function renderPrjTasks(projectId) {
 let calYear = YEAR, calMonth = new Date().getMonth();
 
 function initCalendar() {
-  document.getElementById('cal-prev').addEventListener('click',()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;} renderCalendar();});
-  document.getElementById('cal-next').addEventListener('click',()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;} renderCalendar();});
-  document.getElementById('cal-today').addEventListener('click',()=>{const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();renderCalendar();});
-  document.getElementById('cal-filter-type').addEventListener('change', renderCalendar);
-  document.getElementById('cal-filter-assignee').addEventListener('change', renderCalendar);
-  document.getElementById('cal-filter-project').addEventListener('change', renderCalendar);
+  document.getElementById('cal-prev')?.addEventListener('click',()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;} renderCalendar();});
+  document.getElementById('cal-next')?.addEventListener('click',()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;} renderCalendar();});
+  document.getElementById('cal-today')?.addEventListener('click',()=>{const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();renderCalendar();});
+  document.getElementById('cal-filter-type')?.addEventListener('change', renderCalendar);
+  document.getElementById('cal-filter-assignee')?.addEventListener('change', renderCalendar);
+  document.getElementById('cal-filter-project')?.addEventListener('change', renderCalendar);
   // populate project filter
   const pf = document.getElementById('cal-filter-project');
   (DB.projects||[]).forEach(p=>{const o=document.createElement('option');o.value=p.id||p.code;o.textContent=`${p.code} ${p.brand}`;pf.appendChild(o);});
@@ -12975,7 +12975,7 @@ document.addEventListener('click', e => {
   }
   toggleSyncBtns();
   // อัปเดต toggle หลังบันทึก config
-  document.getElementById('mg-btn-save').addEventListener('click', () => setTimeout(toggleSyncBtns, 300), { once: false });
+  document.getElementById('mg-btn-save')?.addEventListener('click', () => setTimeout(toggleSyncBtns, 300), { once: false });
 })();
 
 // warn on unload if unsaved
