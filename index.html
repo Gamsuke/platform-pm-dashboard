@@ -17430,7 +17430,26 @@ function buildProjectDetailPage(projId, tab) {
   } else if (tab === 'kol') {
     const kols = p.kols || [];
     const mediaBuy = p.mediaBuy || [];
+    const campaignLinks = p.campaignLinks || [];
     body = `
+    <!-- Campaign Links Panel -->
+    <div class="dv-section" style="margin-bottom:16px;">
+      <div class="dv-section-head">
+        <span>🔗 Campaign Links</span>
+        <button class="btn btn-sm btn-primary" onclick="openCampaignLinkEditor('${projId}')">+ Add Link</button>
+      </div>
+      ${campaignLinks.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;">
+        ${campaignLinks.map((lk,i) => {
+          const icon = detectLinkIcon(lk.url);
+          return `<div style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:6px 10px 6px 8px;">
+            <span style="font-size:16px;">${icon}</span>
+            <a href="${escHtml(lk.url)}" target="_blank" style="font-size:12px;font-weight:600;color:#6366f1;text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(lk.url)}">${escHtml(lk.label||lk.url)}</a>
+            <button onclick="deleteCampaignLink('${projId}',${i})" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:14px;line-height:1;padding:0 2px;" title="Remove">×</button>
+          </div>`;
+        }).join('')}
+      </div>` : `<div style="padding:14px 16px;font-size:12px;color:#94a3b8;">ยังไม่มีลิงก์ — เพิ่ม Google Drive, Looker Studio, Report Sheet ฯลฯ</div>`}
+    </div>
+
     <!-- KOL Performance -->
     <div class="dv-section" style="margin-bottom:16px;">
       <div class="dv-section-head">
@@ -17440,12 +17459,13 @@ function buildProjectDetailPage(projId, tab) {
       ${kols.length ? `<table class="dv-table">
         <thead><tr>
           <th>KOL / Influencer</th><th>Category</th><th>Platform</th>
-          <th>Posts</th><th>Reach</th><th>Engagement</th><th>ER%</th><th>Cost</th><th>Status</th><th></th>
+          <th>Posts</th><th>Reach</th><th>Engagement</th><th>ER%</th><th>Cost</th><th>Status</th><th>Link</th><th></th>
         </tr></thead>
         <tbody>
           ${kols.map((k,i)=>{
             const er = k.reach&&k.engagement ? (k.engagement/k.reach*100).toFixed(1)+'%' : k.er||'–';
             const statusColor = k.status==='Published'?'#16a34a':k.status==='In Progress'?'#6366f1':k.status==='Pending'?'#f59e0b':'#94a3b8';
+            const linkHtml = k.publicLink ? `<a href="${escHtml(k.publicLink)}" target="_blank" title="${escHtml(k.publicLink)}" style="font-size:18px;text-decoration:none;">${detectLinkIcon(k.publicLink)}</a>` : '–';
             return `<tr>
               <td style="font-weight:600;">${escHtml(k.name||'–')}</td>
               <td><span style="font-size:10px;padding:2px 8px;border-radius:6px;background:#f0f4ff;color:#6366f1;">${escHtml(k.category||'–')}</span></td>
@@ -17456,6 +17476,7 @@ function buildProjectDetailPage(projId, tab) {
               <td style="font-weight:600;color:#6366f1;">${er}</td>
               <td style="color:#16a34a;font-weight:600;">${k.cost?'฿'+fmtMoney(k.cost):'–'}</td>
               <td><span style="font-size:11px;font-weight:600;color:${statusColor};">● ${k.status||'Draft'}</span></td>
+              <td style="text-align:center;">${linkHtml}</td>
               <td><button class="btn btn-sm" onclick="openKolEditor('${projId}',${i})" style="font-size:10px;">✏</button></td>
             </tr>`;
           }).join('')}
@@ -17479,7 +17500,7 @@ function buildProjectDetailPage(projId, tab) {
       </div>
       ${mediaBuy.length ? `<table class="dv-table">
         <thead><tr>
-          <th>Channel</th><th>Format</th><th>Budget</th><th>Reach</th><th>Impression</th><th>CPM</th><th>CTR%</th><th>Result</th><th></th>
+          <th>Channel</th><th>Format</th><th>Budget</th><th>Reach</th><th>Impression</th><th>CPM</th><th>CTR%</th><th>Result</th><th>Report</th><th></th>
         </tr></thead>
         <tbody>
           ${mediaBuy.map((m,i)=>`<tr>
@@ -17491,6 +17512,7 @@ function buildProjectDetailPage(projId, tab) {
             <td>${m.cpm?'฿'+m.cpm:'–'}</td>
             <td style="font-weight:600;color:#6366f1;">${m.ctr?m.ctr+'%':'–'}</td>
             <td style="font-size:11px;">${escHtml(m.result||'–')}</td>
+            <td style="text-align:center;">${m.reportLink?`<a href="${escHtml(m.reportLink)}" target="_blank" title="${escHtml(m.reportLink)}" style="font-size:18px;text-decoration:none;">${detectLinkIcon(m.reportLink)}</a>`:'–'}</td>
             <td><button class="btn btn-sm" onclick="openMediaEditor('${projId}',${i})" style="font-size:10px;">✏</button></td>
           </tr>`).join('')}
         </tbody>
@@ -17865,6 +17887,149 @@ function renderProjectsUnified() {
 // ═══════════════════════════════
 // KOL & MEDIA EDITORS
 // ═══════════════════════════════
+// ── Link helpers ──────────────────────────────────────────────
+function detectLinkIcon(url) {
+  if (!url) return '🔗';
+  const u = url.toLowerCase();
+  if (u.includes('youtube.com')||u.includes('youtu.be')) return '▶️';
+  if (u.includes('tiktok.com')) return '🎵';
+  if (u.includes('instagram.com')) return '📸';
+  if (u.includes('facebook.com')||u.includes('fb.com')) return '👤';
+  if (u.includes('twitter.com')||u.includes('x.com')) return '🐦';
+  if (u.includes('docs.google.com/spreadsheets')) return '📊';
+  if (u.includes('docs.google.com')) return '📝';
+  if (u.includes('drive.google.com')) return '📁';
+  if (u.includes('datastudio.google.com')||u.includes('lookerstudio.google.com')) return '📈';
+  if (u.includes('looker')) return '📈';
+  if (u.includes('notion.so')) return '📒';
+  if (u.includes('airtable.com')) return '🗂';
+  if (u.includes('lemon8')) return '🍋';
+  if (u.includes('pantip.com')) return '💬';
+  return '🔗';
+}
+
+function detectPlatformName(url) {
+  if (!url) return 'Link';
+  const u = url.toLowerCase();
+  if (u.includes('youtube.com')||u.includes('youtu.be')) return 'YouTube';
+  if (u.includes('tiktok.com')) return 'TikTok';
+  if (u.includes('instagram.com')) return 'Instagram';
+  if (u.includes('facebook.com')||u.includes('fb.com')) return 'Facebook';
+  if (u.includes('docs.google.com/spreadsheets')) return 'Google Sheets';
+  if (u.includes('drive.google.com')) return 'Google Drive';
+  if (u.includes('datastudio')||u.includes('lookerstudio')) return 'Looker Studio';
+  return 'Link';
+}
+
+/** Fetch oEmbed preview for YouTube/TikTok — returns {title, thumbnail, author} or null */
+async function fetchLinkPreview(url) {
+  if (!url) return null;
+  try {
+    if (url.includes('youtube.com')||url.includes('youtu.be')) {
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+      if (!res.ok) return null;
+      const d = await res.json();
+      return { title: d.title, thumbnail: d.thumbnail_url, author: d.author_name, platform: 'YouTube' };
+    }
+    if (url.includes('tiktok.com')) {
+      const res = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`);
+      if (!res.ok) return null;
+      const d = await res.json();
+      return { title: d.title, thumbnail: d.thumbnail_url, author: d.author_name, platform: 'TikTok' };
+    }
+  } catch(e) {}
+  return null;
+}
+
+/** Show oEmbed preview in a popup */
+async function previewLink(url) {
+  const preview = await fetchLinkPreview(url);
+  if (!preview) { window.open(url,'_blank'); return; }
+  const existing = document.querySelector('.link-preview-popup');
+  if (existing) existing.remove();
+  const pop = document.createElement('div');
+  pop.className = 'link-preview-popup';
+  pop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px;';
+  pop.innerHTML = `<div style="background:#fff;border-radius:14px;overflow:hidden;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    ${preview.thumbnail?`<img src="${preview.thumbnail}" style="width:100%;aspect-ratio:16/9;object-fit:cover;">`:''}
+    <div style="padding:16px;">
+      <div style="font-size:10px;font-weight:700;color:#6366f1;text-transform:uppercase;margin-bottom:4px;">${preview.platform}</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px;line-height:1.4;">${escHtml(preview.title||'')}</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:12px;">by ${escHtml(preview.author||'')}</div>
+      <div style="display:flex;gap:8px;">
+        <a href="${escHtml(url)}" target="_blank" class="btn btn-primary" style="flex:1;text-align:center;text-decoration:none;font-size:12px;">🔗 เปิดลิงก์</a>
+        <button onclick="this.closest('.link-preview-popup').remove()" class="btn" style="font-size:12px;">ปิด</button>
+      </div>
+    </div>
+  </div>`;
+  pop.onclick = e => { if (e.target===pop) pop.remove(); };
+  document.body.appendChild(pop);
+}
+
+/** Campaign Links editor */
+function openCampaignLinkEditor(projId) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  document.querySelector('.campaign-link-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'campaign-link-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:14px;padding:24px;width:min(500px,100%);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 style="margin:0;font-size:15px;">🔗 Add Campaign Link</h3>
+      <button onclick="this.closest('.campaign-link-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">×</button>
+    </div>
+    <div style="background:#f0f4ff;border-radius:8px;padding:10px 12px;font-size:11px;color:#4b5563;margin-bottom:14px;line-height:1.6;">
+      <b>แนบได้:</b> Google Drive 📁 · Google Sheets 📊 · Looker Studio 📈 · YouTube ▶️ · TikTok 🎵 · Notion · Airtable · ลิงก์อื่นๆ<br>
+      <span style="color:#6366f1;">YouTube/TikTok: ระบบจะดึง thumbnail + title ให้อัตโนมัติ</span>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Label (ชื่อลิงก์) *</label>
+      <input id="cl-label" placeholder="เช่น KOL Report, Drive Folder, Dashboard" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;">
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">URL *</label>
+      <input id="cl-url" placeholder="https://..." type="url" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;" oninput="updateClPreview(this.value)">
+      <div id="cl-preview" style="margin-top:6px;font-size:11px;color:#6366f1;"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn" onclick="this.closest('.campaign-link-modal').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCampaignLink('${projId}',this)">💾 Add Link</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function updateClPreview(url) {
+  const el = document.getElementById('cl-preview');
+  if (!el) return;
+  if (!url) { el.innerHTML=''; return; }
+  const icon = detectLinkIcon(url);
+  const name = detectPlatformName(url);
+  el.innerHTML = `${icon} Detected: <b>${name}</b>`;
+}
+
+function saveCampaignLink(projId, btn) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  const label = document.getElementById('cl-label')?.value.trim();
+  const url   = document.getElementById('cl-url')?.value.trim();
+  if (!url) { alert('กรุณาใส่ URL'); return; }
+  if (!p.campaignLinks) p.campaignLinks = [];
+  p.campaignLinks.push({ label: label||detectPlatformName(url), url });
+  saveDB();
+  btn?.closest('.campaign-link-modal')?.remove();
+  renderDetailView(parseHash());
+}
+
+function deleteCampaignLink(projId, idx) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p||!p.campaignLinks) return;
+  p.campaignLinks.splice(idx,1);
+  saveDB();
+  renderDetailView(parseHash());
+}
+
 function openKolEditor(projId, editIdx) {
   const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
   if (!p) return;
@@ -17900,6 +18065,14 @@ function openKolEditor(projId, editIdx) {
           ${['Draft','Pending','In Progress','Published','Cancelled'].map(c=>`<option${(k.status||'')==c?' selected':''}>${c}</option>`).join('')}
         </select>
       </div>
+      <div style="grid-column:1/-1;">
+        <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">🔗 Public Link (Post URL)</label>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input id="ke-public-link" type="url" value="${escHtml(k.publicLink||'')}" placeholder="https://www.instagram.com/p/... หรือ YouTube / TikTok link" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;" oninput="document.getElementById('ke-link-preview').textContent=this.value?detectLinkIcon(this.value)+' '+detectPlatformName(this.value):''">
+          <button type="button" onclick="if(document.getElementById('ke-public-link').value)previewLink(document.getElementById('ke-public-link').value);" class="btn btn-sm" style="white-space:nowrap;">👁 Preview</button>
+        </div>
+        <div id="ke-link-preview" style="font-size:11px;color:#6366f1;margin-top:3px;">${k.publicLink?detectLinkIcon(k.publicLink)+' '+detectPlatformName(k.publicLink):''}</div>
+      </div>
       <div style="grid-column:1/-1;"><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Notes</label><textarea id="ke-notes" rows="2" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;">${escHtml(k.notes||'')}</textarea></div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
@@ -17916,7 +18089,7 @@ function saveKol(projId, editIdx, btn) {
   if (!p) return;
   if (!p.kols) p.kols = [];
   const v = id => document.getElementById(id)?.value?.trim()||'';
-  const kol = { name:v('ke-name'), category:v('ke-category'), platform:v('ke-platform'), posts:v('ke-posts'), reach:v('ke-reach'), engagement:v('ke-engagement'), cost:v('ke-cost'), status:v('ke-status'), notes:v('ke-notes') };
+  const kol = { name:v('ke-name'), category:v('ke-category'), platform:v('ke-platform'), posts:v('ke-posts'), reach:v('ke-reach'), engagement:v('ke-engagement'), cost:v('ke-cost'), status:v('ke-status'), notes:v('ke-notes'), publicLink:v('ke-public-link') };
   if (editIdx !== null && editIdx !== undefined && editIdx !== 'null') p.kols[editIdx] = kol;
   else p.kols.push(kol);
   saveDB();
@@ -17961,6 +18134,14 @@ function openMediaEditor(projId, editIdx) {
       <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">CPM (฿)</label><input id="me-cpm" type="number" value="${m.cpm||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
       <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">CTR (%)</label><input id="me-ctr" type="number" step="0.01" value="${m.ctr||''}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
       <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Result / Note</label><input id="me-result" value="${escHtml(m.result||'')}" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"></div>
+      <div style="grid-column:1/-1;">
+        <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">🔗 Report / Dashboard Link</label>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input id="me-report-link" type="url" value="${escHtml(m.reportLink||'')}" placeholder="https://lookerstudio.google.com/... หรือ Google Sheet / Drive link" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;" oninput="document.getElementById('me-link-preview').textContent=this.value?detectLinkIcon(this.value)+' '+detectPlatformName(this.value):''">
+          <button type="button" onclick="if(document.getElementById('me-report-link').value)window.open(document.getElementById('me-report-link').value,'_blank');" class="btn btn-sm" style="white-space:nowrap;">🔗 เปิด</button>
+        </div>
+        <div id="me-link-preview" style="font-size:11px;color:#6366f1;margin-top:3px;">${m.reportLink?detectLinkIcon(m.reportLink)+' '+detectPlatformName(m.reportLink):''}</div>
+      </div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
       ${editIdx!==undefined?`<button class="btn btn-danger" onclick="deleteMedia('${projId}',${editIdx},this)">🗑 Delete</button>`:''}
@@ -17976,7 +18157,7 @@ function saveMedia(projId, editIdx, btn) {
   if (!p) return;
   if (!p.mediaBuy) p.mediaBuy = [];
   const v = id => document.getElementById(id)?.value?.trim()||'';
-  const media = { channel:v('me-channel'), format:v('me-format'), budget:v('me-budget'), reach:v('me-reach'), impression:v('me-impression'), cpm:v('me-cpm'), ctr:v('me-ctr'), result:v('me-result') };
+  const media = { channel:v('me-channel'), format:v('me-format'), budget:v('me-budget'), reach:v('me-reach'), impression:v('me-impression'), cpm:v('me-cpm'), ctr:v('me-ctr'), result:v('me-result'), reportLink:v('me-report-link') };
   if (editIdx !== null && editIdx !== undefined && editIdx !== 'null') p.mediaBuy[editIdx] = media;
   else p.mediaBuy.push(media);
   saveDB();
