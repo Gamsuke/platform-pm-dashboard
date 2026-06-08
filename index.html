@@ -4995,13 +4995,9 @@ let _qtData = [], _qtHeaders = [];
 // QT Status → color mapping (Perk สถานะ)
 function qtStatusStyle(s) {
   const m = {
-    'ออกครบแล้ว': { bg:'#DFF4EC', color:'#1B7A4B' },
-    'ยอมรับแล้ว':  { bg:'#E8F0FD', color:'#427DDA' },
-    'รอตอบรับ':    { bg:'#FDEEE9', color:'#D4603A' },
-    'ออกบางส่วน': { bg:'#EEF3FC', color:'#002169' },
-    'รออนุมัติ':   { bg:'#FFFCE0', color:'#8A6F00' },
-    'ร่าง':        { bg:'#F2F5FC', color:'#4A5A7A' },
-    'พ้นกำหนด':   { bg:'#FDECEA', color:'#B83230' },
+    'รอตอบรับ':   { bg:'#FFFCE0', color:'#8A6F00' },
+    'รับ PO แล้ว': { bg:'#E8F0FD', color:'#427DDA' },
+    'รับเงินแล้ว': { bg:'#DFF4EC', color:'#1B7A4B' },
   };
   return m[s] || { bg:'var(--surface-2)', color:'var(--text-muted)' };
 }
@@ -12598,7 +12594,7 @@ function filterTeamPicker() {
 }
 
 // ── Multi-QT helpers ──────────────────────────────────────
-const QT_STATUS_OPTIONS = ['','รออนุมัติ','รอตอบรับ','อนุมัติแล้ว','ยกเลิก','Approved','Pending','Rejected'];
+const QT_STATUS_OPTIONS = ['','รอตอบรับ','รับ PO แล้ว','รับเงินแล้ว'];
 
 function renderQtList(qtList) {
   const container = document.getElementById('f-qt-list');
