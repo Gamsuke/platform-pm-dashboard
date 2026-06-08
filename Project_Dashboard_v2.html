@@ -10144,6 +10144,8 @@ function cfAddBrand() {
 }
 
 function openClientModal(id) {
+  // Ensure submit handler is attached even if user never visited Clients panel
+  if (!_tabInited.has('clients')) { _tabInited.add('clients'); initClientPage(); }
   const modal = document.getElementById('client-modal');
   updateCompanyDatalist();
   if (id) {
