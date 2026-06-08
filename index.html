@@ -11589,7 +11589,14 @@ function initClientPage() {
   document.getElementById('cf-delete')?.addEventListener('click', () => {
     const id = document.getElementById('cf-id').value;
     if (!id) return;
-    if (!confirm('ลบ contact นี้?')) return;
+    const cl = (DB.clients||[]).find(c => c.id === id);
+    if (!confirm(`ลบ "${cl?.company||'client'}" ออกจากระบบ?\nจะไม่กลับมาอีกเมื่อกด Sync`)) return;
+    // Remember deleted company name so sync won't recreate it
+    if (cl?.company) {
+      if (!DB.deletedClientCompanies) DB.deletedClientCompanies = [];
+      const key = (cl.company||'').trim().toLowerCase();
+      if (!DB.deletedClientCompanies.includes(key)) DB.deletedClientCompanies.push(key);
+    }
     DB.clients = (DB.clients||[]).filter(c => c.id !== id);
     saveDB();
     document.getElementById('client-modal').classList.remove('show');
@@ -12151,10 +12158,16 @@ function syncClientsFromProjects() {
   if (!coMap.size) { alert('ไม่พบข้อมูล Company ใน Projects เลย'); return; }
   if (!DB.clients) DB.clients = [];
 
-  let added = 0, updatedBrands = 0;
+  // Build blocklist of manually-deleted companies
+  const deletedKeys = new Set((DB.deletedClientCompanies||[]).map(s=>s.toLowerCase()));
+
+  let added = 0, updatedBrands = 0, blocked = 0;
   const skipped = [];
 
   coMap.forEach((brands, company) => {
+    // Skip companies that were explicitly deleted
+    if (deletedKeys.has(company.trim().toLowerCase())) { blocked++; return; }
+
     // หา existing client ที่ company ตรงกัน (case-insensitive)
     const existing = DB.clients.find(c => (c.company||'').trim().toLowerCase() === company.toLowerCase());
     if (existing) {
@@ -12196,6 +12209,7 @@ function syncClientsFromProjects() {
   const msgs = [];
   if (added) msgs.push(`✅ เพิ่ม ${added} บริษัทใหม่`);
   if (updatedBrands) msgs.push(`🔄 อัปเดต Brand ใน ${updatedBrands} บริษัท`);
+  if (blocked) msgs.push(`🚫 ข้าม ${blocked} บริษัทที่ถูกลบไปแล้ว`);
   if (skipped.length - updatedBrands > 0) msgs.push(`⏭ ข้าม ${skipped.length - updatedBrands} บริษัทที่มีอยู่แล้ว`);
   if (!msgs.length) msgs.push('ข้อมูล Clients ครบถ้วนแล้ว ไม่มีอะไรต้องเพิ่ม');
   alert(msgs.join('\n'));
