@@ -1509,28 +1509,150 @@ details ul { padding-left: 18px; }
 
   <!-- PROJECT LIST -->
   <div class="panel" id="projects">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
-        <h2 style="margin:0;">All projects</h2>
-        <div id="prj-year-pills" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+  <!-- Page Header -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+    <div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;display:flex;align-items:center;gap:4px;">
+        <span style="color:var(--text-muted);">Projects</span>
+        <span style="color:var(--text-muted);">›</span>
+        <span style="color:var(--text-primary);font-weight:600;">All Projects</span>
       </div>
-      <div class="filter-bar">
-        <input id="prj-search" placeholder="Search…" style="min-width:200px;">
-        <select id="prj-pfpg"><option value="">PF + PG</option><option value="PF">PF — The Platform</option><option value="PG">PG — PG Affluent</option></select>
-        <select id="prj-status"><option value="">All status</option><option>Working</option><option>Proposing</option><option>Pitching</option><option>Hold</option><option>Close</option><option value="Pitch Lost">Pitch Lost/Cancel</option></select>
-        <select id="prj-owner"><option value="">All owners</option></select>
-        <button class="btn" id="btn-csv-down">⬇ Download CSV</button><button class="btn" id="btn-csv-up">⬆ Upload CSV</button><input type="file" id="csv-file-input" accept=".csv" style="display:none;">
+      <h1 style="margin:0;font-size:22px;font-weight:800;">All Projects</h1>
+      <p style="margin:4px 0 0;font-size:12px;color:var(--text-muted);">Manage and track all projects across clients and brands in one place.</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <select id="prj-brand-hdr" onchange="renderTable()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;">
+        <option value="">All Brands</option>
+      </select>
+      <div style="display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;background:#fff;cursor:pointer;" onclick="void(0)">
+        <span>📅</span>
+        <span id="prj-date-range-lbl" style="color:var(--text-primary);">This Year</span>
       </div>
-      <div class="tbl-wrap">
-        <table id="prj-table">
-          <thead><tr>
-            <th>บริษัท</th><th>Code</th><th>Brand / Project</th><th>Owner</th><th>Status</th><th>Timeline 2026</th><th>Budget</th><th>Roles</th><th></th>
-          </tr></thead>
-          <tbody></tbody>
+      <button class="btn btn-sm" id="btn-csv-down" style="display:flex;align-items:center;gap:4px;"><span>⬆</span> Export</button>
+      <input type="file" id="csv-file-input" accept=".csv" style="display:none;">
+      <button class="btn btn-primary" onclick="openModal(null)" style="display:flex;align-items:center;gap:4px;">+ New Project</button>
+    </div>
+  </div>
+
+  <!-- KPI Summary Cards -->
+  <div id="prj-kpi-row" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;"></div>
+
+  <!-- Main layout: table left, charts right -->
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start;">
+    <!-- LEFT: Filters + Table -->
+    <div>
+      <!-- Filter bar -->
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <div style="position:relative;flex:1;min-width:180px;">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px;">🔍</span>
+          <input id="prj-search" placeholder="Search projects..." oninput="renderTable()" style="padding-left:30px;width:100%;box-sizing:border-box;font-size:12px;">
+        </div>
+        <select id="prj-client-filter" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
+          <option value="">All Clients</option>
+        </select>
+        <select id="prj-brand-filter" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
+          <option value="">All Brands</option>
+        </select>
+        <select id="prj-status" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
+          <option value="">All Status</option>
+          <option value="Working">In Progress</option>
+          <option value="Proposing">Planning (Proposing)</option>
+          <option value="Pitching">Planning (Pitching)</option>
+          <option value="Hold">On Hold</option>
+          <option value="Close">Completed</option>
+          <option value="Pitch Lost">At Risk / Lost</option>
+        </select>
+        <select id="prj-owner" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
+          <option value="">All Project Managers</option>
+        </select>
+        <select id="prj-type-filter" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
+          <option value="">All Types</option>
+        </select>
+        <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-left:auto;">
+          <button id="btn-prj-table-view" onclick="setPrjView('table')" style="padding:6px 12px;border:none;background:#6366f1;color:#fff;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;">⊞ Table View</button>
+          <button id="btn-prj-board-view" onclick="setPrjView('board')" style="padding:6px 12px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;">⊟ Board View</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="tbl-wrap" style="border-radius:10px;border:1px solid var(--border);overflow:hidden;background:#fff;">
+        <table id="prj-table" style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:#f8fafc;border-bottom:1px solid var(--border);">
+              <th style="padding:10px 12px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);white-space:nowrap;cursor:pointer;" onclick="sortPrjBy('name')">Project ↕</th>
+              <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);">Client</th>
+              <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);">Brand</th>
+              <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);">Status</th>
+              <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);min-width:90px;">Progress</th>
+              <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);cursor:pointer;" onclick="sortPrjBy('owner')">Project Manager ↕</th>
+              <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);cursor:pointer;" onclick="sortPrjBy('start')">Start Date ↕</th>
+              <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);cursor:pointer;" onclick="sortPrjBy('end')">Due Date ↕</th>
+              <th style="padding:10px 8px;text-align:right;font-weight:600;font-size:11px;color:var(--text-muted);cursor:pointer;" onclick="sortPrjBy('budget')">Budget ↕</th>
+              <th style="padding:10px 8px;text-align:center;font-weight:600;font-size:11px;color:var(--text-muted);">Tasks</th>
+              <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);cursor:pointer;" onclick="sortPrjBy('updated')">Last Updated ↕</th>
+              <th style="padding:10px 8px;"></th>
+            </tr>
+          </thead>
+          <tbody id="prj-tbody"></tbody>
         </table>
+      </div>
+
+      <!-- Pagination -->
+      <div id="prj-pagination" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--text-muted);flex-wrap:wrap;gap:8px;"></div>
+
+      <!-- Timeline mini -->
+      <div id="prj-timeline-section" style="margin-top:20px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:700;">Projects Timeline <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(This Month)</span></div>
+          <button onclick="document.querySelector('[data-panel=timeline]')?.click()" style="background:none;border:none;color:#6366f1;font-size:11px;cursor:pointer;font-weight:600;">View full timeline →</button>
+        </div>
+        <div id="prj-mini-timeline" style="padding:12px 16px;"></div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div id="prj-recent-activity" style="margin-top:16px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:700;">Recent Activity</div>
+          <button style="background:none;border:none;color:#6366f1;font-size:11px;cursor:pointer;font-weight:600;">View all →</button>
+        </div>
+        <div id="prj-activity-list" style="padding:8px 0;"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Charts sidebar -->
+    <div>
+      <!-- Projects by Status -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Projects by Status</div>
+        <div id="prj-chart-status"></div>
+      </div>
+
+      <!-- Projects by Client -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:700;">Projects by Client</div>
+          <button style="background:none;border:none;color:#6366f1;font-size:11px;cursor:pointer;font-weight:600;">View all →</button>
+        </div>
+        <div id="prj-chart-client"></div>
+      </div>
+
+      <!-- Projects by Brand -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:700;">Projects by Brand <span style="color:var(--text-muted);font-size:11px;font-weight:400;">(Top 5)</span></div>
+          <button style="background:none;border:none;color:#6366f1;font-size:11px;cursor:pointer;font-weight:600;">View all →</button>
+        </div>
+        <div id="prj-chart-brand"></div>
+      </div>
+
+      <!-- Projects by Budget -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Projects by Budget</div>
+        <div id="prj-chart-budget"></div>
       </div>
     </div>
   </div>
+</div>
 
   <!-- CLIENTS -->
   <div class="panel" id="clients">
@@ -10069,53 +10191,502 @@ function miniTimeline(p) {
     <div class="tl-label">${fmt(s)} – ${fmt(e)}</div>
   </div>`;
 }
-function renderPrjYearPicker() {
-  const container = document.getElementById('prj-year-pills');
-  if (!container) return;
-  // "All years" option + year pills
-  const years = availableYears();
-  const allActive = !window._prjYearFilter;
-  container.innerHTML = `<button class="year-pill${allActive?' active':''}" data-prj-year="">All</button>` +
-    years.map(y => `<button class="year-pill${window._prjYearFilter===y?' active':''}" data-prj-year="${y}">${y}</button>`).join('');
-  container.querySelectorAll('[data-prj-year]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      window._prjYearFilter = btn.dataset.prjYear ? parseInt(btn.dataset.prjYear) : null;
-      renderPrjYearPicker();
-      renderTable();
-    });
-  });
+// ═══════════════════════════════════════
+// ALL PROJECTS PAGE — New Redesign
+// ═══════════════════════════════════════
+let _prjSort = { key: 'name', dir: 1 };
+let _prjPage = 1;
+let _prjPageSize = 10;
+
+function prjStatusDisplay(s) {
+  const map = {
+    'Working':    { label:'In Progress', bg:'#dcfce7', color:'#166534', dot:'#22c55e' },
+    'Proposing':  { label:'Planning',    bg:'#fef9c3', color:'#854d0e', dot:'#eab308' },
+    'Pitching':   { label:'Planning',    bg:'#fef9c3', color:'#854d0e', dot:'#eab308' },
+    'Hold':       { label:'On Hold',     bg:'#f1f5f9', color:'#64748b', dot:'#94a3b8' },
+    'Close':      { label:'Completed',   bg:'#dcfce7', color:'#166534', dot:'#4ade80' },
+    'Pitch Lost': { label:'At Risk',     bg:'#fee2e2', color:'#991b1b', dot:'#ef4444' },
+  };
+  return map[s] || { label:s||'–', bg:'#f1f5f9', color:'#64748b', dot:'#94a3b8' };
 }
+
+function prjAvatarHtml(name, size=26) {
+  if (!name) return '';
+  const initials = name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+  const colors = ['#6366f1','#0ea5e9','#22c55e','#f59e0b','#ec4899','#14b8a6','#8b5cf6','#f97316'];
+  const ci = name.charCodeAt(0) % colors.length;
+  const member = (DB.team||[]).find(m=>(m.name===name||m.nickname===name) && m.photo);
+  if (member?.photo) return `<img src="${member.photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;" title="${escHtml(name)}">`;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${colors[ci]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.floor(size*0.38)}px;font-weight:700;flex-shrink:0;" title="${escHtml(name)}">${initials}</div>`;
+}
+
+function prjClientLogoHtml(company, size=22) {
+  if (!company) return '';
+  const cl = (DB.clients||[]).find(c=>c.name===company||c.company===company);
+  const logo = cl?.logo;
+  if (logo) return `<img src="${logo}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;" title="${escHtml(company)}">`;
+  const initials = company.replace(/[^A-Za-z0-9฀-๿]/g,' ').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+  const colors = ['#0ea5e9','#6366f1','#f59e0b','#22c55e','#ec4899','#14b8a6'];
+  const ci = company.charCodeAt(0) % colors.length;
+  return `<div style="width:${size}px;height:${size}px;border-radius:4px;background:${colors[ci]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.floor(size*0.42)}px;font-weight:700;flex-shrink:0;">${initials}</div>`;
+}
+
+function prjBrandLogoHtml(brandName, size=22) {
+  if (!brandName) return '';
+  const br = (DB.brands||[]).find(b=>b.name===brandName);
+  const logo = br?.logo;
+  if (logo) return `<img src="${logo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:contain;" title="${escHtml(brandName)}">`;
+  const initials = brandName.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+  const colors = ['#f59e0b','#6366f1','#ec4899','#14b8a6','#22c55e','#0ea5e9'];
+  const ci = brandName.charCodeAt(0) % colors.length;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${colors[ci]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.floor(size*0.42)}px;font-weight:700;flex-shrink:0;">${initials}</div>`;
+}
+
+function fmtPrjDate(d) {
+  if (!d) return '–';
+  const dt = parseDate(d);
+  if (!dt) return d;
+  return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function prjIsOverdue(p) {
+  if (!p.end) return false;
+  const e = parseDate(p.end);
+  return e && e < new Date() && p.status !== 'Close';
+}
+
+function sortPrjBy(key) {
+  if (_prjSort.key === key) _prjSort.dir *= -1;
+  else { _prjSort.key = key; _prjSort.dir = 1; }
+  _prjPage = 1;
+  renderTable();
+}
+
+function setPrjView(v) {
+  const tb = document.getElementById('btn-prj-table-view');
+  const bb = document.getElementById('btn-prj-board-view');
+  if (v === 'board') {
+    if (tb) { tb.style.background='transparent'; tb.style.color='var(--text-muted)'; }
+    if (bb) { bb.style.background='#6366f1'; bb.style.color='#fff'; }
+    document.querySelector('[data-panel=projects-unified]')?.click();
+  } else {
+    if (tb) { tb.style.background='#6366f1'; tb.style.color='#fff'; }
+    if (bb) { bb.style.background='transparent'; bb.style.color='var(--text-muted)'; }
+  }
+}
+
 function renderTable() {
-  const q = (document.getElementById('prj-search').value||'').toLowerCase();
-  const status = document.getElementById('prj-status').value;
-  const owner = document.getElementById('prj-owner').value;
-  const pfpgFilter = document.getElementById('prj-pfpg').value;
-  const rows = DB.projects.filter(p => {
-    if (pfpgFilter && (p.pfpg||'PF') !== pfpgFilter) return false;
-    if (status && p.status!==status) return false;
-    if (owner && p.owner!==owner && p.support!==owner) return false;
-    if (q && !`${p.brand} ${p.name} ${p.owner} ${p.support} ${p.code} ${p.company}`.toLowerCase().includes(q)) return false;
-    if (window._prjYearFilter) { const sv=YEAR; YEAR=window._prjYearFilter; const iy=projectInYear(p); YEAR=sv; if(!iy) return false; }
+  const q = (document.getElementById('prj-search')?.value||'').toLowerCase();
+  const status = document.getElementById('prj-status')?.value||'';
+  const owner = document.getElementById('prj-owner')?.value||'';
+  const clientF = document.getElementById('prj-client-filter')?.value||'';
+  const brandF = document.getElementById('prj-brand-filter')?.value||
+                 document.getElementById('prj-brand-hdr')?.value||'';
+  const typeF = document.getElementById('prj-type-filter')?.value||'';
+
+  // Populate filters lazily
+  const ownerSel = document.getElementById('prj-owner');
+  if (ownerSel && ownerSel.options.length <= 1) {
+    const owners = [...new Set(DB.projects.map(p=>p.owner).filter(Boolean))].sort();
+    owners.forEach(o => { const op=document.createElement('option'); op.value=o; op.textContent=o; ownerSel.appendChild(op); });
+  }
+  const clientSel = document.getElementById('prj-client-filter');
+  if (clientSel && clientSel.options.length <= 1) {
+    const clients = [...new Set(DB.projects.map(p=>p.company).filter(Boolean))].sort();
+    clients.forEach(c => { const op=document.createElement('option'); op.value=c; op.textContent=c; clientSel.appendChild(op); });
+  }
+  const brandSel = document.getElementById('prj-brand-filter');
+  const brandHdr = document.getElementById('prj-brand-hdr');
+  [brandSel, brandHdr].forEach(sel => {
+    if (sel && sel.options.length <= 1) {
+      const brands = [...new Set(DB.projects.map(p=>p.brand).filter(Boolean))].sort();
+      brands.forEach(b => { const op=document.createElement('option'); op.value=b; op.textContent=b; sel.appendChild(op); });
+    }
+  });
+  const typeSel = document.getElementById('prj-type-filter');
+  if (typeSel && typeSel.options.length <= 1) {
+    const types = [...new Set(DB.projects.flatMap(p=>p.types||[]).filter(Boolean))].sort();
+    types.forEach(t => { const op=document.createElement('option'); op.value=t; op.textContent=t; typeSel.appendChild(op); });
+  }
+
+  let rows = DB.projects.filter(p => {
+    if (status && p.status !== status) return false;
+    if (owner && p.owner !== owner && p.support !== owner) return false;
+    if (clientF && p.company !== clientF) return false;
+    if (brandF && p.brand !== brandF) return false;
+    if (typeF && !(p.types||[]).includes(typeF)) return false;
+    if (q && !`${p.brand||''} ${p.name||''} ${p.owner||''} ${p.code||''} ${p.company||''}`.toLowerCase().includes(q)) return false;
     return true;
   });
-  const body = rows.map(p => `<tr>
-    <td>${pfpgBadge(p.pfpg||'PF')}</td>
-    <td>${codeBadge(p.code)}</td>
-    <td style="max-width:220px;" class="brand-cell">
-      <div class="brand-name">${p.brand || p.name || '–'}</div>
-      ${p.brand && p.name ? `<div class="project-name">${p.name}</div>` : ''}
-      ${p.bundle ? `<span class="bundle-badge" style="margin-top:3px;">${p.bundle}</span>` : ''}
-    </td>
-    <td>${p.owner ? `<div class="owner-cell"><div class="main-owner">${p.owner}</div>${p.support?`<div class="sub-support">+${p.support}</div>`:''}</div>` : '–'}</td>
-    <td>${badgeFor(p.status)}${p.status==='Pitch Lost'&&p.decisionFactor?`<br><span style="font-size:10px;color:#991B1B;">${p.decisionFactor}</span>`:''}</td>
-    <td>${miniTimeline(p)}</td>
-    <td style="text-align:right;">฿${fmtMoney(p.budget)}</td>
-    <td>${(p.roles||[]).map(r=>`<span class="role-tag">${r}</span>`).join('')}</td>
-    <td style="white-space:nowrap;">${p.qtStatus?`<span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:${qtStatusStyle(p.qtStatus).bg};color:${qtStatusStyle(p.qtStatus).color};margin-right:4px;">${p.qtStatus}</span>`:''}${p.basecampUrl?`<a href="${p.basecampUrl}" target="_blank" class="btn btn-sm" style="color:var(--accent);text-decoration:none;" title="Basecamp">🔗</a> `:''}${p.driveUrl?`<a href="${p.driveUrl}" target="_blank" class="btn btn-sm" style="color:#1a73e8;text-decoration:none;" title="Google Drive">📁</a> `:''}${p.qtNo||p.qtLink?`<a ${p.qtLink?`href="${p.qtLink}" target="_blank"`:'href="#"'} class="btn btn-sm" style="color:var(--ci-salmon);text-decoration:none;" title="QT ${p.qtNo||''}" ${!p.qtLink?'onclick="return false;"':''}>📄${p.qtNo?' '+p.qtNo:''}</a> `:''}<button class="btn btn-sm" data-edit="${p.id||p.code}">Edit</button></td>
-  </tr>`).join('');
-  document.querySelector('#prj-table tbody').innerHTML = body || `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:20px;">No projects</td></tr>`;
-  document.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openModal(b.dataset.edit)));
+
+  // Sort
+  rows = [...rows].sort((a,b) => {
+    let va, vb;
+    switch(_prjSort.key) {
+      case 'name':    va=a.name||a.brand||''; vb=b.name||b.brand||''; break;
+      case 'owner':   va=a.owner||''; vb=b.owner||''; break;
+      case 'start':   va=parseDate(a.start)||new Date(0); vb=parseDate(b.start)||new Date(0); break;
+      case 'end':     va=parseDate(a.end)||new Date(9e15); vb=parseDate(b.end)||new Date(9e15); break;
+      case 'budget':  va=+(a.budget||0); vb=+(b.budget||0); break;
+      case 'updated': va=parseDate(a.updatedAt)||new Date(0); vb=parseDate(b.updatedAt)||new Date(0); break;
+      default:        va=a.name||''; vb=b.name||'';
+    }
+    if (va < vb) return -1 * _prjSort.dir;
+    if (va > vb) return 1 * _prjSort.dir;
+    return 0;
+  });
+
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / _prjPageSize));
+  _prjPage = Math.min(_prjPage, totalPages);
+  const pageRows = rows.slice((_prjPage-1)*_prjPageSize, _prjPage*_prjPageSize);
+  const today = new Date();
+
+  const body = pageRows.map(p => {
+    const sd = prjStatusDisplay(p.status);
+    const tasks = (DB.tasks||[]).filter(t=>t.project===p.code);
+    const doneTasks = tasks.filter(t=>t.done||t.status==='done').length;
+    const progress = p.progress!=null ? +p.progress : (tasks.length>0 ? Math.round(doneTasks/tasks.length*100) : 0);
+    const overdue = prjIsOverdue(p);
+    const startStr = fmtPrjDate(p.start);
+    const endStr = fmtPrjDate(p.end);
+    const endDate = parseDate(p.end);
+    const endColor = overdue ? '#ef4444' : (endDate && (endDate-today)<7*24*3600*1000 ? '#f59e0b' : 'var(--text-muted)');
+    const updatedAgo = p.updatedAt ? (() => {
+      const diff = Date.now() - (parseDate(p.updatedAt)||new Date()).getTime();
+      if (diff < 3600000) return `${Math.round(diff/60000)}m ago`;
+      if (diff < 86400000) return `${Math.round(diff/3600000)}h ago`;
+      return `${Math.round(diff/86400000)}d ago`;
+    })() : '–';
+    const codePfpg = p.pfpg||'PF';
+    const pfpgColor = codePfpg==='PF'?'#6366f1':'#0ea5e9';
+
+    return `<tr style="border-bottom:1px solid #f1f5f9;transition:background 0.15s;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+      <td style="padding:10px 12px;max-width:200px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div>
+            <span style="font-size:9px;font-weight:700;background:${pfpgColor}15;color:${pfpgColor};padding:1px 5px;border-radius:4px;border:1px solid ${pfpgColor}30;">${escHtml(p.code||'')}</span>
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${escHtml(p.name||p.brand||'')}">${escHtml(p.name||p.brand||'–')}</div>
+          </div>
+        </div>
+      </td>
+      <td style="padding:10px 8px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${prjClientLogoHtml(p.company)}
+          <span style="font-size:11px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;" title="${escHtml(p.company||'')}">${escHtml(p.company||'–')}</span>
+        </div>
+      </td>
+      <td style="padding:10px 8px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${prjBrandLogoHtml(p.brand)}
+          <span style="font-size:11px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;" title="${escHtml(p.brand||'')}">${escHtml(p.brand||'–')}</span>
+        </div>
+      </td>
+      <td style="padding:10px 8px;">
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;background:${sd.bg};color:${sd.color};white-space:nowrap;">
+          <span style="width:6px;height:6px;border-radius:50%;background:${sd.dot};flex-shrink:0;"></span>
+          ${sd.label}
+        </span>
+      </td>
+      <td style="padding:10px 8px;min-width:90px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;min-width:50px;">
+            <div style="height:100%;width:${progress}%;background:${progress>=80?'#22c55e':progress>=40?'#6366f1':'#f59e0b'};border-radius:3px;transition:width 0.3s;"></div>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text-primary);min-width:28px;">${progress}%</span>
+        </div>
+      </td>
+      <td style="padding:10px 8px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${prjAvatarHtml(p.owner)}
+          <div>
+            <div style="font-size:11px;font-weight:500;white-space:nowrap;">${escHtml(p.owner||'–')}</div>
+            ${p.support?`<div style="font-size:10px;color:var(--text-muted);">+${escHtml(p.support)}</div>`:''}
+          </div>
+        </div>
+      </td>
+      <td style="padding:10px 8px;font-size:11px;color:var(--text-muted);white-space:nowrap;">${startStr}</td>
+      <td style="padding:10px 8px;font-size:11px;color:${endColor};font-weight:${overdue?'600':'400'};white-space:nowrap;">${endStr}${overdue?' ⚠':''}
+      </td>
+      <td style="padding:10px 8px;text-align:right;font-size:11px;font-weight:600;color:var(--text-primary);white-space:nowrap;">฿${fmtMoney(p.budget)}</td>
+      <td style="padding:10px 8px;text-align:center;">
+        <span style="font-size:11px;color:var(--text-muted);">${doneTasks} / ${tasks.length||0}</span>
+      </td>
+      <td style="padding:10px 8px;font-size:11px;color:var(--text-muted);white-space:nowrap;">${updatedAgo}</td>
+      <td style="padding:10px 4px;">
+        <div style="position:relative;display:inline-block;">
+          <button onclick="openPrjMenu(event,'${p.id||p.code}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:2px 6px;border-radius:4px;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='none'">⋯</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const tbody = document.getElementById('prj-tbody');
+  if (tbody) tbody.innerHTML = body || `<tr><td colspan="12" style="text-align:center;color:var(--text-muted);padding:30px;">No projects found</td></tr>`;
+
+  // Pagination
+  const pg = document.getElementById('prj-pagination');
+  if (pg) {
+    const start = total===0?0:(_prjPage-1)*_prjPageSize+1;
+    const end = Math.min(_prjPage*_prjPageSize, total);
+    const btnStyle = 'padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:11px;';
+    const pageBtns = [];
+    pageBtns.push(`<button ${_prjPage<=1?'disabled':''} onclick="_prjPage--;renderTable()" style="${btnStyle}">‹</button>`);
+    for (let i=1;i<=totalPages;i++) {
+      if (i===1||i===totalPages||Math.abs(i-_prjPage)<=1) {
+        pageBtns.push(`<button onclick="_prjPage=${i};renderTable()" style="${btnStyle}${i===_prjPage?'background:#6366f1;color:#fff;border-color:#6366f1;':''}">${i}</button>`);
+      } else if (Math.abs(i-_prjPage)===2) {
+        pageBtns.push(`<span style="padding:0 4px;font-size:11px;">…</span>`);
+      }
+    }
+    pageBtns.push(`<button ${_prjPage>=totalPages?'disabled':''} onclick="_prjPage++;renderTable()" style="${btnStyle}">›</button>`);
+    const perPage = `<select onchange="_prjPageSize=parseInt(this.value)||10;_prjPage=1;renderTable()" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;">
+      ${[10,25,50].map(n=>`<option value="${n}" ${_prjPageSize===n?'selected':''}>${n} / page</option>`).join('')}
+    </select>`;
+    pg.innerHTML = `<span>Showing ${start} to ${end} of <b>${total}</b> projects</span>
+      <div style="display:flex;align-items:center;gap:4px;">${pageBtns.join('')}${perPage}</div>`;
+  }
+
+  // KPI cards
+  renderPrjKpi(rows);
+  // Charts
+  renderPrjCharts(rows);
+  // Mini timeline
+  renderPrjMiniTimeline();
+  // Recent activity
+  renderPrjRecentActivity();
 }
+
+function openPrjMenu(e, id) {
+  e.stopPropagation();
+  // Remove existing menu
+  document.querySelectorAll('.prj-ctx-menu').forEach(m=>m.remove());
+  const menu = document.createElement('div');
+  menu.className = 'prj-ctx-menu';
+  menu.style.cssText = 'position:fixed;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;padding:4px;min-width:140px;font-size:12px;';
+  menu.innerHTML = `
+    <div onclick="openModal('${id}');this.closest('.prj-ctx-menu').remove();" style="padding:7px 12px;cursor:pointer;border-radius:6px;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">✏️ Edit</div>
+    <div onclick="navigateTo('detail','${id}');this.closest('.prj-ctx-menu').remove();" style="padding:7px 12px;cursor:pointer;border-radius:6px;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">👁 View Details</div>
+    <div onclick="navigator.clipboard?.writeText('${id}');this.closest('.prj-ctx-menu').remove();" style="padding:7px 12px;cursor:pointer;border-radius:6px;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">📋 Copy Code</div>
+  `;
+  const rect = e.target.getBoundingClientRect();
+  menu.style.left = (rect.right - 140) + 'px';
+  menu.style.top = (rect.bottom + 4) + 'px';
+  document.body.appendChild(menu);
+  setTimeout(() => document.addEventListener('click', ()=>menu.remove(), {once:true}), 10);
+}
+
+function renderPrjKpi(rows) {
+  const el = document.getElementById('prj-kpi-row');
+  if (!el) return;
+  const allP = DB.projects;
+  const total = allP.length;
+  const totalBudget = allP.reduce((s,p)=>s+(+p.budget||0),0);
+  const active = allP.filter(p=>p.status==='Working').length;
+  const completed = allP.filter(p=>p.status==='Close').length;
+  const today = new Date();
+  const overdue = allP.filter(p=>prjIsOverdue(p)).length;
+  const progArr = allP.filter(p=>p.progress!=null).map(p=>+p.progress);
+  const avgProg = progArr.length ? Math.round(progArr.reduce((a,b)=>a+b,0)/progArr.length) : 0;
+
+  const cards = [
+    { label:'Total Projects', value:total, sub:'All Status', icon:'📁', color:'#6366f1', bg:'#f0f4ff' },
+    { label:'Total Budget', value:'฿'+fmtMoney(totalBudget), sub:'↑ All projects', icon:'💰', color:'#059669', bg:'#ecfdf5' },
+    { label:'Active Projects', value:active, sub:`${total?Math.round(active/total*100):0}% of total`, icon:'📈', color:'#2563eb', bg:'#eff6ff' },
+    { label:'Completed Projects', value:completed, sub:`${total?Math.round(completed/total*100):0}% of total`, icon:'✅', color:'#16a34a', bg:'#f0fdf4' },
+    { label:'Overdue Projects', value:overdue, sub:`${total?Math.round(overdue/total*100):0}% of total`, icon:'⏰', color:overdue>0?'#dc2626':'#64748b', bg:overdue>0?'#fef2f2':'#f1f5f9' },
+    { label:'Avg. Progress', value:avgProg+'%', sub:'Across all projects', icon:'📊', color:'#7c3aed', bg:'#faf5ff' },
+  ];
+
+  el.innerHTML = cards.map(c=>`
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:600;color:var(--text-muted);">${c.label}</span>
+        <div style="width:32px;height:32px;border-radius:8px;background:${c.bg};display:flex;align-items:center;justify-content:center;font-size:16px;">${c.icon}</div>
+      </div>
+      <div style="font-size:22px;font-weight:800;color:${c.color};line-height:1;">${c.value}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${c.sub}</div>
+    </div>
+  `).join('');
+}
+
+function renderPrjCharts(rows) {
+  const allP = DB.projects;
+
+  // Status donut
+  const statusEl = document.getElementById('prj-chart-status');
+  if (statusEl) {
+    const groups = {};
+    allP.forEach(p => {
+      const d = prjStatusDisplay(p.status);
+      if (!groups[d.label]) groups[d.label] = { count:0, color:d.dot };
+      groups[d.label].count++;
+    });
+    const gArr = Object.entries(groups).sort((a,b)=>b[1].count-a[1].count);
+    const tot = allP.length || 1;
+    // Simple SVG donut
+    let circumference = 2*Math.PI*38; // r=38
+    let offset = 0;
+    const slices = gArr.map(([lbl,{count,color}]) => {
+      const pct = count/tot;
+      const dash = pct*circumference;
+      const sl = `<circle cx="50" cy="50" r="38" fill="none" stroke="${color}" stroke-width="14" stroke-dasharray="${dash} ${circumference-dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 0.5s;"/>`;
+      offset += dash;
+      return sl;
+    });
+    const donut = `<svg viewBox="0 0 100 100" style="width:100px;height:100px;flex-shrink:0;">
+      ${slices.join('')}
+      <text x="50" y="47" text-anchor="middle" font-size="14" font-weight="800" fill="#1a2a3a">${tot}</text>
+      <text x="50" y="60" text-anchor="middle" font-size="7" fill="#64748b">Total</text>
+    </svg>`;
+    const legend = gArr.map(([lbl,{count,color}])=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="width:8px;height:8px;border-radius:2px;background:${color};flex-shrink:0;"></span>
+          <span style="color:var(--text-primary);">${lbl}</span>
+        </div>
+        <span style="font-weight:600;color:var(--text-primary);">${count} <span style="font-weight:400;color:var(--text-muted);">(${Math.round(count/tot*100)}%)</span></span>
+      </div>`).join('');
+    statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:16px;">${donut}<div style="flex:1;">${legend}</div></div>`;
+  }
+
+  // By Client
+  const clientEl = document.getElementById('prj-chart-client');
+  if (clientEl) {
+    const cm = {};
+    allP.forEach(p => { if (p.company) { cm[p.company]=(cm[p.company]||0)+1; } });
+    const sorted = Object.entries(cm).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const max = sorted[0]?.[1] || 1;
+    clientEl.innerHTML = sorted.map(([name,cnt])=>`
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px;">
+          <span style="font-weight:500;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${escHtml(name)}</span>
+          <span style="font-weight:600;color:var(--text-muted);">${cnt}</span>
+        </div>
+        <div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${cnt/max*100}%;background:#6366f1;border-radius:3px;"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // By Brand
+  const brandEl = document.getElementById('prj-chart-brand');
+  if (brandEl) {
+    const bm = {};
+    allP.forEach(p => { if (p.brand) { bm[p.brand]=(bm[p.brand]||0)+1; } });
+    const sorted = Object.entries(bm).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const max = sorted[0]?.[1] || 1;
+    const colors = ['#6366f1','#0ea5e9','#22c55e','#f59e0b','#ec4899'];
+    brandEl.innerHTML = sorted.map(([name,cnt],i)=>`
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px;">
+          <span style="font-weight:500;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${escHtml(name)}</span>
+          <span style="font-weight:600;color:var(--text-muted);">${cnt} (${Math.round(cnt/allP.length*100)}%)</span>
+        </div>
+        <div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${cnt/max*100}%;background:${colors[i%colors.length]};border-radius:3px;"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // By Budget
+  const budgetEl = document.getElementById('prj-chart-budget');
+  if (budgetEl) {
+    const top5 = [...allP].sort((a,b)=>(+b.budget||0)-(+a.budget||0)).slice(0,5);
+    const maxB = top5[0] ? (+top5[0].budget||0) : 1;
+    budgetEl.innerHTML = top5.map(p=>`
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px;">
+          <span style="font-weight:500;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;" title="${escHtml(p.name||p.brand||p.code||'')}">${escHtml(p.code||'')} ${escHtml(p.brand||p.name||'')}</span>
+          <span style="font-weight:600;color:var(--text-muted);">฿${fmtMoney(p.budget)}</span>
+        </div>
+        <div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${(+p.budget||0)/maxB*100}%;background:#0ea5e9;border-radius:3px;"></div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function renderPrjMiniTimeline() {
+  const el = document.getElementById('prj-mini-timeline');
+  if (!el) return;
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  const total = monthEnd - monthStart;
+
+  const projects = DB.projects.filter(p => {
+    const s = parseDate(p.start), e = parseDate(p.end);
+    if (!s && !e) return false;
+    const ps = s||monthStart, pe = e||monthEnd;
+    return ps <= monthEnd && pe >= monthStart;
+  }).slice(0,6);
+
+  if (!projects.length) { el.innerHTML='<p style="font-size:12px;color:var(--text-muted);text-align:center;padding:10px 0;">No projects this month</p>'; return; }
+
+  const STATUS_BAR_COLORS = { Working:'#6366f1', Proposing:'#eab308', Pitching:'#eab308', Hold:'#94a3b8', Close:'#22c55e', 'Pitch Lost':'#ef4444' };
+
+  const weeks = [];
+  for (let w=0;w<6;w++) {
+    const wd = new Date(monthStart); wd.setDate(1 + w*7);
+    if (wd <= monthEnd) weeks.push(`W${w+1} (${wd.getDate()} ${wd.toLocaleDateString('en-GB',{month:'short'})})`);
+  }
+
+  let h = `<div style="display:grid;grid-template-columns:160px 1fr;gap:0;font-size:11px;">`;
+  h += `<div style="color:var(--text-muted);padding:4px 0;font-weight:600;">Project</div>`;
+  h += `<div style="display:grid;grid-template-columns:repeat(${weeks.length},1fr);gap:0;">${weeks.map(w=>`<div style="color:var(--text-muted);text-align:center;padding:4px 2px;font-size:10px;">${w}</div>`).join('')}</div>`;
+
+  projects.forEach(p => {
+    const s = parseDate(p.start)||monthStart;
+    const e = parseDate(p.end)||monthEnd;
+    const barStart = Math.max(0, (s-monthStart)/total*100);
+    const barEnd = Math.min(100, (e-monthStart)/total*100);
+    const barWidth = Math.max(2, barEnd-barStart);
+    const color = STATUS_BAR_COLORS[p.status]||'#6366f1';
+    const sd = prjStatusDisplay(p.status);
+    h += `<div style="padding:5px 0;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px;" title="${escHtml(p.name||p.brand||p.code||'')}">${escHtml(p.code||'')} ${escHtml(p.brand||p.name||'')}</div>`;
+    h += `<div style="display:flex;align-items:center;padding:5px 0;position:relative;">
+      <div style="flex:1;height:18px;background:#f1f5f9;border-radius:4px;position:relative;overflow:hidden;">
+        <div style="position:absolute;left:${barStart}%;width:${barWidth}%;height:100%;background:${color};border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:9px;color:#fff;font-weight:600;overflow:hidden;white-space:nowrap;padding:0 4px;">${sd.label}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+  h += `</div>`;
+  el.innerHTML = h;
+}
+
+function renderPrjRecentActivity() {
+  const el = document.getElementById('prj-activity-list');
+  if (!el) return;
+  // Generate from recent project updates
+  const recent = [...DB.projects]
+    .filter(p=>p.updatedAt)
+    .sort((a,b)=>(parseDate(b.updatedAt)||0)-(parseDate(a.updatedAt)||0))
+    .slice(0,5);
+  if (!recent.length) { el.innerHTML='<p style="font-size:12px;color:var(--text-muted);padding:12px 16px;">No recent activity</p>'; return; }
+  const actTypes = ['updated project progress','completed a task','added a comment','uploaded a file','updated timeline'];
+  el.innerHTML = recent.map((p,i)=>{
+    const ago = p.updatedAt ? (() => {
+      const diff = Date.now() - (parseDate(p.updatedAt)||new Date()).getTime();
+      if (diff < 3600000) return `${Math.round(diff/60000)}m ago`;
+      if (diff < 86400000) return `${Math.round(diff/3600000)}h ago`;
+      return `${Math.round(diff/86400000)}d ago`;
+    })() : '–';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:${i<recent.length-1?'1px solid #f8fafc':'none'};">
+      ${prjAvatarHtml(p.owner, 28)}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-primary);">${escHtml(p.owner||'–')} <span style="font-weight:400;color:var(--text-muted);">${actTypes[i%actTypes.length]}</span></div>
+        <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(p.code||'')} ${escHtml(p.brand||p.name||'')}</div>
+      </div>
+      <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;">${ago}</span>
+    </div>`;
+  }).join('');
+}
+
+// Old renderPrjYearPicker kept as no-op for compatibility
+function renderPrjYearPicker() {}
 
 // ========== MODAL ==========
 function openModal(id) {
@@ -10789,7 +11360,7 @@ function bind() {
     });
   }
   _bindAll(['gantt-status','gantt-owner','gantt-sort','gantt-search'], 'input', renderGantt);
-  _bindAll(['prj-search','prj-status','prj-owner','prj-pfpg'],         'input', renderTable);
+  _bindAll(['prj-search','prj-status','prj-owner'],                    'input', renderTable);
   _bindAll(['kanban-search','kanban-owner','kanban-dept'],              'input', renderKanban);
   _bindAll(['wl-view','wl-status','wl-role-mode'],                     'change', renderWorkload);
 }
