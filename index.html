@@ -1288,10 +1288,10 @@ details ul { padding-left: 18px; }
         </div>
         <div id="sb-brands-list"></div>
       </div>
+      <button class="tab" data-panel="pipeline">🔭 Pipeline</button>
       <button class="tab" data-panel="projects">📋 Project List</button>
       <button class="tab" data-panel="tasks-hub" data-panel-alias="tasks-mgmt">✅ Tasks</button>
       <button class="tab" data-panel="workload">⚡ Resources</button>
-      <button class="tab" data-panel="pipeline">📊 Pipeline</button>
       <button class="tab" data-panel="reports">📊 Reports</button>
 
       <!-- TEAM -->
@@ -8147,6 +8147,162 @@ function _buildPipelineContent() {
   container.innerHTML = kpiRow + funnelSection + tableSection;
 }
 
+// ═══════════════════════════════
+// CEO OVERVIEW WIDGETS
+// ═══════════════════════════════
+
+function wCeoTopLine() {
+  const now = new Date();
+  const yr = now.getFullYear();
+  const mo = now.getMonth();
+
+  // YTD revenue = sum of all project budgets with start/launch in current year
+  const ytdProjs = (DB.projects||[]).filter(p => {
+    const d = parseDate(p.start||p.launch);
+    return d && d.getFullYear() === yr && (p.status==='Working'||p.status==='In Progress'||(p.status||'').toLowerCase().includes('working'));
+  });
+  const ytdRev = ytdProjs.reduce((s,p)=>s+(+p.budget||0),0);
+
+  // Pipeline = Won+Negotiation+Proposal opportunities value
+  const opps = DB.opportunities||[];
+  const booked = opps.filter(o=>o.stage==='Won').reduce((s,o)=>s+(+o.value||+o.budget||0),0);
+  const signed = opps.filter(o=>o.stage==='Negotiation').reduce((s,o)=>s+(+o.value||+o.budget||0),0);
+  const proposal = opps.filter(o=>o.stage==='Proposal').reduce((s,o)=>s+(+o.value||+o.budget||0),0);
+  const totalPipeline = booked + signed + proposal;
+
+  // GP/employee this month
+  const gpCfg = (() => { try { return JSON.parse(localStorage.getItem('gp_settings')||'{}'); } catch(e) { return {}; } })();
+  const costPct = gpCfg.costPct ?? 60;
+  const headcount = gpCfg.headcount ?? ((DB.team||[]).length || 20);
+  const moProjs = (DB.projects||[]).filter(p => {
+    const d = parseDate(p.start||p.launch);
+    return d && d.getFullYear()===yr && d.getMonth()===mo;
+  });
+  const moRev = moProjs.reduce((s,p)=>s+(+p.budget||0),0);
+  const gpPerEmp = headcount > 0 ? Math.round(moRev * (1 - costPct/100) / headcount) : 0;
+  const gpColor = gpPerEmp >= 140000 ? '#16a34a' : gpPerEmp >= 100000 ? '#d97706' : '#dc2626';
+  const gpLabel = gpPerEmp >= 140000 ? '🟢 On Track' : gpPerEmp >= 100000 ? '🟡 Watch' : '🔴 Below Target';
+
+  // Active projects count
+  const activeCount = (DB.projects||[]).filter(p=>(p.status||'').toLowerCase().includes('working')||(p.status||'').toLowerCase().includes('progress')).length;
+  const clientCount = [...new Set((DB.projects||[]).map(p=>p.company).filter(Boolean))].length;
+
+  const sz = WIDGET_SIZE_MAP.wCeoTopLine || 'col-12';
+  return `<div class="dash-card ${sz}" style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%);color:#fff;border:none;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.5);margin-bottom:4px;">📈 Business Overview ${yr}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.7);">YTD Revenue (Booked Projects)</div>
+        <div style="font-size:36px;font-weight:900;color:#fff;line-height:1.1;">฿${fmtMoney(ytdRev)}</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px 16px;text-align:center;min-width:90px;">
+          <div style="font-size:22px;font-weight:800;">${activeCount}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">Active Projects</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px 16px;text-align:center;min-width:90px;">
+          <div style="font-size:22px;font-weight:800;">${clientCount}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">Active Clients</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px 16px;text-align:center;min-width:90px;">
+          <div style="font-size:22px;font-weight:800;">฿${fmtMoney(totalPipeline)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">Pipeline Value</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px 16px;text-align:center;min-width:90px;">
+          <div style="font-size:20px;font-weight:800;color:${gpColor};">฿${fmtMoney(gpPerEmp)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">${gpLabel}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4);">GP/emp this month</div>
+        </div>
+      </div>
+    </div>
+    <!-- Pipeline funnel row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+      ${[
+        ['🏆 Booked', booked, '#10b981'],
+        ['✍ Signed', signed, '#6366f1'],
+        ['📝 Proposal', proposal, '#f59e0b'],
+      ].map(([l,v,c])=>`<div style="background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;border-left:3px solid ${c};">
+        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:3px;">${l}</div>
+        <div style="font-size:16px;font-weight:800;">฿${fmtMoney(v)}</div>
+      </div>`).join('')}
+    </div>
+    <!-- YTD bar -->
+    <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:11px;color:rgba(255,255,255,.5);white-space:nowrap;">Pipeline Coverage</span>
+      <div style="flex:1;background:rgba(255,255,255,.15);border-radius:4px;height:8px;overflow:hidden;">
+        <div style="width:${Math.min(100,Math.round(totalPipeline/(ytdRev||1)*100))}%;background:linear-gradient(90deg,#10b981,#6366f1);height:100%;border-radius:4px;"></div>
+      </div>
+      <span style="font-size:11px;color:rgba(255,255,255,.7);font-weight:700;white-space:nowrap;">${Math.round(totalPipeline/(ytdRev||1)*100)}% of YTD</span>
+    </div>
+  </div>`;
+}
+
+function wCeoGpAnnual() {
+  const now = new Date();
+  const yr = now.getFullYear();
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+  const gpCfg = (() => { try { return JSON.parse(localStorage.getItem('gp_settings')||'{}'); } catch(e) { return {}; } })();
+  const costPct = gpCfg.costPct ?? 60;
+  const headcount = gpCfg.headcount ?? ((DB.team||[]).length || 20);
+  const targetGp = 140000;
+
+  // Revenue per month from projects (by start/launch date)
+  const revByMonth = Array(12).fill(0);
+  (DB.projects||[]).forEach(p => {
+    const d = parseDate(p.start||p.launch);
+    if (d && d.getFullYear()===yr) revByMonth[d.getMonth()] += (+p.budget||0);
+  });
+
+  // Pipeline per month from opportunities (by closeDate)
+  const pipeByMonth = Array(12).fill(0);
+  (DB.opportunities||[]).filter(o=>o.stage!=='Won'&&o.stage!=='Lost').forEach(o => {
+    const d = parseDate(o.closeDate);
+    if (d && d.getFullYear()===yr) pipeByMonth[d.getMonth()] += (+o.value||+o.budget||0);
+  });
+
+  const gpByMonth = revByMonth.map(r => headcount > 0 ? Math.round(r*(1-costPct/100)/headcount) : 0);
+  const maxVal = Math.max(targetGp * 1.5, ...gpByMonth, ...pipeByMonth.map(v => headcount>0?Math.round(v*(1-costPct/100)/headcount):0));
+  const curMo = now.getMonth();
+
+  const sz = WIDGET_SIZE_MAP.wCeoGpAnnual || 'col-12';
+  return `<div class="dash-card ${sz}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:14px;font-weight:800;color:#1e293b;">💹 GP / Employee — รายเดือน ${yr}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:2px;">เส้นแดง = เป้า ฿140K/คน · แถบสีเข้ม = จาก Projects · แถบโปร่ง = จาก Pipeline ที่คาดการณ์</div>
+      </div>
+      <button onclick="openGpSettings()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;color:#64748b;">⚙ ตั้งค่า (Cost ${costPct}% · ${headcount} คน)</button>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:4px;height:140px;padding-bottom:4px;">
+      ${months.map((m,i) => {
+        const gp = gpByMonth[i];
+        const pipeGp = headcount>0 ? Math.round(pipeByMonth[i]*(1-costPct/100)/headcount) : 0;
+        const barH = Math.round((gp/maxVal)*120);
+        const pipeH = Math.round((pipeGp/maxVal)*120);
+        const barColor = gp >= targetGp ? '#16a34a' : gp >= 100000 ? '#f59e0b' : gp > 0 ? '#dc2626' : '#e2e8f0';
+        const isPast = i < curMo;
+        const isCur = i === curMo;
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <div style="width:100%;position:relative;height:124px;display:flex;align-items:flex-end;gap:2px;">
+            ${gp>0||isPast||isCur ? `<div style="flex:1;background:${barColor};border-radius:3px 3px 0 0;height:${Math.max(2,barH)}px;opacity:${isPast||isCur?1:.5};" title="฿${fmtMoney(gp)}/emp"></div>` : `<div style="flex:1;height:2px;background:#e2e8f0;border-radius:2px;margin-top:auto;"></div>`}
+            ${pipeGp>0&&!isPast ? `<div style="flex:1;background:#6366f1;opacity:.25;border-radius:3px 3px 0 0;height:${Math.max(2,pipeH)}px;" title="Pipeline ฿${fmtMoney(pipeGp)}/emp"></div>` : '<div style="flex:1;"></div>'}
+          </div>
+          <div style="font-size:9px;color:${isCur?'#6366f1':'#94a3b8'};font-weight:${isCur?'700':'400'};white-space:nowrap;">${m}</div>
+          ${gp>0?`<div style="font-size:8px;color:${barColor};font-weight:600;">${Math.round(gp/1000)}K</div>`:'<div style="font-size:8px;color:#e2e8f0;">–</div>'}
+        </div>`;
+      }).join('')}
+    </div>
+    <!-- Target line indicator -->
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:10px;color:#64748b;flex-wrap:wrap;">
+      <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:12px;height:3px;background:#dc2626;border-radius:2px;display:inline-block;"></span>เป้า ฿140K</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:#16a34a;border-radius:2px;display:inline-block;"></span>On Track (≥140K)</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:12px;height:10px;background:#6366f1;opacity:.3;border-radius:2px;display:inline-block;"></span>Pipeline คาดการณ์</span>
+      <span style="margin-left:auto;font-weight:700;color:#1e293b;">YTD Total: ฿${fmtMoney(revByMonth.reduce((s,v)=>s+v,0))} · GP: ฿${fmtMoney(revByMonth.reduce((s,v,i)=>s+gpByMonth[i]*headcount,0))}</span>
+    </div>
+  </div>`;
+}
+
 function wPipelineSummary() {
   const opps = DB.opportunities || [];
   const booked   = opps.filter(o => o.stage === 'Won');
@@ -8366,69 +8522,71 @@ function openWipView() {
 
 function wGpPerEmployee() {
   const now = new Date();
-  const curYear = now.getFullYear();
-  const curMonth = now.getMonth(); // 0-indexed
+  const yr = now.getFullYear();
+  const mo = now.getMonth();
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
-  const gpCfg = JSON.parse(localStorage.getItem('gp_settings') || '{}');
-  const costPct = gpCfg.costPct != null ? +gpCfg.costPct : 60;
-  const headcount = gpCfg.headcount != null ? +gpCfg.headcount : (DB.team?.length || 20);
+  const gpCfg = (() => { try { return JSON.parse(localStorage.getItem('gp_settings')||'{}'); } catch(e) { return {}; } })();
+  const costPct = gpCfg.costPct ?? 60;
+  const headcount = gpCfg.headcount ?? ((DB.team||[]).length || 20);
+  const targetGp = 140000;
 
-  // Revenue = sum of budgets of active/working projects whose start/launch date falls in current month
-  const revenue = (DB.projects || []).filter(p => {
-    const st = p.status || '';
-    const isActive = st === 'Working' || st.toLowerCase().includes('progress');
-    if (!isActive) return false;
-    // check start or launch date in current month
-    const dateStr = p.start || p.launch || p.present || p.brief || '';
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
-    return !isNaN(d) && d.getFullYear() === curYear && d.getMonth() === curMonth;
-  }).reduce((s, p) => s + (+p.budget || 0), 0);
+  // Revenue per month from projects
+  const revByMonth = Array(12).fill(0);
+  (DB.projects||[]).forEach(p => {
+    const d = parseDate(p.start||p.launch);
+    if (d && d.getFullYear()===yr) revByMonth[d.getMonth()] += (+p.budget||0);
+  });
+  const pipeByMonth = Array(12).fill(0);
+  (DB.opportunities||[]).filter(o=>o.stage!=='Won'&&o.stage!=='Lost').forEach(o => {
+    const d = parseDate(o.closeDate);
+    if (d && d.getFullYear()===yr) pipeByMonth[d.getMonth()] += (+o.value||+o.budget||0);
+  });
+  const gpByMonth = revByMonth.map(r => headcount>0 ? Math.round(r*(1-costPct/100)/headcount) : 0);
+  const curGp = gpByMonth[mo];
+  const gpColor = curGp >= targetGp ? '#16a34a' : curGp >= 100000 ? '#d97706' : '#dc2626';
+  const gpLabel = curGp >= targetGp ? '🟢 On Track' : curGp >= 100000 ? '🟡 Watch' : '🔴 Below Target';
+  const maxV = Math.max(targetGp*1.3, ...gpByMonth, ...pipeByMonth.map(v=>headcount>0?Math.round(v*(1-costPct/100)/headcount):0));
 
-  const gp = revenue * (1 - costPct / 100);
-  const gpPerEmp = headcount > 0 ? gp / headcount : 0;
-  const target = 140000;
-
-  let badge, badgeColor;
-  if (gpPerEmp >= target) {
-    badge = '🟢 On Track';
-    badgeColor = 'var(--success)';
-  } else if (gpPerEmp >= 100000) {
-    badge = '🟡 Watch';
-    badgeColor = 'var(--warning)';
-  } else {
-    badge = '🔴 Below Target';
-    badgeColor = 'var(--danger)';
-  }
-
-  const pct = Math.min(100, target > 0 ? Math.round(gpPerEmp / target * 100) : 0);
-  const barColor = gpPerEmp >= target ? 'var(--success)' : gpPerEmp >= 100000 ? 'var(--warning)' : 'var(--danger)';
-
-  const body = `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+  const sz = WIDGET_SIZE_MAP.wGpPerEmployee || 'col-6';
+  return `<div class="dash-card ${sz}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
       <div>
-        <div style="font-size:28px;font-weight:700;color:var(--text);letter-spacing:-1px;">฿${fmtFinance(Math.round(gpPerEmp))}</div>
-        <div style="margin-top:4px;">
-          <span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;background:${badgeColor}20;color:${badgeColor};">${badge}</span>
-        </div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.5px;">💹 GP / Employee</div>
+        <div style="font-size:28px;font-weight:900;color:${gpColor};line-height:1.1;margin-top:2px;">฿${fmtMoney(curGp)}</div>
+        <div style="font-size:11px;margin-top:4px;">${gpLabel} · เดือนนี้</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:2px;">฿${fmtMoney(revByMonth[mo])} รายได้ · ${headcount} คน · Cost ${costPct}%</div>
       </div>
-      <button onclick="openGpSettings()" title="Configure GP Settings" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:0 4px;line-height:1;">⚙</button>
+      <button onclick="openGpSettings()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;color:#64748b;flex-shrink:0;">⚙</button>
     </div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
-      ฿${fmtFinance(Math.round(gp))} GP &nbsp;/&nbsp; ${headcount} employees this month
+    <!-- Target bar -->
+    <div style="background:#f1f5f9;border-radius:6px;height:6px;overflow:hidden;margin-bottom:12px;">
+      <div style="width:${Math.min(100,Math.round(curGp/targetGp*100))}%;background:${gpColor};height:100%;border-radius:6px;transition:width .4s;"></div>
     </div>
-    <div style="margin-bottom:6px;">
-      <div class="dash-progress-bar" style="height:8px;border-radius:4px;background:var(--surface-alt,#eee);overflow:hidden;">
-        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width .4s;"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:3px;">
-        <span style="font-size:10px;color:var(--text-muted);">฿0</span>
-        <span style="font-size:10px;color:var(--text-muted);">Target ฿140K (${pct}%)</span>
-      </div>
+    <!-- 12-month mini chart -->
+    <div style="display:flex;align-items:flex-end;gap:3px;height:64px;">
+      ${months.map((m,i) => {
+        const gp = gpByMonth[i];
+        const pipeGp = headcount>0 ? Math.round(pipeByMonth[i]*(1-costPct/100)/headcount) : 0;
+        const barH = Math.round((gp/maxV)*56);
+        const pipeH = Math.round((pipeGp/maxV)*56);
+        const c = gp>=targetGp?'#16a34a':gp>=100000?'#f59e0b':gp>0?'#dc2626':'#e2e8f0';
+        const isCur = i===mo;
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+          <div style="width:100%;display:flex;align-items:flex-end;gap:1px;height:58px;">
+            <div style="flex:1;background:${c};border-radius:2px 2px 0 0;height:${Math.max(isCur?3:2,barH)}px;opacity:${i>mo?.4:1};" title="${m} ฿${fmtMoney(gp)}"></div>
+            ${pipeGp>0&&i>mo?`<div style="flex:1;background:#6366f1;opacity:.2;border-radius:2px 2px 0 0;height:${Math.max(2,pipeH)}px;" title="Pipeline ${m}"></div>`:''}
+          </div>
+          <div style="font-size:7px;color:${isCur?'#6366f1':'#cbd5e1'};margin-top:1px;font-weight:${isCur?700:400};">${m}</div>
+        </div>`;
+      }).join('')}
     </div>
-    <div style="font-size:10px;color:var(--text-hint,#bbb);margin-top:6px;">GP = Revenue × (1 - ${costPct}%) ÷ ${headcount} • Revenue from Working projects this month</div>
-  `;
-  return dashWidget('💹', 'GP / Employee', body, WIDGET_SIZE_MAP.wGpPerEmployee || 'col-6');
+    <div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:9px;color:#94a3b8;">
+      <span>เป้า ฿140K</span>
+      <div style="flex:1;border-top:1px dashed #dc2626;opacity:.5;"></div>
+      <span style="color:#6366f1;font-size:9px;">▓ pipeline</span>
+    </div>
+  </div>`;
 }
 
 function openGpSettings() {
@@ -8489,6 +8647,7 @@ function openGpSettings() {
 // ══════════════════════════════════════════════════════════
 
 const ROLE_WIDGET_MAP = {
+  ceo:        ['wCeoTopLine','wCeoGpAnnual','wPipelineSummary','wCriticalAlerts','wTeamCapacity','wTopClients','wProjectsAtRisk','wActivityFeed'],
   admin:      ['wRevenuePipeline','wActiveProjects','wCriticalAlerts','wTeamCapacity','wTopClients','wTopBrands','wProjectsAtRisk','wActivityFeed','wPipelineSummary','wGpPerEmployee'],
   management: ['wRevenuePipeline','wActiveProjects','wCriticalAlerts','wTeamCapacity','wTopClients','wTopBrands','wProjectsAtRisk','wActivityFeed','wPipelineSummary','wGpPerEmployee'],
   account:    ['wMyAccounts','wClientFollowup','wProjectsByClient','wOpportunityPipeline','wProjectsAtRisk','wUpcomingMilestones','wWaitingClientFeedback','wActivityFeed'],
@@ -8516,10 +8675,11 @@ const WIDGET_SIZE_MAP = {
   wWaitingClientFeedback:'col-6',wMyAccounts:'col-4',
   wProjectsByClient:'col-8',   wPendingInvoices:'col-6',
   wPipelineSummary:'col-6',    wGpPerEmployee:'col-6',
+  wCeoTopLine:'col-12',        wCeoGpAnnual:'col-12',
 };
 
 const ROLE_LABELS_MAP = {
-  admin:'Management / MD', management:'Management / MD',
+  ceo:'CEO / MD', admin:'Management / MD', management:'Management / MD',
   account:'Account Management', bd:'Business Development',
   pm:'Project Manager', designer:'Designer / Creative',
   strategy:'Strategy', media:'Media + KOL',
@@ -8531,6 +8691,7 @@ const ROLE_LABELS_MAP = {
 let _dashPreviewRole = null;
 
 const ROLE_PREVIEW_OPTIONS = [
+  { key:'ceo',        label:'CEO',                   icon:'👑' },
   { key:'admin',      label:'Management / MD',       icon:'👑' },
   { key:'account',    label:'Account Management',    icon:'🤝' },
   { key:'bd',         label:'Business Development',  icon:'📈' },
@@ -9050,7 +9211,7 @@ const DASH_WIDGET_FN = {
   wUpcomingMilestones, wClientFollowup, wWaitingClientFeedback, wPendingApprovals,
   wMyAccounts, wProjectsByClient, wProspectFollowup, wUpcomingClosings,
   wPipelineValue, wPendingInvoices,
-  wPipelineSummary, wGpPerEmployee,
+  wPipelineSummary, wGpPerEmployee, wCeoTopLine, wCeoGpAnnual,
 };
 
 function renderOverview() {
