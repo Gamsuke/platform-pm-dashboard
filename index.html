@@ -15297,6 +15297,74 @@ function migrateBrandsFromProjects() {
 }
 
 /** Remove duplicate brands (same name + same client) keeping the one with clientId set */
+/** Assign an unlinked brand to a company */
+function assignUnlinkedBrand(brandId) {
+  const sel = document.getElementById(`unlink-client-${brandId}`);
+  const company = sel?.value;
+  if (!company) { alert('กรุณาเลือก Company ก่อน'); return; }
+  const b = (DB.brands||[]).find(x=>x.id===brandId);
+  if (!b) return;
+  // Check for existing brand with same name under that client (would be a dup)
+  const cl = (DB.clients||[]).find(c=>(c.company||'').toLowerCase()===company.toLowerCase());
+  const existing = (DB.brands||[]).find(x =>
+    x.id !== brandId &&
+    (x.name||'').toLowerCase() === (b.name||'').toLowerCase() &&
+    (x.clientId===cl?.id || (x.clientName||'').toLowerCase()===company.toLowerCase())
+  );
+  if (existing) {
+    if (!confirm(`มี Brand "${b.name}" ใน Company "${company}" อยู่แล้ว\nต้องการ Merge และลบ record นี้ออกไหม?`)) return;
+    // Re-point projects
+    (DB.projects||[]).forEach(p=>{ if(p.brandId===brandId) p.brandId=existing.id; });
+    DB.brands = DB.brands.filter(x=>x.id!==brandId);
+  } else {
+    b.clientName = company;
+    b.clientId = cl?.id || null;
+  }
+  saveDB();
+  renderBrands();
+}
+
+/** Delete an unlinked brand (with confirmation) */
+function deleteUnlinkedBrand(brandId, brandName) {
+  const projCount = (DB.projects||[]).filter(p=>p.brand===brandName||p.brandId===brandId).length;
+  const msg = projCount > 0
+    ? `ลบ Brand "${brandName}"?\nมี ${projCount} project ที่ใช้ Brand นี้ — project จะยังอยู่แต่จะไม่ link กับ Brand\nยืนยัน?`
+    : `ลบ Brand "${brandName}"? ยืนยัน`;
+  if (!confirm(msg)) return;
+  DB.brands = (DB.brands||[]).filter(b=>b.id!==brandId);
+  saveDB();
+  renderBrands();
+}
+
+/** Assign all unlinked brands that have a company selected */
+function bulkAssignUnlinked() {
+  const unlinked = (DB.brands||[]).filter(b=>!b.clientId&&!(b.clientName||'').trim());
+  let assigned = 0, skipped = 0;
+  unlinked.forEach(b => {
+    const sel = document.getElementById(`unlink-client-${b.id}`);
+    if (!sel?.value) { skipped++; return; }
+    const cl = (DB.clients||[]).find(c=>(c.company||'').toLowerCase()===sel.value.toLowerCase());
+    b.clientName = sel.value;
+    b.clientId = cl?.id || null;
+    assigned++;
+  });
+  if (assigned === 0) { alert(`ไม่มี Brand ที่เลือก Company — กรุณาเลือก Company ก่อน (${skipped} ยังไม่เลือก)`); return; }
+  saveDB();
+  renderBrands();
+  if (skipped > 0) alert(`Assign แล้ว ${assigned} brands, ยังเหลือ ${skipped} ที่ยังไม่เลือก Company`);
+}
+
+/** Delete ALL unlinked brands */
+function bulkDeleteUnlinked() {
+  const unlinked = (DB.brands||[]).filter(b=>!b.clientId&&!(b.clientName||'').trim());
+  if (!unlinked.length) return;
+  if (!confirm(`ลบ Brand ที่ไม่มี Company ทั้งหมด ${unlinked.length} รายการ?\nยืนยัน`)) return;
+  const ids = new Set(unlinked.map(b=>b.id));
+  DB.brands = (DB.brands||[]).filter(b=>!ids.has(b.id));
+  saveDB();
+  renderBrands();
+}
+
 function deduplicateBrands() {
   if (!DB.brands) return 0;
   const seen = {};
@@ -15728,12 +15796,58 @@ function renderBrands() {
 
   const el=document.getElementById('brands-content');
   if (!el) return;
+
+  // ── Unlinked brands section ──────────────────────────────────
+  const unlinked = (DB.brands||[]).filter(b =>
+    !b.clientId && !(b.clientName||'').trim()
+  );
+  let unlinkedHtml = '';
+  if (unlinked.length) {
+    const clientOptions = getUniqueClients().map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+    unlinkedHtml = `
+    <div id="unlinked-brands-section" style="background:#fffbeb;border:1.5px solid #fbbf24;border-radius:12px;padding:16px 20px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">⚠️</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#92400e;">Unlinked Brands (${unlinked.length})</div>
+            <div style="font-size:11px;color:#b45309;">Brands ที่ยังไม่ได้ผูกกับ Company — กรุณาระบุ Company หรือลบออก</div>
+          </div>
+        </div>
+        <button onclick="document.getElementById('unlinked-brands-section').style.display='none'" style="background:none;border:none;cursor:pointer;color:#92400e;font-size:18px;line-height:1;" title="ซ่อน">×</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${unlinked.map(b => {
+          const projCount = (DB.projects||[]).filter(p=>p.brand===b.name||p.brandId===b.id).length;
+          return `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;flex-wrap:wrap;" id="unlink-row-${b.id}">
+            <div style="flex:1;min-width:140px;">
+              <div style="font-size:13px;font-weight:700;color:#1e293b;">${escHtml(b.name||'–')}</div>
+              <div style="font-size:11px;color:#64748b;">${projCount} project${projCount!==1?'s':''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:200px;">
+              <select id="unlink-client-${b.id}" style="flex:1;font-size:12px;padding:5px 8px;border:1px solid #fbbf24;border-radius:7px;background:#fffbeb;">
+                <option value="">— เลือก Company —</option>
+                ${clientOptions}
+              </select>
+              <button onclick="assignUnlinkedBrand('${b.id}')" style="padding:5px 12px;background:#f59e0b;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;" onmouseenter="this.style.background='#d97706'" onmouseleave="this.style.background='#f59e0b'">✓ Assign</button>
+            </div>
+            <button onclick="deleteUnlinkedBrand('${b.id}','${escHtml(b.name||'')}')" style="padding:5px 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;" onmouseenter="this.style.background='#fecaca'" onmouseleave="this.style.background='#fee2e2'">🗑 Delete</button>
+          </div>`;
+        }).join('')}
+      </div>
+      ${unlinked.length > 1 ? `<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="bulkAssignUnlinked()" style="padding:6px 14px;background:#f59e0b;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">✓ Assign ทั้งหมดที่เลือก</button>
+        <button onclick="bulkDeleteUnlinked()" style="padding:6px 14px;background:#fee2e2;color:#dc2626;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">🗑 Delete ทั้งหมด</button>
+      </div>` : ''}
+    </div>`;
+  }
+
   if (_brandsView==='card') {
-    el.innerHTML = paged.length
+    el.innerHTML = unlinkedHtml + (paged.length
       ? `<div class="brands-grid">${paged.map(renderBrandCard).join('')}</div>`
-      : `<div style="text-align:center;padding:60px;color:var(--text-muted);">ยังไม่มี Brand — กด "+ Add Brand" หรือ "🔄 Sync"</div>`;
+      : `<div style="text-align:center;padding:60px;color:var(--text-muted);">ยังไม่มี Brand — กด "+ Add Brand" หรือ "🔄 Sync"</div>`);
   } else {
-    el.innerHTML = renderBrandsTable(paged);
+    el.innerHTML = unlinkedHtml + renderBrandsTable(paged);
   }
 
   // Pagination bar
