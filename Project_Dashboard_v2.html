@@ -8261,6 +8261,482 @@ function _buildPipelineContent() {
 // CEO OVERVIEW WIDGETS
 // ═══════════════════════════════
 
+// ═══════════════════════════════════════════════════════
+// CEO EXECUTIVE DASHBOARD — Date Range State
+// ═══════════════════════════════════════════════════════
+let _ceoRange = 'ytd'; // 'thisMonth'|'lastMonth'|'thisQuarter'|'lastQuarter'|'ytd'|'lastYear'|'custom'
+let _ceoCustomStart = null;
+let _ceoCustomEnd   = null;
+
+function getCeoDateRange() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  switch (_ceoRange) {
+    case 'thisMonth':
+      return { start: new Date(y,m,1), end: new Date(y,m+1,0), label:`${MONTH_LABELS[m]} ${y}`, sub:`01 ${MONTH_LABELS[m]} ${y} – ${now.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}` };
+    case 'lastMonth': {
+      const lm = m===0?11:m-1, ly = m===0?y-1:y;
+      return { start:new Date(ly,lm,1), end:new Date(ly,lm+1,0), label:`${MONTH_LABELS[lm]} ${ly}`, sub:`01 ${MONTH_LABELS[lm]} ${ly} – ${new Date(ly,lm+1,0).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}` };
+    }
+    case 'thisQuarter': {
+      const q = Math.floor(m/3); const qs = q*3;
+      return { start:new Date(y,qs,1), end:new Date(y,qs+3,0), label:`Q${q+1} ${y}`, sub:`${MONTH_LABELS[qs]} – ${MONTH_LABELS[Math.min(qs+2,11)]} ${y}` };
+    }
+    case 'lastQuarter': {
+      const q = Math.floor(m/3)-1; const lq = q<0?3:q; const lqy = q<0?y-1:y; const qs = lq*3;
+      return { start:new Date(lqy,qs,1), end:new Date(lqy,qs+3,0), label:`Q${lq+1} ${lqy}`, sub:`${MONTH_LABELS[qs]} – ${MONTH_LABELS[Math.min(qs+2,11)]} ${lqy}` };
+    }
+    case 'lastYear':
+      return { start:new Date(y-1,0,1), end:new Date(y-1,11,31), label:`${y-1}`, sub:`01 Jan ${y-1} – 31 Dec ${y-1}` };
+    case 'custom':
+      if (_ceoCustomStart && _ceoCustomEnd) {
+        const s = _ceoCustomStart, e = _ceoCustomEnd;
+        return { start:s, end:e, label:'Custom', sub:`${s.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} – ${e.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}` };
+      }
+      // fall through to ytd
+    case 'ytd':
+    default:
+      return { start:new Date(y,0,1), end:now, label:`YTD ${y}`, sub:`01 Jan ${y} – Today` };
+  }
+}
+
+function setCeoRange(r, customStart, customEnd) {
+  _ceoRange = r;
+  if (r==='custom' && customStart && customEnd) {
+    _ceoCustomStart = new Date(customStart);
+    _ceoCustomEnd   = new Date(customEnd);
+  }
+  renderOverview();
+}
+
+function projInRange(p, start, end) {
+  const d = parseDate(p.start||p.launch);
+  if (!d) return false;
+  return d >= start && d <= end;
+}
+function oppInRange(o, start, end) {
+  const d = parseDate(o.closeDate);
+  if (!d) return false;
+  return d >= start && d <= end;
+}
+
+function wCeoExecutiveDashboard() {
+  const dr    = getCeoDateRange();
+  const start = dr.start;
+  const end   = dr.end;
+  const now   = new Date();
+  const gpCfg = (() => { try { return JSON.parse(localStorage.getItem('gp_settings')||'{}'); } catch(e) { return {}; } })();
+  const costPct   = +(gpCfg.costPct ?? 60);
+  const headcount = +(gpCfg.headcount ?? ((DB.team||[]).filter(m=>(m.status||'active')==='active').length || 20));
+  const GP_MARGIN_CFG = 1 - costPct/100; // e.g. 0.40 = 40%
+
+  // ── Core data slices ─────────────────────────────────────────
+  const allProjs  = DB.projects||[];
+  const allOpps   = DB.opportunities||[];
+
+  // Period projects
+  const periodProjs   = allProjs.filter(p => projInRange(p, start, end));
+  const confirmedP    = periodProjs.filter(p => p.status==='Working'||p.status==='Close');
+  const pipelineP     = periodProjs.filter(p => p.status==='Pitching'||p.status==='Proposing');
+
+  // Revenue
+  const revConfirmed  = confirmedP.reduce((s,p)=>s+(+p.budget||0),0);
+  const revPipeline   = pipelineP.reduce((s,p)=>s+(+p.budget||0),0);
+
+  // GP
+  const gpConfirmed   = Math.round(revConfirmed * GP_MARGIN_CFG);
+  const gpMarginPct   = revConfirmed > 0 ? (gpConfirmed/revConfirmed*100).toFixed(1) : '0.0';
+
+  // Growth vs prior period (same duration ending 1 period ago)
+  const duration = end - start;
+  const priorEnd   = new Date(start.getTime() - 1);
+  const priorStart = new Date(priorEnd.getTime() - duration);
+  const priorRev   = allProjs.filter(p => projInRange(p, priorStart, priorEnd) && (p.status==='Working'||p.status==='Close')).reduce((s,p)=>s+(+p.budget||0),0);
+  const growthPct  = priorRev > 0 ? Math.round((revConfirmed - priorRev)/priorRev*100) : null;
+
+  // Run rate (annualise YTD or period)
+  const daysInPeriod = Math.max(1, Math.round((end - start)/86400000));
+  const runRate      = Math.round(revConfirmed / daysInPeriod * 365);
+
+  // ── 1. COMPANY HEALTH KPI CARDS ──────────────────────────────
+  const growthStr = growthPct===null ? '–' : (growthPct>=0?'+':'')+growthPct+'%';
+  const growthColor = growthPct===null?'#64748b':growthPct>=0?'#16a34a':'#dc2626';
+  const gpMarginColor = +gpMarginPct>=40?'#16a34a':+gpMarginPct>=30?'#d97706':'#dc2626';
+
+  const kpiCards = [
+    { icon:'💰', label:'Revenue', sub:dr.label, val:'฿'+fmtMoney(revConfirmed), color:'#1e293b', bg:'#f0fdf4', accent:'#16a34a' },
+    { icon:'📈', label:'GP', sub:`Margin ${gpMarginPct}%`, val:'฿'+fmtMoney(gpConfirmed), color:'#1e293b', bg:'#eff6ff', accent:'#2563eb' },
+    { icon:'📊', label:'GP Margin', sub:'Cost basis '+costPct+'%', val:gpMarginPct+'%', color:gpMarginColor, bg:'#faf5ff', accent:'#7c3aed' },
+    { icon:'🚀', label:'Growth', sub:'vs prior period', val:growthStr, color:growthColor, bg: growthPct===null?'#f8fafc':growthPct>=0?'#f0fdf4':'#fef2f2', accent:growthColor },
+    { icon:'🔮', label:'Annual Run Rate', sub:`Based on ${daysInPeriod}d`, val:'฿'+fmtMoney(runRate), color:'#7c3aed', bg:'#fdf4ff', accent:'#a855f7' },
+  ].map(c=>`
+    <div style="background:${c.bg};border:1.5px solid ${c.accent}25;border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:10px;right:12px;font-size:22px;opacity:.4;">${c.icon}</div>
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">${c.label}</div>
+      <div style="font-size:26px;font-weight:900;color:${c.color};line-height:1.1;margin-bottom:4px;">${c.val}</div>
+      <div style="font-size:11px;color:#94a3b8;">${c.sub}</div>
+    </div>`).join('');
+
+  // ── 2. REVENUE FORECAST ───────────────────────────────────────
+  const thisMo = now.getMonth(), thisYr = now.getFullYear();
+  const nextMo = thisMo===11?0:thisMo+1, nextMoYr = thisMo===11?thisYr+1:thisYr;
+  const mo2    = nextMo===11?0:nextMo+1, mo2Yr = nextMo===11?nextMoYr+1:nextMoYr;
+
+  function projsInMonth(y,m) { return allProjs.filter(p=>{ const d=parseDate(p.start||p.launch); return d&&d.getFullYear()===y&&d.getMonth()===m; }); }
+  function bookedRev(projs) { return projs.filter(p=>p.status==='Working'||p.status==='Close').reduce((s,p)=>s+(+p.budget||0),0); }
+  function totalRev(projs)  { return projs.reduce((s,p)=>s+(+p.budget||0),0); }
+
+  const curMoProjs = projsInMonth(thisYr, thisMo);
+  const nxtMoProjs = projsInMonth(nextMoYr, nextMo);
+  const mo2Projs   = projsInMonth(mo2Yr, mo2);
+
+  // 90-day window
+  const d90end = new Date(now); d90end.setDate(d90end.getDate()+90);
+  const next90  = allProjs.filter(p=>{ const d=parseDate(p.start||p.launch); return d&&d>=now&&d<=d90end; });
+  const next90Rev = totalRev(next90);
+  const next90Booked = bookedRev(next90);
+
+  // Monthly revenue trend (last 6 months)
+  const trendMonths = [];
+  for (let i=5;i>=0;i--) {
+    const mi = ((thisMo - i) % 12 + 12) % 12;
+    const yi = thisYr - (thisMo - mi < 0 ? 1 : 0) + (thisMo - i < 0 ? -1 : 0);
+    const corr_yi = thisYr + Math.floor((thisMo - i)/12);
+    trendMonths.push({ label:MONTH_LABELS[mi], rev:bookedRev(projsInMonth(corr_yi, mi)) });
+  }
+  const maxTrend = Math.max(...trendMonths.map(t=>t.rev), 1);
+
+  const forecastHtml = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+      ${[[MONTH_LABELS[thisMo]+' (Now)',curMoProjs],[MONTH_LABELS[nextMo]+' (Next)',nxtMoProjs],['Next 90d',next90]].map(([lbl,projs])=>{
+        const bk=bookedRev(projs); const tt=totalRev(projs);
+        const pct=tt>0?Math.round(bk/tt*100):0;
+        return `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;">
+          <div style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:6px;">${lbl}</div>
+          <div style="font-size:18px;font-weight:800;color:#1e293b;">฿${fmtMoney(tt)}</div>
+          <div style="font-size:11px;color:#16a34a;margin:3px 0;">✅ Booked ฿${fmtMoney(bk)}</div>
+          <div style="height:4px;background:#e5e7eb;border-radius:2px;margin-top:6px;"><div style="height:100%;width:${pct}%;background:#16a34a;border-radius:2px;"></div></div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:3px;">${pct}% confirmed</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Revenue Trend (6 months)</div>
+    <div style="display:flex;align-items:flex-end;gap:4px;height:50px;">
+      ${trendMonths.map((t,i)=>{
+        const h=Math.max(4,Math.round(t.rev/maxTrend*50));
+        const isCur=(i===5);
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <div style="width:100%;height:${h}px;background:${isCur?'#6366f1':'#cbd5e1'};border-radius:3px 3px 0 0;"></div>
+          <div style="font-size:9px;color:#94a3b8;">${t.label}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  // ── 3. SALES PIPELINE ────────────────────────────────────────
+  const pipeStages = ['Proposal','Negotiation','Closing','Won','Lost'];
+  const pipeColors = { Proposal:'#f59e0b',Negotiation:'#6366f1',Closing:'#0ea5e9',Won:'#16a34a',Lost:'#94a3b8' };
+  const stageBuckets = {};
+  pipeStages.forEach(s=>{ stageBuckets[s]={count:0,value:0}; });
+  allOpps.forEach(o=>{
+    const s = o.stage||'Proposal';
+    if (stageBuckets[s]) { stageBuckets[s].count++; stageBuckets[s].value+=(+o.value||+o.budget||0); }
+  });
+  const wonTotal  = stageBuckets['Won'].value;
+  const totalOpps = allOpps.length;
+  const wonCount  = stageBuckets['Won'].count;
+  const winRate   = totalOpps>0 ? Math.round(wonCount/totalOpps*100) : 0;
+  const activePipeVal = ['Proposal','Negotiation','Closing'].reduce((s,st)=>s+stageBuckets[st].value,0);
+
+  const pipeHtml = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div style="background:#eff6ff;border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:800;color:#2563eb;">฿${fmtMoney(activePipeVal)}</div>
+        <div style="font-size:10px;color:#64748b;margin-top:2px;">Active Pipeline</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:800;color:#16a34a;">฿${fmtMoney(wonTotal)}</div>
+        <div style="font-size:10px;color:#64748b;margin-top:2px;">Won Value</div>
+      </div>
+      <div style="background:#faf5ff;border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:800;color:#7c3aed;">${winRate}%</div>
+        <div style="font-size:10px;color:#64748b;margin-top:2px;">Win Rate</div>
+      </div>
+    </div>
+    ${pipeStages.map(s=>{
+      const b=stageBuckets[s]; if(!b.count) return '';
+      const maxV=Math.max(...pipeStages.map(st=>stageBuckets[st].value),1);
+      const pct=Math.round(b.value/maxV*100);
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:10px;font-weight:700;min-width:80px;color:${pipeColors[s]};">${s}</span>
+        <div style="flex:1;height:18px;background:#f1f5f9;border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${pipeColors[s]};border-radius:4px;display:flex;align-items:center;padding-left:6px;">
+            <span style="font-size:10px;color:#fff;font-weight:700;white-space:nowrap;">${b.count} · ฿${fmtMoney(b.value)}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}`;
+
+  // ── 4. CLIENT CONCENTRATION RISK ────────────────────────────
+  const clientRevMap = {};
+  confirmedP.forEach(p=>{ if(p.company){ clientRevMap[p.company]=(clientRevMap[p.company]||0)+(+p.budget||0); } });
+  const clientRevArr = Object.entries(clientRevMap).sort((a,b)=>b[1]-a[1]);
+  const totalClientRev = clientRevArr.reduce((s,[,v])=>s+v,0)||1;
+  const top1Pct = clientRevArr[0] ? clientRevArr[0][1]/totalClientRev*100 : 0;
+  const top3Pct = clientRevArr.slice(0,3).reduce((s,[,v])=>s+v/totalClientRev*100,0);
+  const riskLevel = top1Pct>=30?'🔴 High':top1Pct>=20||top3Pct>=60?'🟡 Moderate':'🟢 Low';
+  const riskColor = top1Pct>=30?'#dc2626':top1Pct>=20||top3Pct>=60?'#d97706':'#16a34a';
+  const others    = clientRevArr.slice(5).reduce((s,[,v])=>s+v,0);
+  const topClients = clientRevArr.slice(0,5);
+
+  const concHtml = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;background:#f8fafc;border-radius:8px;padding:8px 12px;">
+      <span style="font-size:13px;font-weight:700;color:${riskColor};">${riskLevel}</span>
+      <span style="font-size:11px;color:#64748b;">Top client: ${top1Pct.toFixed(0)}% · Top 3: ${top3Pct.toFixed(0)}%</span>
+    </div>
+    ${[...topClients, others>0?['Others',others]:null].filter(Boolean).map(([name,val],i)=>{
+      const pct=(val/totalClientRev*100).toFixed(0);
+      const colors=['#6366f1','#0ea5e9','#22c55e','#f59e0b','#ec4899','#94a3b8'];
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:11px;font-weight:600;min-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(name)}">${escHtml(name)}</span>
+        <div style="flex:1;height:14px;background:#f1f5f9;border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${colors[i%6]};border-radius:4px;"></div>
+        </div>
+        <span style="font-size:11px;font-weight:700;min-width:36px;text-align:right;">${pct}%</span>
+      </div>`;
+    }).join('')}`;
+
+  // ── 5. BRAND PORTFOLIO ───────────────────────────────────────
+  const brandRevMap = {};
+  const brandProjCount = {};
+  confirmedP.forEach(p=>{ if(p.brand){ brandRevMap[p.brand]=(brandRevMap[p.brand]||0)+(+p.budget||0); brandProjCount[p.brand]=(brandProjCount[p.brand]||0)+1; } });
+  const topBrands = Object.entries(brandRevMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxBrandRev = topBrands[0]?.[1]||1;
+  // Growth vs prior period per brand
+  const priorBrandRev = {};
+  allProjs.filter(p => projInRange(p, priorStart, priorEnd) && (p.status==='Working'||p.status==='Close')).forEach(p=>{ if(p.brand) priorBrandRev[p.brand]=(priorBrandRev[p.brand]||0)+(+p.budget||0); });
+  const brandOpenOpps = {};
+  allOpps.filter(o=>o.stage!=='Won'&&o.stage!=='Lost').forEach(o=>{ if(o.brand) brandOpenOpps[o.brand]=(brandOpenOpps[o.brand]||0)+1; });
+
+  const brandHtml = topBrands.length ? topBrands.map(([name,rev])=>{
+    const prior=priorBrandRev[name]||0;
+    const g=prior>0?Math.round((rev-prior)/prior*100):null;
+    const gStr=g===null?'–':(g>=0?'+':'')+g+'%';
+    const gColor=g===null?'#94a3b8':g>=0?'#16a34a':'#dc2626';
+    const projs=brandProjCount[name]||0;
+    const opps=brandOpenOpps[name]||0;
+    const barW=Math.round(rev/maxBrandRev*100);
+    return `<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:12px;font-weight:700;color:#1e293b;">${escHtml(name)}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:800;color:#1e293b;">฿${fmtMoney(rev)}</span>
+          <span style="font-size:10px;font-weight:700;color:${gColor};">${gStr}</span>
+        </div>
+      </div>
+      <div style="height:5px;background:#f1f5f9;border-radius:3px;margin-bottom:4px;"><div style="height:100%;width:${barW}%;background:#6366f1;border-radius:3px;"></div></div>
+      <div style="font-size:10px;color:#94a3b8;">${projs} project${projs!==1?'s':''} · ${opps} open opp${opps!==1?'s':''}</div>
+    </div>`;
+  }).join('') : `<div style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">No brand data for this period</div>`;
+
+  // ── 6. DEPARTMENT HEALTH ─────────────────────────────────────
+  const curM = now.getMonth();
+  const deptHealth = ALL_DEPTS.map(dept=>{
+    const members = (DB.team||[]).filter(m=>(m.status||'active')==='active'&&m.dept===dept);
+    if (!members.length) return null;
+    const loads = members.map(m=>{ const nick=m.nickname||m.name; return (getPersonLoadArray(nick,dept)||[])[curM]||0; });
+    const avgLoad = loads.reduce((s,v)=>s+v,0)/loads.length;
+    // Utilization: project-based depts: 5 proj = 100%, task-based: 15 tasks = 100%
+    const {getDeptLoadMode} = window; // already defined
+    const mode = typeof getDeptLoadMode==='function' ? getDeptLoadMode(dept) : 'tasks';
+    const cap  = mode==='tasks'?15:5;
+    const util = Math.round(avgLoad/cap*100);
+    return { dept, members:members.length, avgLoad:avgLoad.toFixed(1), util };
+  }).filter(Boolean);
+
+  const deptHtml = deptHealth.map(d=>{
+    const color=d.util>=110?'#dc2626':d.util>=90?'#d97706':'#16a34a';
+    const bg=d.util>=110?'#fef2f2':d.util>=90?'#fffbeb':'#f0fdf4';
+    const status=d.util>=110?'Overloaded':d.util>=90?'Warning':'Healthy';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f8fafc;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.dept}</div>
+        <div style="font-size:10px;color:#94a3b8;">${d.members} people</div>
+      </div>
+      <div style="width:80px;height:6px;background:#e5e7eb;border-radius:3px;"><div style="height:100%;width:${Math.min(100,d.util)}%;background:${color};border-radius:3px;"></div></div>
+      <div style="min-width:38px;text-align:right;font-size:11px;font-weight:800;color:${color};">${d.util}%</div>
+      <span style="font-size:9px;padding:2px 6px;border-radius:5px;background:${bg};color:${color};font-weight:700;min-width:62px;text-align:center;">${status}</span>
+    </div>`;
+  }).join('');
+
+  // ── 7. PROFITABILITY ANALYSIS ────────────────────────────────
+  const brandProfitArr = Object.entries(brandRevMap).map(([name,rev])=>{
+    const gp=Math.round(rev*GP_MARGIN_CFG);
+    return { name, rev, gp, margin:+(gp/rev*100).toFixed(1) };
+  }).sort((a,b)=>b.margin-a.margin);
+
+  const profitHtml = `
+    <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Top Profitable Brands</div>
+    ${brandProfitArr.slice(0,4).map(b=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;">
+        <span style="flex:1;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(b.name)}</span>
+        <span style="font-size:11px;color:#64748b;">฿${fmtMoney(b.rev)}</span>
+        <span style="font-size:11px;font-weight:700;color:#16a34a;">฿${fmtMoney(b.gp)} GP</span>
+        <span style="font-size:11px;font-weight:800;color:${b.margin>=40?'#16a34a':b.margin>=30?'#d97706':'#dc2626'};">${b.margin}%</span>
+      </div>`).join('')}
+    <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin:10px 0 6px;">Needs Attention</div>
+    ${brandProfitArr.slice(-3).reverse().map(b=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;">
+        <span style="flex:1;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(b.name)}</span>
+        <span style="font-size:11px;color:#64748b;">฿${fmtMoney(b.rev)}</span>
+        <span style="font-size:11px;font-weight:800;color:#dc2626;">${b.margin}% margin</span>
+      </div>`).join('')}`;
+
+  // ── 8. CEO ALERT CENTER ───────────────────────────────────────
+  const alerts = [];
+  // Revenue below target
+  const moTarget = runRate/12;
+  const curMoRev = bookedRev(curMoProjs);
+  if (moTarget>0 && curMoRev < moTarget*0.85) alerts.push({ level:'danger', msg:`Revenue this month ฿${fmtMoney(curMoRev)} — ${Math.round((1-curMoRev/moTarget)*100)}% below run-rate target` });
+  // Client concentration
+  if (top1Pct>=30) alerts.push({ level:'danger', msg:`Client concentration risk: Top client = ${top1Pct.toFixed(0)}% of revenue (>30%)` });
+  else if (top1Pct>=20) alerts.push({ level:'warning', msg:`Client concentration: Top client = ${top1Pct.toFixed(0)}% of revenue — monitor` });
+  // Overloaded depts
+  deptHealth.filter(d=>d.util>=110).forEach(d=>alerts.push({ level:'danger', msg:`${d.dept} team overloaded at ${d.util}% — capacity risk` }));
+  deptHealth.filter(d=>d.util>=90&&d.util<110).forEach(d=>alerts.push({ level:'warning', msg:`${d.dept} team at ${d.util}% utilization — approaching limit` }));
+  // At-risk projects by value
+  const today2=new Date(); today2.setHours(0,0,0,0);
+  const cutoff14=new Date(today2); cutoff14.setDate(cutoff14.getDate()+14);
+  const atRiskProjs=allProjs.filter(p=>{const e=parseDate(p.end);return e&&e<=cutoff14&&p.status==='Working';});
+  const atRiskVal=atRiskProjs.reduce((s,p)=>s+(+p.budget||0),0);
+  if (atRiskVal>0) alerts.push({ level:'warning', msg:`${atRiskProjs.length} project${atRiskProjs.length!==1?'s':''} (฿${fmtMoney(atRiskVal)}) approaching deadline in 14 days` });
+  // Pipeline declining
+  const pipeLastMo = allProjs.filter(p=>{ const d=parseDate(p.start||p.launch); return d&&d.getFullYear()===(thisMo===0?now.getFullYear()-1:now.getFullYear())&&d.getMonth()===(thisMo===0?11:thisMo-1)&&(p.status==='Pitching'||p.status==='Proposing'); }).reduce((s,p)=>s+(+p.budget||0),0);
+  const pipeThisMo = pipelineP.filter(p=>{ const d=parseDate(p.start||p.launch); return d&&d.getFullYear()===now.getFullYear()&&d.getMonth()===thisMo; }).reduce((s,p)=>s+(+p.budget||0),0);
+  if (pipeLastMo>0 && pipeThisMo < pipeLastMo*0.7) alerts.push({ level:'warning', msg:`Pipeline declining: This month ฿${fmtMoney(pipeThisMo)} vs last month ฿${fmtMoney(pipeLastMo)}` });
+  // Positive
+  if (growthPct!==null && growthPct>=20) alerts.push({ level:'success', msg:`Strong growth: +${growthPct}% vs prior period` });
+
+  const alertColors = { danger:'#dc2626', warning:'#d97706', success:'#16a34a', info:'#2563eb' };
+  const alertBgs    = { danger:'#fef2f2', warning:'#fffbeb', success:'#f0fdf4', info:'#eff6ff' };
+  const alertIcons  = { danger:'🔴', warning:'🟡', success:'🟢', info:'🔵' };
+
+  const alertHtml = alerts.length
+    ? alerts.map(a=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;background:${alertBgs[a.level]};border:1px solid ${alertColors[a.level]}20;border-radius:8px;margin-bottom:6px;">
+        <span style="font-size:14px;flex-shrink:0;">${alertIcons[a.level]}</span>
+        <span style="font-size:12px;color:#1e293b;line-height:1.4;">${a.msg}</span>
+      </div>`).join('')
+    : `<div style="text-align:center;padding:20px;font-size:12px;color:#16a34a;">✅ No critical alerts — business running smoothly</div>`;
+
+  // ── 9. EXECUTIVE ACTIVITY ────────────────────────────────────
+  const execActs = [
+    ...allOpps.filter(o=>o.stage==='Won').slice(-3).map(o=>({ icon:'🏆', text:`Won: ${o.company||''} ${o.brand?'·'+o.brand:''} — ฿${fmtMoney(o.value||o.budget||0)}`, date:o.closeDate })),
+    ...allProjs.filter(p=>p.status==='Working').slice(-2).map(p=>({ icon:'🚀', text:`Project started: ${p.code||''} ${p.brand||p.name||''} — ฿${fmtMoney(p.budget||0)}`, date:p.start })),
+    ...allOpps.filter(o=>o.stage==='Proposal').slice(-2).map(o=>({ icon:'📝', text:`Proposal submitted: ${o.company||''} ฿${fmtMoney(o.value||o.budget||0)}`, date:o.closeDate })),
+  ].sort((a,b)=>(parseDate(b.date)||new Date(0))-(parseDate(a.date)||new Date(0))).slice(0,6);
+
+  const actHtml = execActs.length
+    ? execActs.map(a=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f8fafc;">
+        <span style="font-size:18px;flex-shrink:0;">${a.icon}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;color:#1e293b;line-height:1.4;">${a.text}</div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${a.date||'–'}</div>
+        </div>
+      </div>`).join('')
+    : `<div style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">No recent executive activity</div>`;
+
+  // ── DATE RANGE SELECTOR ───────────────────────────────────────
+  const drOptions = [
+    ['thisMonth','This Month'],['lastMonth','Last Month'],
+    ['thisQuarter','This Quarter'],['lastQuarter','Last Quarter'],
+    ['ytd','YTD'],['lastYear','Last Year'],
+  ];
+  const drSelector = `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+    ${drOptions.map(([k,lbl])=>`<button onclick="setCeoRange('${k}')" style="font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid ${_ceoRange===k?'#6366f1':'#e2e8f0'};background:${_ceoRange===k?'#6366f1':'#fff'};color:${_ceoRange===k?'#fff':'#64748b'};cursor:pointer;font-family:inherit;font-weight:${_ceoRange===k?'700':'400'};">${lbl}</button>`).join('')}
+    <div style="display:flex;gap:4px;align-items:center;margin-left:4px;">
+      <input type="date" id="ceo-dr-start" style="font-size:11px;padding:3px 6px;border:1px solid #e2e8f0;border-radius:6px;" value="${_ceoCustomStart?_ceoCustomStart.toISOString().slice(0,10):''}">
+      <span style="font-size:11px;color:#94a3b8;">–</span>
+      <input type="date" id="ceo-dr-end" style="font-size:11px;padding:3px 6px;border:1px solid #e2e8f0;border-radius:6px;" value="${_ceoCustomEnd?_ceoCustomEnd.toISOString().slice(0,10):''}">
+      <button onclick="setCeoRange('custom',document.getElementById('ceo-dr-start').value,document.getElementById('ceo-dr-end').value)" style="font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-family:inherit;">Apply</button>
+    </div>
+  </div>`;
+
+  // ── ASSEMBLE ──────────────────────────────────────────────────
+  const sz = WIDGET_SIZE_MAP.wCeoExecutiveDashboard||'col-12';
+  return `<div class="dash-widget ${sz}" style="padding:0;background:transparent;border:none;box-shadow:none;">
+
+  <!-- Header + Date Range -->
+  <div style="background:linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95);border-radius:14px;padding:20px 24px;margin-bottom:16px;color:#fff;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.5);margin-bottom:4px;">📊 Executive Business Dashboard</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;">${dr.label}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;">${dr.sub}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;">
+        ${drSelector.replace(/style="/g,'style="color:#fff;').replace(/background:#fff/g,'background:rgba(255,255,255,.08)').replace(/border:1px solid #e2e8f0/g,'border:1px solid rgba(255,255,255,.2)').replace(/color:#64748b/g,'color:rgba(255,255,255,.6)').replace(/color:#94a3b8/g,'color:rgba(255,255,255,.5)')}
+      </div>
+    </div>
+    <!-- Company Health KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+      ${kpiCards}
+    </div>
+  </div>
+
+  <!-- Row 2: Revenue Forecast + Sales Pipeline -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:12px;">📅 Revenue Forecast</div>
+      ${forecastHtml}
+    </div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:12px;">🎯 Sales Pipeline</div>
+      ${pipeHtml}
+    </div>
+  </div>
+
+  <!-- Row 3: Client Concentration + Brand Portfolio -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:800;color:#1e293b;">🏢 Client Concentration</div>
+        <span style="font-size:10px;padding:3px 8px;border-radius:6px;background:${top1Pct>=30?'#fef2f2':top1Pct>=20?'#fffbeb':'#f0fdf4'};color:${riskColor};font-weight:700;">${top1Pct>=30?'High Risk':top1Pct>=20?'Moderate':'Low Risk'}</span>
+      </div>
+      ${concHtml}
+    </div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:12px;">📦 Brand Portfolio</div>
+      ${brandHtml}
+    </div>
+  </div>
+
+  <!-- Row 4: Department Health + Profitability -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:12px;">⚡ Department Capacity</div>
+      ${deptHtml||'<div style="color:#94a3b8;font-size:12px;padding:10px;">No team data available</div>'}
+    </div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:12px;">💹 Profitability Analysis</div>
+      ${profitHtml}
+    </div>
+  </div>
+
+  <!-- Row 5: Alerts + Activity -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:12px;">🚨 CEO Alert Center</div>
+      ${alertHtml}
+    </div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:12px;">📋 Executive Activity</div>
+      ${actHtml}
+    </div>
+  </div>
+
+  </div>`;
+}
+
 function wCeoTopLine() {
   const now = new Date();
   const yr = now.getFullYear();
@@ -8764,7 +9240,7 @@ function openGpSettings() {
 // ══════════════════════════════════════════════════════════
 
 const ROLE_WIDGET_MAP = {
-  ceo:        ['wCeoTopLine','wCeoGpAnnual','wPipelineSummary','wCriticalAlerts','wTeamCapacity','wTopClients','wProjectsAtRisk','wActivityFeed'],
+  ceo:        ['wCeoExecutiveDashboard'],
   admin:      ['wRevenuePipeline','wActiveProjects','wCriticalAlerts','wTeamCapacity','wTopClients','wTopBrands','wProjectsAtRisk','wActivityFeed','wPipelineSummary','wGpPerEmployee'],
   management: ['wRevenuePipeline','wActiveProjects','wCriticalAlerts','wTeamCapacity','wTopClients','wTopBrands','wProjectsAtRisk','wActivityFeed','wPipelineSummary','wGpPerEmployee'],
   account:    ['wMyAccounts','wClientFollowup','wProjectsByClient','wOpportunityPipeline','wProjectsAtRisk','wUpcomingMilestones','wWaitingClientFeedback','wActivityFeed'],
@@ -8793,6 +9269,7 @@ const WIDGET_SIZE_MAP = {
   wProjectsByClient:'col-8',   wPendingInvoices:'col-6',
   wPipelineSummary:'col-6',    wGpPerEmployee:'col-6',
   wCeoTopLine:'col-12',        wCeoGpAnnual:'col-12',
+  wCeoExecutiveDashboard:'col-12',
 };
 
 const ROLE_LABELS_MAP = {
@@ -9392,6 +9869,7 @@ const DASH_WIDGET_FN = {
   wMyAccounts, wProjectsByClient, wProspectFollowup, wUpcomingClosings,
   wPipelineValue, wPendingInvoices,
   wPipelineSummary, wGpPerEmployee, wCeoTopLine, wCeoGpAnnual,
+  wCeoExecutiveDashboard,
 };
 
 function renderOverview() {
