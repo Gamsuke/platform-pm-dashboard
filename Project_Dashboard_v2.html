@@ -1728,6 +1728,7 @@ details ul { padding-left: 18px; }
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <button class="btn btn-sm" id="btn-sync-brands" onclick="migrateBrandsFromProjects();renderBrands();" title="Sync from Projects">🔄 Sync</button>
+        <button class="btn btn-sm" onclick="const n=deduplicateBrands();renderBrands();alert(n>0?'ลบ duplicate '+n+' brands แล้ว':'ไม่พบ duplicate');" title="Remove duplicate brands">🧹 Fix Duplicates</button>
         <button class="btn btn-primary" onclick="openBrandModal(null)">+ Add Brand</button>
       </div>
     </div>
@@ -15273,20 +15274,53 @@ function migrateBrandsFromProjects() {
     const cl = (DB.clients||[]).find(c => (c.company||'').toLowerCase() === compName.toLowerCase());
     const clientId   = cl?.id || null;
     const clientName = cl?.company || compName;
-    // Find or create brand
+    // Find existing brand by name + company (regardless of whether clientId is set yet)
     let brand = DB.brands.find(b =>
       b.name.toLowerCase() === brandName.toLowerCase() &&
-      (clientId ? b.clientId === clientId : (b.clientName||'').toLowerCase() === compName.toLowerCase())
+      ((b.clientId && clientId && b.clientId === clientId) ||
+       (b.clientName||'').toLowerCase() === compName.toLowerCase() ||
+       (!b.clientId && !b.clientName && b.name.toLowerCase() === brandName.toLowerCase()))
     );
     if (!brand) {
       brand = { id:'brand_'+Date.now()+'_'+Math.random().toString(36).slice(2,5), clientId, clientName, name: brandName, description:'', status:'active', createdAt: new Date().toISOString() };
       DB.brands.push(brand);
       changed = true;
+    } else {
+      // Update existing brand with clientId/clientName if missing
+      if (!brand.clientId && clientId) { brand.clientId = clientId; changed = true; }
+      if (!brand.clientName && clientName) { brand.clientName = clientName; changed = true; }
     }
     if (!p.brandId) { p.brandId = brand.id; changed = true; }
     if (!p.clientId && clientId) { p.clientId = clientId; changed = true; }
   });
   if (changed) saveDB();
+}
+
+/** Remove duplicate brands (same name + same client) keeping the one with clientId set */
+function deduplicateBrands() {
+  if (!DB.brands) return 0;
+  const seen = {};
+  const keep = [];
+  let removed = 0;
+  // Sort: ones with clientId first (preferred)
+  const sorted = [...DB.brands].sort((a,b) => (b.clientId?1:0) - (a.clientId?1:0));
+  sorted.forEach(b => {
+    const key = (b.name||'').toLowerCase() + '__' + (b.clientId || (b.clientName||'').toLowerCase());
+    if (!seen[key]) {
+      seen[key] = b.id;
+      keep.push(b);
+    } else {
+      removed++;
+      // Re-point any projects/brands pointing to the dup → to the kept one
+      const keepId = seen[key];
+      (DB.projects||[]).forEach(p => { if (p.brandId === b.id) p.brandId = keepId; });
+    }
+  });
+  if (removed > 0) {
+    DB.brands = keep;
+    saveDB();
+  }
+  return removed;
 }
 
 function getUniqueClients() {
@@ -16495,7 +16529,14 @@ function buildClientDetailPage(clientId, tab) {
   const linked = (DB.projects || []).filter(p => p.company === cl.company || (cl.projectIds || []).includes(p.id || p.code));
   const leads = (DB.leads || []).filter(l => l.company === cl.company);
   const opps = (DB.opportunities || []).filter(o => o.company === cl.company);
-  const brandObjs = (DB.brands || []).filter(b => b.clientId === cl.id || (b.clientName || '').toLowerCase() === (cl.company || '').toLowerCase());
+  const brandObjsRaw = (DB.brands || []).filter(b => b.clientId === cl.id || (b.clientName || '').toLowerCase() === (cl.company || '').toLowerCase());
+  // Deduplicate by name (keep whichever has clientId set, otherwise first found)
+  const _bSeen = {};
+  const brandObjs = brandObjsRaw.filter(b => {
+    const k = (b.name||'').toLowerCase();
+    if (_bSeen[k]) return false;
+    _bSeen[k] = true; return true;
+  });
   const contacts = (DB.contacts || []).filter(c => c.company === cl.company);
   const totalRev = linked.reduce((s, p) => s + (+p.budget || 0), 0);
   const activeProjs = linked.filter(p => p.status && p.status.toLowerCase().includes('progress'));
@@ -18429,8 +18470,9 @@ function openBackupPanel() {
   // Render users when admin tab is opened
   document.querySelector('[data-panel="admin"]')?.addEventListener('click', renderUsers);
   document.querySelector('[data-panel="profile"]')?.addEventListener('click', initProfile);
-  // Migrate brands from projects
+  // Migrate brands from projects + auto-deduplicate on startup
   migrateBrandsFromProjects();
+  deduplicateBrands();
   } catch(e) {
     console.error('[initAuth] uncaught error:', e);
     const al = document.getElementById('auth-loading');
