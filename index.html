@@ -8881,7 +8881,7 @@ function wActiveProjects() {
 }
 
 function wTeamCapacity() {
-  const pm = personMonthMatrix();
+  const pm = buildLoadMatrix();
   const thisM = new Date().getMonth();
   const entries = Object.entries(pm).map(([n,a])=>({n, load:a[thisM]||0})).sort((a,b)=>b.load-a.load);
   const overloaded = entries.filter(e=>e.load>=5).length;
@@ -9336,6 +9336,115 @@ function renderKPI() {
   ).join('');
 }
 
+// ═══════════════════════════════
+// ROLE-BASED LOAD CALCULATION
+// ═══════════════════════════════
+
+const DEPT_LOAD_MODE = {
+  'Management': 'projects',
+  'Account Management': 'projects',
+  'Business Development': 'bd',   // leads + opps + projects
+  // all others default to 'tasks'
+};
+
+function getDeptLoadMode(dept) {
+  return DEPT_LOAD_MODE[dept] || 'tasks';
+}
+
+/**
+ * Returns Array(12) load counts for a person, using role-appropriate metric.
+ * @param {string} nick - person's nickname/name
+ * @param {string} dept - their department
+ * @param {Function} [filterFn] - optional project filter
+ */
+function getPersonLoadArray(nick, dept, filterFn) {
+  const mode = getDeptLoadMode(dept);
+  const counts = Array(12).fill(0);
+
+  if (mode === 'projects' || mode === 'bd') {
+    // Count projects (owner or support or teamMember)
+    const bundleSeen = {};
+    activeProjects().forEach(p => {
+      if (filterFn && !filterFn(p)) return;
+      const people = [...new Set([p.owner, p.support, ...(p.teamMembers||[])].filter(Boolean))];
+      if (!people.includes(nick)) return;
+      monthSpan(p).forEach(mo => {
+        if (p.bundle) {
+          const key = `${nick}__${p.bundle}__${mo}`;
+          if (!bundleSeen[key]) { bundleSeen[key] = true; counts[mo]++; }
+        } else {
+          counts[mo]++;
+        }
+      });
+    });
+  }
+
+  if (mode === 'bd') {
+    // Add open Opportunities owned by this person (by closeDate month)
+    (DB.opportunities||[]).filter(o =>
+      o.stage !== 'Won' && o.stage !== 'Lost' &&
+      (o.owner === nick || (o.owner||'').toLowerCase() === nick.toLowerCase())
+    ).forEach(o => {
+      const d = parseDate(o.closeDate);
+      if (d && d.getFullYear() === YEAR) counts[d.getMonth()]++;
+      else if (!o.closeDate) counts[new Date().getMonth()]++; // no date → this month
+    });
+    // Add open Leads owned by this person (by createdAt month)
+    (DB.leads||[]).filter(l =>
+      l.status !== 'dead' && l.status !== 'Lost' &&
+      (l.owner === nick || (l.owner||'').toLowerCase() === nick.toLowerCase())
+    ).forEach(l => {
+      const d = parseDate(l.createdAt);
+      if (d && d.getFullYear() === YEAR) counts[d.getMonth()]++;
+    });
+  }
+
+  if (mode === 'tasks') {
+    // Count tasks assigned to this person by due month
+    (DB.tasks||[]).filter(t =>
+      !t.done && t.status !== 'done' &&
+      (t.assignee === nick || (t.assignee||'').toLowerCase() === nick.toLowerCase())
+    ).forEach(t => {
+      const d = parseDate(t.due);
+      if (d && d.getFullYear() === YEAR) counts[d.getMonth()]++;
+      else if (!t.due) counts[new Date().getMonth()]++; // no due date → this month
+    });
+  }
+
+  return counts;
+}
+
+/**
+ * Build per-person load matrix respecting role-based logic.
+ * Returns { nick: Array(12) }
+ */
+function buildLoadMatrix(filterFn) {
+  const matrix = {};
+  // Initialize all active team members with 0
+  (DB.team||[]).filter(m => (m.status||'active') === 'active').forEach(m => {
+    const nick = m.nickname || m.name;
+    if (nick) matrix[nick] = getPersonLoadArray(nick, m.dept||'', filterFn);
+  });
+  // Also include project owners/support not in team list (legacy data)
+  activeProjects().forEach(p => {
+    if (filterFn && !filterFn(p)) return;
+    [p.owner, p.support].filter(Boolean).forEach(nick => {
+      if (!matrix[nick]) {
+        // Unknown dept → default to projects mode
+        matrix[nick] = getPersonLoadArray(nick, '', filterFn);
+      }
+    });
+  });
+  return matrix;
+}
+
+function getLoadLabel(dept) {
+  const mode = getDeptLoadMode(dept);
+  if (mode === 'projects') return 'projects';
+  if (mode === 'bd') return 'leads+opps+proj';
+  return 'tasks';
+}
+
 function personMonthMatrix(filterFn) {
   const m = {};
   const bundleSeen = {}; // same dedup logic as renderWorkload
@@ -9629,30 +9738,16 @@ function renderWorkload() {
   };
   let matrix = {};
   if (view === 'person') {
-    // Include all ACTIVE team members (even 0-project) so nobody is invisible
+    // Use role-based load calculation per person
     (DB.team||[]).filter(m=>(m.status||'active')==='active').forEach(m => {
       const nick = m.nickname || m.name;
-      if (!matrix[nick]) matrix[nick] = Array(12).fill(0);
+      if (!nick) return;
+      matrix[nick] = getPersonLoadArray(nick, m.dept||'', filter);
     });
-    // Bundle deduplication: same bundle counts as 1 slot per person per month
-    const bundleSeen = {}; // key: "person__bundle__month"
+    // Also include project owners not in team DB
     activeProjects().filter(filter).forEach(p => {
-      const ms = monthSpan(p);
-      // Build people list based on role-mode filter
-      let people = [];
-      if (roleMode === 'owner-only') { if (p.owner) people = [p.owner]; }
-      else if (roleMode === 'no-support') { people = [p.owner, ...(p.teamMembers||[])].filter(Boolean); }
-      else { people = [p.owner, p.support, ...(p.teamMembers||[])].filter(Boolean); }
-      [...new Set(people)].forEach(n => {
-        if (!matrix[n]) matrix[n] = Array(12).fill(0);
-        ms.forEach(mo => {
-          if (p.bundle) {
-            const key = `${n}__${p.bundle}__${mo}`;
-            if (!bundleSeen[key]) { bundleSeen[key] = true; matrix[n][mo]++; }
-          } else {
-            matrix[n][mo]++;
-          }
-        });
+      [p.owner, p.support].filter(Boolean).forEach(nick => {
+        if (!matrix[nick]) matrix[nick] = getPersonLoadArray(nick, '', filter);
       });
     });
   } else if (view === 'dept') {
@@ -9743,42 +9838,64 @@ function renderRDOrg() {
   let h = `<div class="workload-grid"><div class="wl-h">แผนก</div>`;
   MONTH_LABELS.forEach(m=>h+=`<div class="wl-h">${m}</div>`);
   ALL_DEPTS.forEach(dept => {
-    const members = (DB.team||[]).filter(m=>m.dept===dept).map(m=>m.nickname||m.name).filter(Boolean);
-    // Show all depts; if no members show an empty row
+    const members = (DB.team||[]).filter(m=>m.dept===dept);
     const counts = Array(12).fill(0);
-    activeProjects().forEach(p => {
-      if (members.includes(p.owner)||members.includes(p.support)) monthSpan(p).forEach(mo=>counts[mo]++);
+    const loadMode = getDeptLoadMode(dept);
+    members.forEach(member => {
+      const nick = member.nickname||member.name;
+      const load = getPersonLoadArray(nick, dept);
+      load.forEach((v,i) => counts[i]+=v);
     });
+    // Also check project owners with this dept
+    if (loadMode === 'projects' || loadMode === 'bd') {
+      const memberNicks = members.map(m=>m.nickname||m.name);
+      // already counted above via team members
+    }
     const peak = Math.max(...counts);
-    const memberStr = members.length ? members.slice(0,4).join(', ') + (members.length>4?` +${members.length-4}`:'') : '— ยังไม่มีสมาชิก';
-    h+=`<div class="wl-name" style="font-weight:500;font-size:11px;${!members.length?'color:var(--text-hint);':''}">${dept}<br><span style="font-size:10px;font-weight:400;color:var(--text-hint);">${memberStr}</span></div>`;
+    const memberStr = members.length
+      ? members.slice(0,4).map(m=>m.nickname||m.name).join(', ') + (members.length>4?` +${members.length-4}`:'')
+      : '— ยังไม่มีสมาชิก';
+    const modeTag = `<span style="font-size:9px;color:#6366f1;background:#f0f4ff;border-radius:4px;padding:1px 5px;margin-left:4px;">${getLoadLabel(dept)}</span>`;
+    h+=`<div class="wl-name" style="font-weight:500;font-size:11px;${!members.length?'color:var(--text-hint);':''}">${dept}${modeTag}<br><span style="font-size:10px;font-weight:400;color:var(--text-hint);">${memberStr}</span></div>`;
     counts.forEach(v=>{const cc=colorFor(v);h+=`<div class="wl-cell" style="background:${cc.bg};color:${cc.fg};">${v||''}</div>`;});
   });
   h+=`</div>`;
-  document.getElementById('rd-content').innerHTML = h;
+  const el = document.getElementById('rd-content');
+  if (el) el.innerHTML = h;
 }
 
 function renderRDDept() {
-  const dept = document.getElementById('rd-dept-select').value;
+  const dept = document.getElementById('rd-dept-select')?.value || '';
   const members = (DB.team||[]).filter(m=>m.dept===dept);
-  if (!members.length) { document.getElementById('rd-content').innerHTML=`<p style="color:var(--text-muted);padding:20px;">ยังไม่มีสมาชิกในแผนก ${dept} — เพิ่มใน Team ก่อน</p>`; return; }
-  let h = `<div class="workload-grid"><div class="wl-h">${dept}</div>`;
+  if (!members.length) { const el=document.getElementById('rd-content'); if(el) el.innerHTML=`<p style="color:var(--text-muted);padding:20px;">ยังไม่มีสมาชิกในแผนก ${dept} — เพิ่มใน Team ก่อน</p>`; return; }
+  const loadMode = getDeptLoadMode(dept);
+  const loadLabel = getLoadLabel(dept);
+  let h = `<div style="font-size:11px;color:#6366f1;font-weight:600;background:#f0f4ff;border-radius:8px;padding:6px 12px;margin-bottom:10px;display:inline-block;">
+    📊 Load คำนวณจาก: <b>${loadLabel}</b>${loadMode==='bd'?' (Leads + Opps + Projects)':loadMode==='tasks'?' (Tasks ที่ยังไม่เสร็จ)':' (Projects ที่รับผิดชอบ)'}
+  </div>`;
+  h += `<div class="workload-grid"><div class="wl-h">${dept}</div>`;
   MONTH_LABELS.forEach(m=>h+=`<div class="wl-h">${m}</div>`);
   members.forEach(member => {
     const nick = member.nickname||member.name;
-    const counts = Array(12).fill(0);
-    const myProj = activeProjects().filter(p=>p.owner===nick||p.support===nick||(p.teamMembers||[]).includes(nick));
-    myProj.forEach(p=>monthSpan(p).forEach(mo=>counts[mo]++));
+    const counts = getPersonLoadArray(nick, dept);
     const peak = Math.max(...counts);
-    const budget = myProj.reduce((s,p)=>s+(+p.budget||0),0);
+    const myProj = activeProjects().filter(p=>p.owner===nick||p.support===nick||(p.teamMembers||[]).includes(nick));
+    const myTasks = loadMode==='tasks' ? (DB.tasks||[]).filter(t=>!t.done&&t.status!=='done'&&(t.assignee===nick||(t.assignee||'').toLowerCase()===nick.toLowerCase())).length : null;
+    const myOpps = (loadMode==='bd') ? (DB.opportunities||[]).filter(o=>o.stage!=='Won'&&o.stage!=='Lost'&&(o.owner===nick||(o.owner||'').toLowerCase()===nick.toLowerCase())).length : null;
+    const statStr = loadMode==='tasks'
+      ? `${myTasks} tasks · ${myProj.length} projs`
+      : loadMode==='bd'
+      ? `${myOpps} opps · ${myProj.length} projs · peak ${peak}`
+      : `${myProj.length} projs · ฿${fmtMoney(myProj.reduce((s,p)=>s+(+p.budget||0),0))} · peak ${peak}`;
     const rdNameEl = member.id
       ? `<span data-wl-profile="${member.id}" style="cursor:pointer;color:var(--accent);text-decoration:underline dotted;">${nick}</span>`
       : nick;
-    h+=`<div class="wl-name">${rdNameEl} <span style="color:var(--text-hint);font-size:10px;font-weight:400;">${member.role||''} · peak ${peak}<br>Active (${myProj.length}) · ฿${fmtMoney(budget)}</span></div>`;
+    h+=`<div class="wl-name">${rdNameEl} <span style="color:var(--text-hint);font-size:10px;font-weight:400;">${member.role||''}<br>${statStr}</span></div>`;
     counts.forEach(v=>{const c=colorFor(v);h+=`<div class="wl-cell" style="background:${c.bg};color:${c.fg};">${v||''}</div>`;});
   });
   h+=`</div>`;
-  document.getElementById('rd-content').innerHTML = h;
+  const el = document.getElementById('rd-content');
+  if (el) el.innerHTML = h;
 }
 
 function renderRDPerson() {
