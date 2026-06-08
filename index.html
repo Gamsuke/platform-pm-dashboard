@@ -2240,6 +2240,13 @@ details ul { padding-left: 18px; }
   </div>
   <div class="prof-stabs" id="prof-stabs"></div>
   <div id="prof-content" style="min-height:200px;"></div>
+  <div style="margin-top:16px;padding:16px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">💾 Backup & Restore</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="openBackupPanel()">💾 Backup Panel</button>
+      <button class="btn" onclick="openTrash()">🗑 Trash (กู้คืนข้อมูล)</button>
+    </div>
+  </div>
 </div>
 
 <!-- LEADS PANEL -->
@@ -13969,12 +13976,53 @@ function saveBrand() {
 function deleteBrand() {
   const id = document.getElementById('bf-id').value;
   const b  = (DB.brands||[]).find(x=>x.id===id);
-  if (!b || !confirm(`ลบ Brand "${b.name}"?\n\nProjects ที่เชื่อมกับ Brand นี้จะยังคงอยู่ แต่จะไม่มี Brand link`)) return;
+  if (!b) return;
+  const linkedProjs = (DB.projects||[]).filter(p=>p.brandId===id||p.brand===b.name);
+  // Remove any existing confirm modal
+  document.querySelector('.brand-delete-confirm')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'brand-delete-confirm';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:800;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;padding:28px;width:min(440px,100%);box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="width:56px;height:56px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px;">🗑</div>
+      <h3 style="margin:0 0 6px;font-size:18px;font-weight:800;color:#1e293b;">ยืนยันการลบ Brand</h3>
+      <p style="margin:0;font-size:13px;color:#64748b;">คุณกำลังจะลบ Brand นี้ออกจากระบบ</p>
+    </div>
+    <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:40px;height:40px;background:#6366f1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${b.logo?`<img src="${b.logo}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;" onerror="this.parentElement.textContent='📦'">`:'📦'}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">${escHtml(b.name||'–')}</div>
+          <div style="font-size:11px;color:#64748b;">${escHtml(b.clientName||'')}</div>
+        </div>
+      </div>
+      ${linkedProjs.length ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:#dc2626;"><b>⚠ มี ${linkedProjs.length} project</b> ที่เชื่อมกับ Brand นี้ — project จะยังคงอยู่แต่จะไม่มี Brand link</div>` : ''}
+    </div>
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px;margin-bottom:20px;font-size:12px;color:#92400e;">
+      <b>💡 ข้อมูลจะถูกย้ายไป Trash</b> — คุณสามารถกู้คืนได้ภายใน <b>30 วัน</b> จากเมนู Settings → Trash
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="this.closest('.brand-delete-confirm').remove()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:9px;background:#fff;cursor:pointer;font-size:13px;font-weight:600;">ยกเลิก</button>
+      <button onclick="confirmDeleteBrand('${id}')" style="flex:1;padding:10px;border:none;border-radius:9px;background:#dc2626;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">🗑 ลบ Brand</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function confirmDeleteBrand(id) {
+  const b = (DB.brands||[]).find(x=>x.id===id);
+  if (!b) return;
+  // Soft delete → trash
+  if (!DB.trash) DB.trash = [];
+  DB.trash.push({ type:'brand', data: JSON.parse(JSON.stringify(b)), deletedAt: new Date().toISOString(), expiresAt: new Date(Date.now()+30*24*60*60*1000).toISOString() });
   DB.brands = (DB.brands||[]).filter(x=>x.id!==id);
   (DB.projects||[]).forEach(p => { if (p.brandId===id) { delete p.brandId; delete p.clientId; } });
   saveDB(true);
-  document.getElementById('brand-modal').classList.remove('show');
+  document.querySelector('.brand-delete-confirm')?.remove();
+  document.getElementById('brand-modal')?.classList.remove('show');
   renderBrands();
+  showToast('Brand ถูกย้ายไป Trash แล้ว — กู้คืนได้ภายใน 30 วัน', 'info');
 }
 
 // ── Brand view state ─────────────────────────
@@ -16565,6 +16613,264 @@ function printReport(reportId) {
   printWin.document.close();
 }
 
+// ═══════════════════════════════
+// TOAST NOTIFICATION
+// ═══════════════════════════════
+function showToast(msg, type) {
+  const existing = document.querySelector('.toast-notification');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'toast-notification';
+  const bg = type==='success'?'#16a34a':type==='danger'?'#dc2626':type==='warning'?'#d97706':'#6366f1';
+  el.style.cssText = `position:fixed;bottom:24px;right:24px;background:${bg};color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:slideUp .25s ease;max-width:360px;`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 3500);
+}
+if (!document.getElementById('toast-anim-style')) {
+  const s = document.createElement('style');
+  s.id = 'toast-anim-style';
+  s.textContent = '@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}';
+  document.head.appendChild(s);
+}
+
+// ═══════════════════════════════
+// TRASH & RECOVERY
+// ═══════════════════════════════
+function openTrash() {
+  if (!DB.trash) DB.trash = [];
+  // Purge expired items (>30 days)
+  const now = Date.now();
+  DB.trash = DB.trash.filter(item => new Date(item.expiresAt).getTime() > now);
+  saveDB();
+  renderTrashList();
+  document.getElementById('trash-modal')?.classList.add('show');
+}
+
+function renderTrashList() {
+  const el = document.getElementById('trash-list');
+  if (!el) return;
+  if (!DB.trash) DB.trash = [];
+  const now = Date.now();
+  const active = DB.trash.filter(item => new Date(item.expiresAt).getTime() > now);
+  if (!active.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:#94a3b8;"><div style="font-size:40px;margin-bottom:10px;">🗑</div><p>Trash ว่างเปล่า</p></div>`;
+    return;
+  }
+  const typeIcon = { brand:'📦', client:'🏢', project:'📁', task:'✅' };
+  el.innerHTML = `<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:#f8fafc;">
+        <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;">ประเภท</th>
+        <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;">ชื่อ</th>
+        <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;">ลบเมื่อ</th>
+        <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;">หมดอายุ</th>
+        <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;">คงเหลือ</th>
+        <th style="padding:9px 14px;"></th>
+      </tr></thead>
+      <tbody>
+        ${active.map((item, i) => {
+          const daysLeft = Math.ceil((new Date(item.expiresAt).getTime() - now) / 86400000);
+          const name = item.data.name || item.data.company || item.data.code || item.data.title || '–';
+          const delDate = item.deletedAt ? new Date(item.deletedAt).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}) : '–';
+          const expDate = item.expiresAt ? new Date(item.expiresAt).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}) : '–';
+          return `<tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 14px;"><span style="font-size:16px;">${typeIcon[item.type]||'📄'}</span></td>
+            <td style="padding:10px 14px;font-weight:600;">${escHtml(name)}</td>
+            <td style="padding:10px 14px;font-size:11px;color:#64748b;">${delDate}</td>
+            <td style="padding:10px 14px;font-size:11px;color:#64748b;">${expDate}</td>
+            <td style="padding:10px 14px;"><span style="font-size:11px;font-weight:700;color:${daysLeft<=7?'#dc2626':daysLeft<=14?'#f59e0b':'#16a34a'};">${daysLeft} วัน</span></td>
+            <td style="padding:10px 14px;">
+              <button class="btn btn-sm btn-primary" onclick="recoverTrashItem(${i})" style="font-size:10px;margin-right:4px;">↩ กู้คืน</button>
+              <button class="btn btn-sm btn-danger" onclick="permanentDeleteTrashItem(${i})" style="font-size:10px;">✕</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function recoverTrashItem(idx) {
+  if (!DB.trash) return;
+  const now = Date.now();
+  const active = DB.trash.filter(item => new Date(item.expiresAt).getTime() > now);
+  const item = active[idx];
+  if (!item) return;
+  if (item.type === 'brand') {
+    if (!DB.brands) DB.brands = [];
+    if (!DB.brands.find(x=>x.id===item.data.id)) DB.brands.push(item.data);
+  } else if (item.type === 'client') {
+    if (!DB.clients) DB.clients = [];
+    if (!DB.clients.find(x=>x.id===item.data.id)) DB.clients.push(item.data);
+  } else if (item.type === 'project') {
+    if (!DB.projects) DB.projects = [];
+    if (!DB.projects.find(x=>(x.id||x.code)===(item.data.id||item.data.code))) DB.projects.push(item.data);
+  }
+  // Remove from trash
+  const trashIdx = DB.trash.indexOf(item);
+  if (trashIdx >= 0) DB.trash.splice(trashIdx, 1);
+  saveDB();
+  renderTrashList();
+  renderBrands();
+  showToast('กู้คืนข้อมูลสำเร็จ ✓', 'success');
+}
+
+function permanentDeleteTrashItem(idx) {
+  if (!DB.trash) return;
+  const now = Date.now();
+  const active = DB.trash.filter(item => new Date(item.expiresAt).getTime() > now);
+  const item = active[idx];
+  if (!item || !confirm(`ลบ "${item.data.name||item.data.company||item.data.code||'item'}" ถาวร? ไม่สามารถกู้คืนได้อีก`)) return;
+  const trashIdx = DB.trash.indexOf(item);
+  if (trashIdx >= 0) DB.trash.splice(trashIdx, 1);
+  saveDB();
+  renderTrashList();
+}
+
+function emptyTrash() {
+  if (!DB.trash?.length) return;
+  if (!confirm(`ล้าง Trash ทั้งหมด ${DB.trash.length} รายการ? ลบถาวร ไม่สามารถกู้คืนได้`)) return;
+  DB.trash = [];
+  saveDB();
+  renderTrashList();
+  showToast('ล้าง Trash เรียบร้อย', 'info');
+}
+
+// ═══════════════════════════════
+// BACKUP & RESTORE
+// ═══════════════════════════════
+function exportBackup() {
+  const data = JSON.stringify(DB, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date().toISOString().slice(0,16).replace('T','_').replace(/:/g,'-');
+  a.href = url;
+  a.download = `platform-one-backup-${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('💾 Backup ดาวน์โหลดแล้ว', 'success');
+  try { localStorage.setItem('last_backup_at', new Date().toISOString()); } catch(e) {}
+}
+
+function importBackup(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || typeof parsed !== 'object') throw new Error('Invalid format');
+      if (!confirm(`นำเข้าข้อมูล Backup จากไฟล์ "${file.name}"?\n\nข้อมูลปัจจุบันทั้งหมดจะถูกแทนที่`)) return;
+      try { localStorage.setItem('db_auto_backup', localStorage.getItem('pm_db') || ''); } catch(e) {}
+      Object.keys(DB).forEach(k => { delete DB[k]; });
+      Object.assign(DB, parsed);
+      saveDB();
+      location.reload();
+    } catch(err) {
+      alert('ไม่สามารถอ่านไฟล์ Backup ได้: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function createLocalSnapshot() {
+  try {
+    const snapshots = JSON.parse(localStorage.getItem('db_snapshots') || '[]');
+    const snap = { ts: new Date().toISOString(), label: new Date().toLocaleString('th-TH'), data: JSON.parse(JSON.stringify(DB)) };
+    snapshots.unshift(snap);
+    if (snapshots.length > 10) snapshots.length = 10;
+    localStorage.setItem('db_snapshots', JSON.stringify(snapshots));
+    showToast('📸 Snapshot บันทึกแล้ว (' + snapshots.length + '/10)', 'success');
+    renderSnapshotList();
+  } catch(e) { alert('บันทึก Snapshot ไม่สำเร็จ: ' + e.message); }
+}
+
+function renderSnapshotList() {
+  const el = document.getElementById('snapshot-list');
+  if (!el) return;
+  try {
+    const snapshots = JSON.parse(localStorage.getItem('db_snapshots') || '[]');
+    if (!snapshots.length) { el.innerHTML = '<p style="font-size:12px;color:#94a3b8;text-align:center;padding:20px;">ยังไม่มี Snapshot</p>'; return; }
+    el.innerHTML = snapshots.map((s, i) => `<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+      <span style="font-size:20px;">📸</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;">${escHtml(s.label||s.ts)}</div>
+        <div style="font-size:10px;color:#94a3b8;">${Object.keys(s.data).map(k=>Array.isArray(s.data[k])?`${k}: ${s.data[k].length}`:null).filter(Boolean).join(' · ')}</div>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="restoreSnapshot(${i})" style="font-size:10px;white-space:nowrap;">↩ Restore</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteSnapshot(${i})" style="font-size:10px;">✕</button>
+    </div>`).join('');
+  } catch(e) { el.innerHTML = '<p style="color:#dc2626;font-size:12px;">โหลด Snapshot ไม่สำเร็จ</p>'; }
+}
+
+function restoreSnapshot(idx) {
+  try {
+    const snapshots = JSON.parse(localStorage.getItem('db_snapshots') || '[]');
+    const snap = snapshots[idx];
+    if (!snap) return;
+    if (!confirm(`Restore Snapshot จาก "${snap.label}"?\n\nข้อมูลปัจจุบันจะถูกแทนที่`)) return;
+    Object.keys(DB).forEach(k => { delete DB[k]; });
+    Object.assign(DB, snap.data);
+    saveDB();
+    location.reload();
+  } catch(e) { alert('Restore ไม่สำเร็จ: ' + e.message); }
+}
+
+function deleteSnapshot(idx) {
+  try {
+    const snapshots = JSON.parse(localStorage.getItem('db_snapshots') || '[]');
+    snapshots.splice(idx, 1);
+    localStorage.setItem('db_snapshots', JSON.stringify(snapshots));
+    renderSnapshotList();
+  } catch(e) {}
+}
+
+function openBackupPanel() {
+  document.querySelector('.backup-panel-modal')?.remove();
+  const lastBackup = localStorage.getItem('last_backup_at');
+  const modal = document.createElement('div');
+  modal.className = 'backup-panel-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:min(600px,100%);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <h3 style="margin:0;font-size:16px;font-weight:800;">💾 Backup & Restore</h3>
+        <p style="margin:4px 0 0;font-size:11px;color:#94a3b8;">สำรองข้อมูลและกู้คืนระบบ</p>
+      </div>
+      <button onclick="this.closest('.backup-panel-modal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;">×</button>
+    </div>
+    <div style="padding:20px 24px;overflow-y:auto;flex:1;">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:8px;">📤 Export / Import Backup File</div>
+        <p style="font-size:12px;color:#166534;margin-bottom:12px;">บันทึกข้อมูลทั้งหมดเป็นไฟล์ .json สำหรับสำรองข้อมูล${lastBackup?` · Backup ล่าสุด: ${new Date(lastBackup).toLocaleString('th-TH')}`:''}
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="exportBackup()" style="font-size:12px;">💾 Download Backup</button>
+          <label class="btn" style="cursor:pointer;font-size:12px;">
+            📂 Import from File
+            <input type="file" accept=".json" style="display:none;" onchange="importBackup(this)">
+          </label>
+          <button class="btn" onclick="openTrash()" style="font-size:12px;">🗑 Trash (${(DB.trash||[]).length})</button>
+        </div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div>
+            <div style="font-size:13px;font-weight:700;">📸 Local Snapshots</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px;">บันทึก snapshot ใน browser (สูงสุด 10 รายการ)</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="createLocalSnapshot()" style="font-size:11px;">+ Snapshot ตอนนี้</button>
+        </div>
+        <div id="snapshot-list"></div>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  renderSnapshotList();
+}
+
 (async function initAuth() {
   try {
   loadSession();
@@ -17553,6 +17859,21 @@ ${files.length ? `<div style="border:1px solid var(--border);border-radius:12px;
     <div id="rpt-kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;"></div>
     <!-- Reports table -->
     <div id="rpt-list-container"></div>
+  </div>
+</div>
+
+<div class="modal" id="trash-modal" style="z-index:700;">
+  <div class="modal-box" style="max-width:700px;">
+    <div class="modal-header">
+      <h2>🗑 Trash — กู้คืนข้อมูล</h2>
+      <button class="modal-close" onclick="document.getElementById('trash-modal').classList.remove('show')">&times;</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">ข้อมูลที่ถูกลบจะถูกเก็บไว้ 30 วัน หลังจากนั้นจะถูกลบถาวร</p>
+    <div id="trash-list"></div>
+    <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;">
+      <button class="btn btn-danger btn-sm" onclick="emptyTrash()">🗑 ล้าง Trash ทั้งหมด</button>
+      <button class="btn btn-sm" onclick="document.getElementById('trash-modal').classList.remove('show')">ปิด</button>
+    </div>
   </div>
 </div>
 
