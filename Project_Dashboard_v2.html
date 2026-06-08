@@ -11488,10 +11488,16 @@ function initClientPage() {
     const id = document.getElementById('cf-id').value || ('cl-' + Math.random().toString(36).slice(2,9));
     if (!DB.clients) DB.clients = [];
     let c = DB.clients.find(x => x.id === id);
+    const isNew = !c;
     if (!c) { c = { id }; DB.clients.push(c); }
+
+    // Capture old company name before overwriting (for cascade)
+    const oldCompany = c.company || '';
+
     c.company = document.getElementById('cf-company').value.trim();
     // Save brands array + keep legacy c.brand = first brand
-    c.brands = cfGetBrands();
+    const newBrands = cfGetBrands();
+    c.brands = newBrands;
     c.brand = c.brands[0] || '';
     c.contactName = document.getElementById('cf-name').value.trim();
     c.nickname = document.getElementById('cf-nickname').value.trim();
@@ -11505,6 +11511,10 @@ function initClientPage() {
     c.note = document.getElementById('cf-note').value.trim();
     const jid = document.getElementById('cf-juristic-id').value.trim() || document.getElementById('cf-juristic-id-saved').value;
     if (jid) c.juristicId = jid;
+
+    // ── Cascade: propagate company rename + brand changes ─────
+    if (!isNew) cascadeClientUpdate(c, oldCompany, newBrands);
+
     saveDB();
     document.getElementById('client-modal').classList.remove('show');
     renderClients();
@@ -11564,6 +11574,75 @@ function cfAddBrand() {
   cfRenderBrandChip(val);
   input.value = '';
   input.focus();
+}
+
+/**
+ * Cascade client edits to all related records:
+ *  1. Company name rename  → DB.projects, DB.brands, DB.contacts, DB.leads, DB.opportunities
+ *  2. Brand list changes   → ensure DB.brands entries are consistent (add new, mark removed as unlinked)
+ */
+function cascadeClientUpdate(client, oldCompany, newBrandNames) {
+  const newCompany = client.company;
+  const clientId   = client.id;
+  const companyChanged = oldCompany && newCompany && oldCompany.toLowerCase() !== newCompany.toLowerCase();
+
+  // 1. Rename company in every collection ─────────────────────
+  if (companyChanged) {
+    (DB.projects||[]).forEach(p => {
+      if ((p.company||'').toLowerCase() === oldCompany.toLowerCase()) p.company = newCompany;
+    });
+    (DB.brands||[]).forEach(b => {
+      if (b.clientId === clientId || (b.clientName||'').toLowerCase() === oldCompany.toLowerCase()) {
+        b.clientName = newCompany;
+        if (!b.clientId) b.clientId = clientId;
+      }
+    });
+    (DB.contacts||[]).forEach(ct => {
+      if ((ct.company||'').toLowerCase() === oldCompany.toLowerCase()) ct.company = newCompany;
+    });
+    (DB.leads||[]).forEach(l => {
+      if ((l.company||'').toLowerCase() === oldCompany.toLowerCase()) l.company = newCompany;
+    });
+    (DB.opportunities||[]).forEach(o => {
+      if ((o.company||'').toLowerCase() === oldCompany.toLowerCase()) o.company = newCompany;
+    });
+  }
+
+  // 2. Sync DB.brands to match the new brand list ─────────────
+  const resolvedCompany = newCompany || oldCompany;
+  (newBrandNames||[]).forEach(brandName => {
+    if (!brandName.trim()) return;
+    // Find existing brand for this client by name
+    let bObj = (DB.brands||[]).find(b =>
+      (b.name||'').toLowerCase() === brandName.toLowerCase() &&
+      (b.clientId === clientId || (b.clientName||'').toLowerCase() === resolvedCompany.toLowerCase())
+    );
+    // Also check unlinked brand with same name (adopt it)
+    if (!bObj) {
+      bObj = (DB.brands||[]).find(b =>
+        (b.name||'').toLowerCase() === brandName.toLowerCase() &&
+        !b.clientId && !(b.clientName||'').trim()
+      );
+    }
+    if (bObj) {
+      // Update to ensure correct clientId/clientName
+      bObj.clientId   = clientId;
+      bObj.clientName = resolvedCompany;
+      bObj.status     = bObj.status || 'active';
+    } else {
+      // Create new brand entry
+      if (!DB.brands) DB.brands = [];
+      DB.brands.push({
+        id: 'brand_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+        clientId, clientName: resolvedCompany,
+        name: brandName, status: 'active',
+        createdAt: new Date().toISOString()
+      });
+    }
+  });
+
+  // 3. Re-run dedup to clean up any duplicates created ────────
+  deduplicateBrands();
 }
 
 function openClientModal(id) {
