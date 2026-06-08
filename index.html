@@ -8266,12 +8266,18 @@ function wCeoTopLine() {
   const yr = now.getFullYear();
   const mo = now.getMonth();
 
-  // YTD revenue = sum of all project budgets with start/launch in current year
+  // YTD revenue = confirmed projects only (Working + Close)
   const ytdProjs = (DB.projects||[]).filter(p => {
     const d = parseDate(p.start||p.launch);
-    return d && d.getFullYear() === yr && (p.status==='Working'||p.status==='In Progress'||(p.status||'').toLowerCase().includes('working'));
+    return d && d.getFullYear() === yr && (p.status==='Working' || p.status==='Close');
   });
   const ytdRev = ytdProjs.reduce((s,p)=>s+(+p.budget||0),0);
+  // Pipeline = Pitching + Proposing projects this year
+  const ytdPipelineProjs = (DB.projects||[]).filter(p => {
+    const d = parseDate(p.start||p.launch);
+    return d && d.getFullYear() === yr && (p.status==='Pitching' || p.status==='Proposing');
+  });
+  const ytdPipelineRev = ytdPipelineProjs.reduce((s,p)=>s+(+p.budget||0),0);
 
   // Pipeline = Won+Negotiation+Proposal opportunities value
   const opps = DB.opportunities||[];
@@ -8315,8 +8321,9 @@ function wCeoTopLine() {
           <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">Active Clients</div>
         </div>
         <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px 16px;text-align:center;min-width:90px;">
-          <div style="font-size:22px;font-weight:800;">฿${fmtMoney(totalPipeline)}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">Pipeline Value</div>
+          <div style="font-size:16px;font-weight:800;color:#fbbf24;">฿${fmtMoney(ytdPipelineRev)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">🎯 Pipeline (ปีนี้)</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4);">${ytdPipelineProjs.length} projects</div>
         </div>
         <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px 16px;text-align:center;min-width:90px;">
           <div style="font-size:20px;font-weight:800;color:${gpColor};">฿${fmtMoney(gpPerEmp)}</div>
@@ -8940,36 +8947,99 @@ function wProjectsAtRisk() {
 }
 
 function wRevenuePipeline() {
-  const projs = activeProjects();
-  const working   = projs.filter(p=>p.status==='Working');
-  const proposing = projs.filter(p=>p.status==='Proposing');
-  const pitching  = projs.filter(p=>p.status==='Pitching');
-  const wBg  = working.reduce((s,p)=>s+(+p.budget||0),0);
-  const ppBg = proposing.reduce((s,p)=>s+(+p.budget||0),0);
-  const piBg = pitching.reduce((s,p)=>s+(+p.budget||0),0);
-  const total = wBg + ppBg + piBg;
-  const body = `<div class="dash-stat-row">
-    <div class="dash-stat">
-      <div class="dash-stat-val" style="color:#1b7a4b;font-size:16px;">฿${fmtMoney(wBg)}</div>
-      <div class="dash-stat-lbl">Working (${working.length})</div>
-      ${dashProgressBar(wBg, total, '#1b7a4b')}
+  const yr = YEAR || new Date().getFullYear();
+  const allProjs = (DB.projects||[]).filter(p => {
+    const d = parseDate(p.start||p.launch);
+    return d && d.getFullYear() === yr;
+  });
+
+  // Confirmed revenue: Working + Close
+  const confirmed = allProjs.filter(p => p.status==='Working' || p.status==='Close');
+  const working   = confirmed.filter(p => p.status==='Working');
+  const closed    = confirmed.filter(p => p.status==='Close');
+  const confirmedRev = confirmed.reduce((s,p)=>s+(+p.budget||0),0);
+  const workingRev   = working.reduce((s,p)=>s+(+p.budget||0),0);
+  const closedRev    = closed.reduce((s,p)=>s+(+p.budget||0),0);
+
+  // Pipeline: Pitching + Proposing
+  const pipeline   = allProjs.filter(p => p.status==='Pitching' || p.status==='Proposing');
+  const pitching   = pipeline.filter(p => p.status==='Pitching');
+  const proposing  = pipeline.filter(p => p.status==='Proposing');
+  const pipelineRev  = pipeline.reduce((s,p)=>s+(+p.budget||0),0);
+  const pitchingRev  = pitching.reduce((s,p)=>s+(+p.budget||0),0);
+  const proposingRev = proposing.reduce((s,p)=>s+(+p.budget||0),0);
+
+  const grandTotal = confirmedRev + pipelineRev;
+  const confirmedPct = grandTotal > 0 ? Math.round(confirmedRev/grandTotal*100) : 0;
+  const pipelinePct  = grandTotal > 0 ? Math.round(pipelineRev/grandTotal*100) : 0;
+
+  const body = `
+  <!-- Combined progress bar -->
+  <div style="margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+      <span>Confirmed ${confirmedPct}%</span><span>Pipeline ${pipelinePct}%</span>
     </div>
-    <div class="dash-stat">
-      <div class="dash-stat-val" style="color:#d4603a;font-size:16px;">฿${fmtMoney(ppBg)}</div>
-      <div class="dash-stat-lbl">Proposing (${proposing.length})</div>
-      ${dashProgressBar(ppBg, total, '#d4603a')}
+    <div style="height:10px;border-radius:6px;overflow:hidden;background:#f1f5f9;display:flex;">
+      <div style="width:${confirmedPct}%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:6px 0 0 6px;transition:width .4s;"></div>
+      <div style="width:${pipelinePct}%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:0 6px 6px 0;transition:width .4s;"></div>
     </div>
-    <div class="dash-stat">
-      <div class="dash-stat-val" style="color:#427dda;font-size:16px;">฿${fmtMoney(piBg)}</div>
-      <div class="dash-stat-lbl">Pitching (${pitching.length})</div>
-      ${dashProgressBar(piBg, total, '#427dda')}
+  </div>
+
+  <!-- Two columns: Confirmed | Pipeline -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+    <!-- Confirmed Revenue -->
+    <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px;">
+      <div style="font-size:10px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">✅ Confirmed Revenue</div>
+      <div style="font-size:20px;font-weight:800;color:#15803d;margin-bottom:8px;">฿${fmtMoney(confirmedRev)}</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;">
+          <span style="color:#16a34a;">🔨 Working (${working.length})</span>
+          <span style="font-weight:600;">฿${fmtMoney(workingRev)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;">
+          <span style="color:#15803d;">✓ Closed (${closed.length})</span>
+          <span style="font-weight:600;">฿${fmtMoney(closedRev)}</span>
+        </div>
+      </div>
     </div>
-    <div class="dash-stat">
-      <div class="dash-stat-val" style="font-size:16px;">฿${fmtMoney(total)}</div>
-      <div class="dash-stat-lbl">Total Pipeline</div>
+    <!-- Pipeline Revenue -->
+    <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px;">
+      <div style="font-size:10px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">🎯 Pipeline (ต้องปิด)</div>
+      <div style="font-size:20px;font-weight:800;color:#d97706;margin-bottom:8px;">฿${fmtMoney(pipelineRev)}</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;">
+          <span style="color:#d97706;">📝 Proposing (${proposing.length})</span>
+          <span style="font-weight:600;">฿${fmtMoney(proposingRev)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;">
+          <span style="color:#2563eb;">🏆 Pitching (${pitching.length})</span>
+          <span style="font-weight:600;">฿${fmtMoney(pitchingRev)}</span>
+        </div>
+      </div>
     </div>
-  </div>`;
-  return dashWidget('💰','Revenue Pipeline', body, WIDGET_SIZE_MAP.wRevenuePipeline);
+  </div>
+
+  <!-- Pipeline projects list (Pitching + Proposing) to focus on -->
+  ${pipeline.length > 0 ? `
+  <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">📋 งานที่ต้อง Focus ปิดให้ได้ (${pipeline.length})</div>
+  <div style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;">
+    ${[...pipeline].sort((a,b)=>(+b.budget||0)-(+a.budget||0)).map(p=>{
+      const statusColor = p.status==='Pitching'?'#2563eb':'#d97706';
+      const statusLabel = p.status==='Pitching'?'Pitching':'Proposing';
+      const e = parseDate(p.end); const today=new Date(); today.setHours(0,0,0,0);
+      const daysLeft = e ? Math.round((e-today)/86400000) : null;
+      const daysColor = daysLeft===null?'#94a3b8':daysLeft<0?'#dc2626':daysLeft<=14?'#d97706':'#16a34a';
+      const daysStr = daysLeft===null?'–':daysLeft<0?`${Math.abs(daysLeft)}d overdue`:`${daysLeft}d left`;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#fff;border:1px solid #f1f5f9;border-radius:7px;">
+        <span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;background:${statusColor}18;color:${statusColor};white-space:nowrap;">${statusLabel}</span>
+        <span style="flex:1;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(p.name||p.brand||p.code||'')}">${escHtml(p.code||'')} ${escHtml(p.brand||p.name||'')}</span>
+        <span style="font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;">฿${fmtMoney(p.budget)}</span>
+        <span style="font-size:10px;color:${daysColor};white-space:nowrap;">${daysStr}</span>
+      </div>`;
+    }).join('')}
+  </div>` : `<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:10px;">ไม่มีงานที่รอปิด</div>`}
+  `;
+  return dashWidget('💰','Revenue — Confirmed vs Pipeline', body, WIDGET_SIZE_MAP.wRevenuePipeline);
 }
 
 function wActiveProjects() {
@@ -11747,11 +11817,13 @@ function getClientStats(company, clientId) {
   const brands = (DB.brands||[]).filter(b => (b.clientName||'').toLowerCase()===(company||'').toLowerCase() || b.clientId===clientId);
   const contacts = (DB.clients||[]).filter(c => c.company===company && c.contactName);
 
-  // Revenue YTD: projects starting this year
+  // Revenue YTD: confirmed projects only (Working + Close) starting this year
   const thisYear = new Date().getFullYear().toString();
-  const ytdProjs = projs.filter(p => (p.start||p.launch||p.createdAt||'').startsWith(thisYear));
+  const ytdProjs = projs.filter(p => (p.start||p.launch||p.createdAt||'').startsWith(thisYear) && (p.status==='Working'||p.status==='Close'));
   const revenueYTD = ytdProjs.reduce((s,p)=>s+(+p.budget||0), 0);
-  const totalRevenue = projs.reduce((s,p)=>s+(+p.budget||0), 0);
+  const pipelineProjs = projs.filter(p => (p.status==='Pitching'||p.status==='Proposing'));
+  const pipelineRev = pipelineProjs.reduce((s,p)=>s+(+p.budget||0), 0);
+  const totalRevenue = projs.filter(p=>p.status==='Working'||p.status==='Close').reduce((s,p)=>s+(+p.budget||0), 0);
 
   // Projects at risk (deadline in ≤14 days)
   const today = new Date(); today.setHours(0,0,0,0);
@@ -11777,7 +11849,7 @@ function getClientStats(company, clientId) {
     if (m >= 0 && m < 12) monthBudgets[m] += (+p.budget||0);
   });
 
-  return { projs, activeProjs, opps, openOpps, brands, contacts, revenueYTD, totalRevenue, atRisk, workloadPct, health, monthBudgets };
+  return { projs, activeProjs, opps, openOpps, brands, contacts, revenueYTD, pipelineRev, totalRevenue, atRisk, workloadPct, health, monthBudgets };
 }
 
 function clientHealthBadge(health, isInactive) {
@@ -11823,7 +11895,7 @@ function renderClientsKPI(allClients) {
 
   const allProjs = activeProjects();
   const thisYear = new Date().getFullYear().toString();
-  const totalRevYTD = allProjs.filter(p=>(p.start||p.launch||p.createdAt||'').startsWith(thisYear)).reduce((s,p)=>s+(+p.budget||0),0);
+  const totalRevYTD = allProjs.filter(p=>(p.start||p.launch||p.createdAt||'').startsWith(thisYear)&&(p.status==='Working'||p.status==='Close')).reduce((s,p)=>s+(+p.budget||0),0);
   const totalActiveProjs = allProjs.length;
   const openOpps = (DB.opportunities||[]).filter(o=>o.stage!=='Won'&&o.stage!=='Lost');
   const openOppValue = openOpps.reduce((s,o)=>s+(+o.value||0),0);
@@ -15643,9 +15715,10 @@ function getBrandStats(brandId) {
   const thisYear = new Date().getFullYear().toString();
 
   const activeProjs = projs.filter(p=>p.status!=='Close'&&p.status!=='Pitch Lost');
-  const ytdProjs    = projs.filter(p=>(p.start||p.launch||p.createdAt||'').startsWith(thisYear));
+  const ytdProjs    = projs.filter(p=>(p.start||p.launch||p.createdAt||'').startsWith(thisYear)&&(p.status==='Working'||p.status==='Close'));
   const revenueYTD  = ytdProjs.reduce((s,p)=>s+(+p.budget||0),0);
-  const totalRev    = projs.reduce((s,p)=>s+(+p.budget||0),0);
+  const pipelineRev = projs.filter(p=>p.status==='Pitching'||p.status==='Proposing').reduce((s,p)=>s+(+p.budget||0),0);
+  const totalRev    = projs.filter(p=>p.status==='Working'||p.status==='Close').reduce((s,p)=>s+(+p.budget||0),0);
   const atRisk      = activeProjs.filter(p=>{const e=parseDate(p.end);return e&&e<=cutoff;});
 
   // Open opportunities for this brand (match by brand name or project)
@@ -15691,7 +15764,7 @@ function getBrandStats(brandId) {
     if(m>=0&&m<12) monthBudgets[m]+=(+p.budget||0);
   });
 
-  return { projs, activeProjs, tasks, openTasks, revenueYTD, totalRev, atRisk, openOpps, workloadPct, health, relatedContacts, lastAct, monthBudgets };
+  return { projs, activeProjs, tasks, openTasks, revenueYTD, pipelineRev, totalRev, atRisk, openOpps, workloadPct, health, relatedContacts, lastAct, monthBudgets };
 }
 
 function brandHealthBadge(health) {
@@ -16718,7 +16791,8 @@ function buildClientDetailPage(clientId, tab) {
     _bSeen[k] = true; return true;
   });
   const contacts = (DB.contacts || []).filter(c => c.company === cl.company);
-  const totalRev = linked.reduce((s, p) => s + (+p.budget || 0), 0);
+  const totalRev = linked.filter(p=>p.status==='Working'||p.status==='Close').reduce((s, p) => s + (+p.budget || 0), 0);
+  const pipelineRev = linked.filter(p=>p.status==='Pitching'||p.status==='Proposing').reduce((s,p)=>s+(+p.budget||0),0);
   const activeProjs = linked.filter(p => p.status && p.status.toLowerCase().includes('progress'));
   const files = cl.files || [];
 
