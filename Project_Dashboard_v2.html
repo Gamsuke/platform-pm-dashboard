@@ -1273,6 +1273,7 @@ details ul { padding-left: 18px; }
       <button class="tab" data-panel="leads">🎯 Leads</button>
       <button class="tab" data-panel="clients">🏢 Clients</button>
       <button class="tab" data-panel="clients" data-panel-alias="contacts">👤 Contacts</button>
+      <button class="tab" data-panel="client-intel">⭐ Intelligence</button>
       <button class="tab" data-panel="opportunities">💼 Opportunities</button>
 
       <!-- MANAGEMENT -->
@@ -1646,6 +1647,26 @@ details ul { padding-left: 18px; }
 </div>
 
   <!-- CLIENTS -->
+  <!-- CLIENT INTELLIGENCE PANEL -->
+  <div class="panel" id="client-intel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="margin:0;font-size:20px;font-weight:800;color:#1e293b;">⭐ Client Intelligence</h2>
+        <div style="font-size:12px;color:#94a3b8;margin-top:3px;">Account Transfer Readiness — คลิก client เพื่อเปิด Intelligence</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="ci-panel-search" placeholder="Search clients…" oninput="renderCIPanel()" style="padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;min-width:180px;">
+        <select id="ci-panel-filter" onchange="renderCIPanel()" style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;">
+          <option value="">All Scores</option>
+          <option value="red">🔴 High Risk (0–60)</option>
+          <option value="yellow">🟡 Needs Improvement (61–80)</option>
+          <option value="green">🟢 Ready (81–100)</option>
+        </select>
+      </div>
+    </div>
+    <div id="ci-panel-content"></div>
+  </div>
+
   <div class="panel" id="clients">
     <!-- Breadcrumb -->
     <div id="clients-breadcrumb" style="font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;"></div>
@@ -5528,6 +5549,7 @@ document.querySelectorAll('.tab').forEach(t => {
     t.classList.add('active');
     document.getElementById(t.dataset.panel).classList.add('active');
     if (t.dataset.panel === 'clients' && !_tabInited.has('clients')) { _tabInited.add('clients'); initClientPage(); }
+    if (t.dataset.panel === 'client-intel') renderCIPanel();
     if (t.dataset.panel === 'team' && !_tabInited.has('team')) { _tabInited.add('team'); initTeamPage(); }
     if (t.dataset.panel === 'roles' && !_tabInited.has('roles')) { _tabInited.add('roles'); initRoleDemand(); }
     if (t.dataset.panel === 'calendar' && !_tabInited.has('calendar')) { _tabInited.add('calendar'); initCalendar(); }
@@ -20236,8 +20258,8 @@ function openClientProfileCRM(clientId, activeTab) {
   const totalRev = linked.reduce((s,p)=>s+(+p.budget||0),0);
   const isActive = (cl.active||'active')!=='inactive';
   const brands   = cl.brands?.length?cl.brands:(cl.brand?[cl.brand]:[]);
-  const TABS = ['overview','brands','projects','revenue','activity','contacts','leads','opportunities'];
-  const tabLabels = {overview:'📊 Overview',brands:'📦 Brands',projects:'📁 Projects',revenue:'💰 Revenue',activity:'📋 Activity',contacts:'👤 Contacts',leads:'🎯 Leads',opportunities:'💼 Opportunities'};
+  const TABS = ['overview','brands','projects','intelligence','revenue','activity','contacts','leads','opportunities'];
+  const tabLabels = {overview:'📊 Overview',brands:'📦 Brands',projects:'📁 Projects',intelligence:'⭐ Intelligence',revenue:'💰 Revenue',activity:'📋 Activity',contacts:'👤 Contacts',leads:'🎯 Leads',opportunities:'💼 Opportunities'};
   const tabsHtml = TABS.map(t=>`<div class="clt-detail-tab${t===activeTab?' active':''}" onclick="openClientProfileCRM('${clientId}','${t}')">${tabLabels[t]}</div>`).join('');
   let bodyHtml = '';
   if (activeTab==='overview') {
@@ -20457,6 +20479,8 @@ ${files.length ? `<div style="border:1px solid var(--border);border-radius:12px;
           <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="width:${Math.min(100,(v/Math.max(totalRev,1)*100))}%;height:100%;background:var(--accent);border-radius:4px;"></div></div>
           <span style="font-size:13px;font-weight:600;">฿${fmtMoney(v)}</span>
         </div>`).join('');
+  } else if (activeTab==='intelligence') {
+    bodyHtml = renderClientIntelligence(clientId, cl);
   } else if (activeTab==='activity') {
     const acts = (DB.activityLog||[]).filter(a=>a.projectId&&linked.some(p=>(p.id||p.code)===a.projectId)).slice(0,20);
     bodyHtml = acts.length
@@ -20476,6 +20500,692 @@ ${files.length ? `<div style="border:1px solid var(--border);border-radius:12px;
     <div class="clt-detail-tabs">${tabsHtml}</div>
     <div style="padding:4px 0;">${bodyHtml}</div>`;
   document.getElementById('client-profile-modal').classList.add('show');
+}
+
+// ════════════════════════════════════════════════════════════════
+// CLIENT INTELLIGENCE MODULE
+// ════════════════════════════════════════════════════════════════
+
+function getCI(clientId) {
+  if (!DB.clientIntelligence) DB.clientIntelligence = {};
+  if (!DB.clientIntelligence[clientId]) DB.clientIntelligence[clientId] = {};
+  const ci = DB.clientIntelligence[clientId];
+  if (!ci.orgProfile)     ci.orgProfile     = { industry:'', orgStructure:'', regionalInvolvement:'', decisionComplexity:'', updatedBy:'', updatedAt:'' };
+  if (!ci.workingProcess) ci.workingProcess = { preferredComm:[], reviewSpeed:'', feedbackDays:'', meetingPref:[], workingStyleNotes:'', updatedBy:'', updatedAt:'' };
+  if (!ci.approvalProcess)ci.approvalProcess= { steps:[], updatedBy:'', updatedAt:'' };
+  if (!ci.procurement)    ci.procurement    = { vendorRegRequired:false, poRequired:false, quotationReq:'', paymentTerms:'', billingRules:'', updatedBy:'', updatedAt:'' };
+  if (!ci.legal)          ci.legal          = { legalReviewRequired:false, restrictedClaims:'', requiredDisclaimer:'', complianceNotes:'', updatedBy:'', updatedAt:'' };
+  if (!ci.presentation)   ci.presentation   = { likes:[], dislikes:[], presentationNotes:'', updatedBy:'', updatedAt:'' };
+  if (!ci.playbook)       ci.playbook       = { whatWorks:'', whatToAvoid:'', tips:'', updatedBy:'', updatedAt:'' };
+  if (!ci.historicalLearnings) ci.historicalLearnings = [];
+  if (!ci.escalation)     ci.escalation     = { contacts:[], updatedBy:'', updatedAt:'' };
+  return ci;
+}
+
+function ciSectionScore(ci) {
+  const weights = { orgProfile:10, workingProcess:10, approvalProcess:15, procurement:10, legal:10, presentation:10, playbook:15, historicalLearnings:10, escalation:10 };
+  let score = 0;
+  const pct = (obj, keys) => { const filled = keys.filter(k => { const v = obj?.[k]; return Array.isArray(v) ? v.length > 0 : (v !== '' && v !== false && v !== undefined && v !== null); }); return filled.length / keys.length; };
+  score += weights.orgProfile     * pct(ci.orgProfile,     ['industry','orgStructure','regionalInvolvement','decisionComplexity']);
+  score += weights.workingProcess * pct(ci.workingProcess,  ['preferredComm','reviewSpeed','feedbackDays','meetingPref']);
+  score += weights.approvalProcess* (ci.approvalProcess?.steps?.length > 0 ? 1 : 0);
+  score += weights.procurement    * pct(ci.procurement,     ['quotationReq','paymentTerms']);
+  score += weights.legal          * pct(ci.legal,           ['restrictedClaims','complianceNotes']);
+  score += weights.presentation   * pct(ci.presentation,    ['likes','presentationNotes']);
+  score += weights.playbook       * pct(ci.playbook,        ['whatWorks','whatToAvoid','tips']);
+  score += weights.historicalLearnings * (ci.historicalLearnings?.length > 0 ? 1 : 0);
+  score += weights.escalation     * (ci.escalation?.contacts?.length > 0 ? 1 : 0);
+  return Math.round(score);
+}
+
+function ciUpdatedBadge(sec) {
+  if (!sec?.updatedAt) return '';
+  return `<span style="font-size:10px;color:#94a3b8;margin-left:8px;">Updated ${sec.updatedAt.slice(0,10)} by ${escHtml(sec.updatedBy||'–')}</span>`;
+}
+
+function ciToggle(fieldId) {
+  const body = document.getElementById('ci-body-' + fieldId);
+  const icon = document.getElementById('ci-icon-' + fieldId);
+  if (!body || !icon) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  icon.textContent = isOpen ? '▶' : '▼';
+}
+
+function ciRichField(id, value, placeholder) {
+  return `<div style="border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;">
+    <div style="display:flex;gap:4px;padding:6px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+      <button type="button" onclick="document.execCommand('bold')" title="Bold" style="font-size:12px;font-weight:700;padding:2px 7px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;">B</button>
+      <button type="button" onclick="document.execCommand('italic')" title="Italic" style="font-size:12px;font-style:italic;padding:2px 7px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;">I</button>
+      <button type="button" onclick="document.execCommand('insertUnorderedList')" title="Bullet" style="font-size:12px;padding:2px 7px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;">• List</button>
+      <button type="button" onclick="ciInsertLink('${id}')" title="Link" style="font-size:12px;padding:2px 7px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;">🔗</button>
+    </div>
+    <div id="${id}" contenteditable="true"
+      style="min-height:80px;padding:10px 12px;font-size:13px;line-height:1.6;outline:none;color:#1e293b;"
+      data-placeholder="${escHtml(placeholder)}"
+      oninput="this.dataset.empty = this.textContent.trim()===''?'true':'false'"
+      onfocus="this.dataset.empty='false'"
+      onblur="this.dataset.empty=this.textContent.trim()===''?'true':'false'"
+    >${value}</div>
+  </div>
+  <style>#${id}:empty:before{content:attr(data-placeholder);color:#94a3b8;pointer-events:none;display:block;}</style>`;
+}
+
+function ciInsertLink(id) {
+  const url = prompt('Enter URL:');
+  if (url) { document.getElementById(id)?.focus(); document.execCommand('createLink', false, url); }
+}
+
+function ciMultiSelect(id, options, selected, color) {
+  return `<div id="${id}-ms" style="display:flex;flex-wrap:wrap;gap:6px;">
+    ${options.map(opt => {
+      const isOn = selected.includes(opt);
+      return `<button type="button" data-val="${escHtml(opt)}" onclick="ciToggleMS('${id}-ms',this,'${color||'#6366f1'}')"
+        style="font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;
+               border:1.5px solid ${isOn?color||'#6366f1':'#e2e8f0'};
+               background:${isOn?(color||'#6366f1')+'18':'#fff'};
+               color:${isOn?color||'#6366f1':'#64748b'};">${escHtml(opt)}</button>`;
+    }).join('')}
+  </div>`;
+}
+
+function ciToggleMS(containerId, btn, color) {
+  if (!btn) return;
+  const isOn = btn.style.color !== 'rgb(100, 116, 139)' && btn.style.background !== 'rgb(255, 255, 255)';
+  if (isOn) {
+    btn.style.border = '1.5px solid #e2e8f0'; btn.style.background = '#fff'; btn.style.color = '#64748b';
+  } else {
+    btn.style.border = `1.5px solid ${color}`; btn.style.background = color+'18'; btn.style.color = color;
+  }
+}
+
+function ciGetMS(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+  return Array.from(container.querySelectorAll('button')).filter(b => {
+    const col = b.style.color;
+    return col !== 'rgb(100, 116, 139)';
+  }).map(b => b.dataset.val);
+}
+
+function ciToggleSwitch(id) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  input.checked = !input.checked;
+  const track = document.getElementById(id+'-track');
+  if (track) {
+    track.style.background = input.checked ? '#6366f1' : '#e2e8f0';
+    const thumb = track.querySelector('.ci-thumb');
+    if (thumb) thumb.style.transform = input.checked ? 'translateX(20px)' : 'translateX(0)';
+  }
+}
+
+function ciSwitch(id, checked, label) {
+  return `<div style="display:flex;align-items:center;gap:10px;">
+    <input type="checkbox" id="${id}" ${checked?'checked':''} style="display:none;">
+    <div id="${id}-track" onclick="ciToggleSwitch('${id}')" style="width:44px;height:24px;border-radius:12px;background:${checked?'#6366f1':'#e2e8f0'};cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;">
+      <div class="ci-thumb" style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .2s;transform:${checked?'translateX(20px)':'translateX(0)'};"></div>
+    </div>
+    <span style="font-size:13px;color:#1e293b;">${label}</span>
+  </div>`;
+}
+
+function ciSectionHeader(id, icon, title, sec, completePct) {
+  const bar = completePct > 0 ? `<div style="width:${completePct}%;height:100%;background:${completePct>=80?'#16a34a':completePct>=50?'#f59e0b':'#6366f1'};border-radius:2px;"></div>` : '';
+  return `<div onclick="ciToggle('${id}')" style="display:flex;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;user-select:none;border-bottom:1px solid #f1f5f9;">
+    <span id="ci-icon-${id}" style="font-size:12px;color:#94a3b8;width:14px;">▼</span>
+    <span style="font-size:16px;">${icon}</span>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:14px;font-weight:700;color:#1e293b;">${title}</span>
+        ${ciUpdatedBadge(sec)}
+      </div>
+      <div style="height:4px;background:#f1f5f9;border-radius:2px;margin-top:5px;width:120px;overflow:hidden;">${bar}</div>
+    </div>
+    <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${completePct>=80?'#dcfce7':completePct>=50?'#fef3c7':'#f0f4ff'};color:${completePct>=80?'#16a34a':completePct>=50?'#d97706':'#6366f1'};">${completePct}%</span>
+  </div>`;
+}
+
+function ciField(label, desc, content, tooltip) {
+  return `<div style="margin-bottom:18px;">
+    <label style="font-size:12px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+      ${label}
+      ${tooltip?`<span title="${escHtml(tooltip)}" style="cursor:help;color:#94a3b8;font-size:13px;">ⓘ</span>`:''}
+    </label>
+    ${desc?`<div style="font-size:11px;color:#64748b;margin-bottom:6px;">${desc}</div>`:''}
+    ${content}
+  </div>`;
+}
+
+function renderClientIntelligence(clientId, client) {
+  const ci = getCI(clientId);
+  const score = ciSectionScore(ci);
+  const scoreColor = score >= 81 ? '#16a34a' : score >= 61 ? '#d97706' : '#dc2626';
+  const scoreBg    = score >= 81 ? '#dcfce7' : score >= 61 ? '#fef3c7' : '#fee2e2';
+  const scoreLabel = score >= 81 ? '🟢 Ready for Handover' : score >= 61 ? '🟡 Needs Improvement' : '🔴 High Risk';
+
+  const INDUSTRIES = ['FMCG','Retail','F&B','Healthcare','Pharmaceutical','Financial Services','Insurance','Automotive','Technology','Telecommunications','Real Estate','Education','Entertainment','Fashion & Lifestyle','Beauty & Personal Care','Travel & Hospitality','Government','Non-profit','Other'];
+
+  const pctOrg  = Math.round((['industry','orgStructure','regionalInvolvement','decisionComplexity'].filter(k => ci.orgProfile[k]).length / 4) * 100);
+  const pctWork = Math.round((['preferredComm','reviewSpeed','feedbackDays','meetingPref'].filter(k => { const v=ci.workingProcess[k]; return Array.isArray(v)?v.length>0:!!v; }).length / 4) * 100);
+  const pctAppr = ci.approvalProcess.steps.length > 0 ? 100 : 0;
+  const pctProc = Math.round((['quotationReq','paymentTerms'].filter(k=>ci.procurement[k]).length/2)*100);
+  const pctLeg  = Math.round((['restrictedClaims','complianceNotes'].filter(k=>ci.legal[k]).length/2)*100);
+  const pctPres = Math.round((['likes','presentationNotes'].filter(k=>{const v=ci.presentation[k];return Array.isArray(v)?v.length>0:!!v;}).length/2)*100);
+  const pctPlay = Math.round((['whatWorks','whatToAvoid','tips'].filter(k=>ci.playbook[k]).length/3)*100);
+  const pctHist = ci.historicalLearnings.length > 0 ? 100 : 0;
+  const pctEsc  = ci.escalation.contacts.length > 0 ? 100 : 0;
+
+  const projs = (DB.projects||[]).filter(p=>(p.company||'').toLowerCase()===(client?.company||'').toLowerCase());
+  const openProjs = projs.filter(p=>p.status==='Working').length;
+  const openOpps  = (DB.opportunities||[]).filter(o=>(o.company||'').toLowerCase()===(client?.company||'').toLowerCase()&&o.stage!=='Won'&&o.stage!=='Lost').length;
+  const lastAct   = (DB.activity||[]).filter(a=>a.clientId===clientId||a.company===(client?.company||'')).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+  const revYTD    = projs.filter(p=>p.status==='Working'||p.status==='Close').reduce((s,p)=>s+(+p.budget||0),0);
+  const healthScore = (openProjs>0?30:0) + (openOpps>0?20:0) + (score>60?30:0) + (lastAct?20:0);
+  const healthLabel = healthScore>=70?'🟢 Healthy':healthScore>=40?'🟡 Needs Attention':'🔴 At Risk';
+  const healthColor = healthScore>=70?'#16a34a':healthScore>=40?'#d97706':'#dc2626';
+
+  return `
+  <div style="display:flex;align-items:center;gap:16px;padding:16px 20px;background:linear-gradient(135deg,${scoreBg},#fff);border:2px solid ${scoreColor}30;border-radius:12px;margin-bottom:16px;">
+    <div style="text-align:center;min-width:70px;">
+      <div style="font-size:34px;font-weight:900;color:${scoreColor};line-height:1;">${score}</div>
+      <div style="font-size:10px;color:#64748b;margin-top:2px;">/ 100</div>
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:800;color:#1e293b;">Account Transfer Readiness</div>
+      <div style="font-size:12px;font-weight:700;color:${scoreColor};margin-top:2px;">${scoreLabel}</div>
+      <div style="height:6px;background:#f1f5f9;border-radius:3px;margin-top:6px;overflow:hidden;">
+        <div style="width:${score}%;height:100%;background:${scoreColor};border-radius:3px;transition:width .4s;"></div>
+      </div>
+    </div>
+    <button onclick="saveClientIntelligence('${clientId}')" style="padding:10px 20px;background:#6366f1;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;white-space:nowrap;">💾 Save All</button>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+    <div style="padding:14px 18px;background:#f8fafc;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;font-weight:700;color:#1e293b;">📊 Account Health</span>
+      <span style="font-size:12px;font-weight:700;color:${healthColor};">${healthLabel}</span>
+    </div>
+    <div style="padding:14px 18px;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+      ${[
+        ['Open Projects',openProjs+'','#6366f1'],
+        ['Open Opps',openOpps+'','#f59e0b'],
+        ['Revenue YTD','฿'+fmtMoney(revYTD),'#16a34a'],
+        ['Last Activity',lastAct?lastAct.date?.slice(0,10)||'–':'Never','#0ea5e9'],
+        ['Intel Score',score+'%',scoreColor],
+      ].map(([l,v,c])=>`<div style="text-align:center;background:#f8fafc;border-radius:8px;padding:10px 6px;">
+        <div style="font-size:18px;font-weight:800;color:${c};">${v}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:3px;">${l}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;">
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('org','🏢','Organization Profile',ci.orgProfile,pctOrg)}
+    <div id="ci-body-org" style="padding:18px;">
+      ${ciField('Industry','Select the client\'s primary industry.',
+        `<select id="ci-org-industry" style="width:100%;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;">
+          <option value="">Select industry</option>
+          ${INDUSTRIES.map(i=>`<option value="${i}" ${ci.orgProfile.industry===i?'selected':''}>${i}</option>`).join('')}
+        </select>`, 'e.g. FMCG, Healthcare, Technology')}
+      ${ciField('Organization Structure','Describe key stakeholders involved in decision making.',
+        ciRichField('ci-org-structure', ci.orgProfile.orgStructure, 'e.g. Marketing Director → Brand Manager → Procurement → Finance'),
+        'Who approves what? Draw the org chart in text form.')}
+      ${ciField('Regional Involvement','Does a regional or global team participate in approvals?',
+        `<select id="ci-org-regional" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;">
+          <option value="">Select...</option>
+          ${['None','Occasional','Always'].map(o=>`<option ${ci.orgProfile.regionalInvolvement===o?'selected':''}>${o}</option>`).join('')}
+        </select>`, 'None = local only, Always = regional approves everything')}
+      ${ciField('Decision Complexity','How difficult is it to obtain approvals?',
+        `<select id="ci-org-complexity" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;">
+          <option value="">Select...</option>
+          ${['Low','Medium','High','Very High'].map(o=>`<option ${ci.orgProfile.decisionComplexity===o?'selected':''}>${o}</option>`).join('')}
+        </select>`, 'High = requires many sign-offs and rounds of review')}
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('work','⚙️','Working Process',ci.workingProcess,pctWork)}
+    <div id="ci-body-work" style="padding:18px;">
+      ${ciField('Preferred Communication','How does this client prefer to be contacted?',
+        ciMultiSelect('ci-work-comm',['LINE','Email','Teams','Phone','WhatsApp'],ci.workingProcess.preferredComm,'#0ea5e9'),
+        'Select all that apply')}
+      ${ciField('Review Speed','How fast does the client typically review work?',
+        `<select id="ci-work-speed" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;">
+          <option value="">Select...</option>
+          ${['Very Fast','Fast','Normal','Slow'].map(o=>`<option ${ci.workingProcess.reviewSpeed===o?'selected':''}>${o}</option>`).join('')}
+        </select>`, 'Based on past experience')}
+      ${ciField('Average Feedback Time (days)','Average number of days the client takes to respond.',
+        `<input id="ci-work-feedback" type="number" min="0" value="${ci.workingProcess.feedbackDays||''}" placeholder="e.g. 3" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;">`,
+        'Count business days')}
+      ${ciField('Meeting Preference','Preferred meeting format.',
+        ciMultiSelect('ci-work-meeting',['Online','Onsite','Hybrid'],ci.workingProcess.meetingPref,'#6366f1'),
+        'Select all that apply')}
+      ${ciField('Working Style Notes','Any informal rules or habits the client has.',
+        ciRichField('ci-work-notes', ci.workingProcess.workingStyleNotes, 'e.g. Client prefers LINE before formal email. Dislikes meetings over 1 hour.'),
+        'Practical tips that are not written anywhere officially')}
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('appr','✅','Approval Process',ci.approvalProcess,pctAppr)}
+    <div id="ci-body-appr" style="padding:18px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:12px;">Document the approval chain. Each step shows who approves, how long it takes, and whether it is mandatory.</div>
+      <div id="ci-appr-steps">
+        ${ci.approvalProcess.steps.map((step,i)=>ciApprovalStepHTML(i,step)).join('')}
+      </div>
+      <button type="button" onclick="ciAddApprovalStep('${clientId}')" style="font-size:12px;padding:7px 16px;background:#f0f4ff;color:#6366f1;border:1.5px dashed #6366f1;border-radius:8px;cursor:pointer;font-weight:700;font-family:inherit;margin-top:4px;">+ Add Approval Step</button>
+      ${ci.approvalProcess.steps.length>0?`
+      <div style="margin-top:14px;padding:12px 16px;background:#f0fdf4;border-radius:8px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;">⏱</span>
+        <div>
+          <div style="font-size:11px;color:#64748b;">Average Approval Cycle</div>
+          <div style="font-size:20px;font-weight:800;color:#16a34a;">${ci.approvalProcess.steps.reduce((s,st)=>s+(+st.days||0),0)} Days</div>
+        </div>
+      </div>`:''}
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('proc','💳','Procurement & Finance',ci.procurement,pctProc)}
+    <div id="ci-body-proc" style="padding:18px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div>${ciField('Vendor Registration Required','Must the agency be registered as a vendor?',ciSwitch('ci-proc-vendor',ci.procurement.vendorRegRequired,'Required'))}</div>
+        <div>${ciField('PO Required','Does the client require a Purchase Order before work begins?',ciSwitch('ci-proc-po',ci.procurement.poRequired,'PO Required'))}</div>
+      </div>
+      ${ciField('Quotation Requirement','How many quotes does procurement require?',
+        `<select id="ci-proc-quotes" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;">
+          <option value="">Select...</option>
+          ${['1 Quote','2 Quotes','3 Quotes'].map(o=>`<option ${ci.procurement.quotationReq===o?'selected':''}>${o}</option>`).join('')}
+        </select>`)}
+      ${ciField('Payment Terms','Standard payment terms for this client.',
+        `<select id="ci-proc-payment" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;">
+          <option value="">Select...</option>
+          ${['15 Days','30 Days','45 Days','60 Days','90 Days'].map(o=>`<option ${ci.procurement.paymentTerms===o?'selected':''}>${o}</option>`).join('')}
+        </select>`)}
+      ${ciField('Special Billing Rules','Any invoicing rules that must be followed.',
+        ciRichField('ci-proc-billing', ci.procurement.billingRules, 'e.g. Invoice must contain PO number. Invoice must match legal company name.'))}
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('legal','⚖️','Legal & Compliance',ci.legal,pctLeg)}
+    <div id="ci-body-legal" style="padding:18px;">
+      ${ciField('Legal Review Required','',ciSwitch('ci-legal-review',ci.legal.legalReviewRequired,'Legal review required before publication'))}
+      ${ciField('Restricted Claims','Claims or statements that cannot be used in communications.',
+        ciRichField('ci-legal-claims', ci.legal.restrictedClaims, 'e.g. Cannot claim: "No.1 in Thailand", "Guaranteed Results", Medical Treatment Claims'))}
+      ${ciField('Required Disclaimers','Disclaimers that must always appear.',
+        ciRichField('ci-legal-disclaimer', ci.legal.requiredDisclaimer, 'e.g. Breast milk is best for infants.'))}
+      ${ciField('Compliance Notes','',
+        ciRichField('ci-legal-notes', ci.legal.complianceNotes, 'e.g. All nutrition-related campaigns must be reviewed by legal before publication.'))}
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('pres','📊','Presentation Preferences',ci.presentation,pctPres)}
+    <div id="ci-body-pres" style="padding:18px;">
+      ${ciField('Likes','Content types the client responds well to.',
+        ciMultiSelect('ci-pres-likes',['Dashboard','Benchmark Data','Business Cases','Mockups','Research','Prototypes'],ci.presentation.likes,'#16a34a'))}
+      ${ciField('Dislikes','Things to avoid in presentations.',
+        ciMultiSelect('ci-pres-dislikes',['Long Slides','Too Much Text','Technical Language','Animations'],ci.presentation.dislikes,'#dc2626'))}
+      ${ciField('Presentation Notes','',
+        ciRichField('ci-pres-notes', ci.presentation.presentationNotes, 'e.g. Client prefers visual dashboards instead of long PowerPoint presentations.'))}
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('play','📖','Client Playbook',ci.playbook,pctPlay)}
+    <div id="ci-body-play" style="padding:18px;">
+      ${ciField('What Works Well','Proven strategies and approaches with this client.',
+        ciRichField('ci-play-works', ci.playbook.whatWorks, 'e.g. Send draft via LINE before official email. Always provide competitor benchmark.'))}
+      ${ciField('What To Avoid','Mistakes and approaches that have backfired.',
+        ciRichField('ci-play-avoid', ci.playbook.whatToAvoid, 'e.g. Avoid changing timeline during final approval stage.'))}
+      ${ciField('Tips For New Account Team','Practical advice for someone taking over this account.',
+        ciRichField('ci-play-tips', ci.playbook.tips, 'e.g. Client values responsiveness more than presentation quality.'))}
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('hist','📚','Historical Learnings',{updatedAt:'',updatedBy:''},pctHist)}
+    <div id="ci-body-hist" style="padding:18px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:12px;">Record lessons learned from past projects. This preserves organizational memory when team members change.</div>
+      <div id="ci-hist-records" style="display:flex;flex-direction:column;gap:10px;">
+        ${ci.historicalLearnings.map((lr,i)=>ciLearningRowHTML(i,lr)).join('')}
+      </div>
+      <button type="button" onclick="ciAddLearning('${clientId}')" style="font-size:12px;padding:7px 16px;background:#fef3c7;color:#d97706;border:1.5px dashed #d97706;border-radius:8px;cursor:pointer;font-weight:700;font-family:inherit;margin-top:10px;">+ Add Learning</button>
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    ${ciSectionHeader('esc','🚨','Escalation Guide',ci.escalation,pctEsc)}
+    <div id="ci-body-esc" style="padding:18px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:12px;">Who to contact when issues escalate beyond the normal account team.</div>
+      <div id="ci-esc-contacts" style="display:flex;flex-direction:column;gap:10px;">
+        ${ci.escalation.contacts.map((c,i)=>ciEscContactHTML(i,c)).join('')}
+      </div>
+      <button type="button" onclick="ciAddEscContact('${clientId}')" style="font-size:12px;padding:7px 16px;background:#fee2e2;color:#dc2626;border:1.5px dashed #dc2626;border-radius:8px;cursor:pointer;font-weight:700;font-family:inherit;margin-top:10px;">+ Add Contact</button>
+    </div>
+  </div>
+
+  </div>
+
+  <div style="margin-top:20px;text-align:right;">
+    <button onclick="saveClientIntelligence('${clientId}')" style="padding:12px 28px;background:#6366f1;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;">💾 Save Client Intelligence</button>
+  </div>`;
+}
+
+function ciApprovalStepHTML(i, step) {
+  return `<div id="ci-appr-step-${i}" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:8px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:12px;font-weight:700;color:#6366f1;background:#f0f4ff;padding:3px 10px;border-radius:20px;">Step ${i+1}</span>
+      <button type="button" onclick="ciRemoveApprovalStep(${i})" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:8px;">
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">APPROVAL ROLE</label>
+        <input data-field="role" value="${escHtml(step.role||'')}" placeholder="e.g. Brand Manager" style="width:100%;padding:7px;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">DAYS</label>
+        <input data-field="days" type="number" value="${step.days||''}" placeholder="2" style="width:100%;padding:7px;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">MANDATORY</label>
+        <select data-field="mandatory" style="width:100%;padding:7px;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;">
+          <option value="true" ${step.mandatory!==false?'selected':''}>Yes</option>
+          <option value="false" ${step.mandatory===false?'selected':''}>No</option>
+        </select></div>
+    </div>
+    <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">NOTES</label>
+      <input data-field="notes" value="${escHtml(step.notes||'')}" placeholder="e.g. Initial content approval" style="width:100%;padding:7px;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+  </div>`;
+}
+
+function ciLearningRowHTML(i, lr) {
+  const CATS = ['Creative','Strategy','Media','KOL','Production','Client Relations','Finance','Other'];
+  return `<div id="ci-hist-row-${i}" style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:11px;font-weight:700;color:#d97706;">📚 Learning #${i+1}</span>
+      <button type="button" onclick="ciRemoveLearning(${i})" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">DATE</label>
+        <input data-field="date" type="date" value="${lr.date||''}" style="width:100%;padding:7px;border:1px solid #fde68a;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">PROJECT</label>
+        <input data-field="project" value="${escHtml(lr.project||'')}" placeholder="e.g. Bear Brand Campaign" style="width:100%;padding:7px;border:1px solid #fde68a;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">CATEGORY</label>
+        <select data-field="category" style="width:100%;padding:7px;border:1px solid #fde68a;border-radius:7px;font-size:12px;">
+          <option value="">Select...</option>
+          ${CATS.map(c=>`<option ${lr.category===c?'selected':''}>${c}</option>`).join('')}
+        </select></div>
+    </div>
+    <div style="margin-bottom:8px;"><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">LEARNING</label>
+      <textarea data-field="learning" rows="2" placeholder="What happened? What did we learn?" style="width:100%;padding:7px;border:1px solid #fde68a;border-radius:7px;font-size:12px;resize:vertical;box-sizing:border-box;font-family:inherit;">${escHtml(lr.learning||'')}</textarea></div>
+    <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">RECOMMENDATION</label>
+      <textarea data-field="recommendation" rows="2" placeholder="What should we do differently next time?" style="width:100%;padding:7px;border:1px solid #fde68a;border-radius:7px;font-size:12px;resize:vertical;box-sizing:border-box;font-family:inherit;">${escHtml(lr.recommendation||'')}</textarea></div>
+  </div>`;
+}
+
+function ciEscContactHTML(i, c) {
+  const TYPES = ['Urgent','Budget','Legal','Regional','Technical','Other'];
+  return `<div id="ci-esc-row-${i}" style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:11px;font-weight:700;color:#dc2626;">🚨 Contact #${i+1}</span>
+      <button type="button" onclick="ciRemoveEscContact(${i})" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">TYPE</label>
+        <select data-field="type" style="width:100%;padding:7px;border:1px solid #fecaca;border-radius:7px;font-size:12px;">
+          <option value="">Select...</option>
+          ${TYPES.map(t=>`<option ${c.type===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">ROLE / NAME</label>
+        <input data-field="role" value="${escHtml(c.role||'')}" placeholder="e.g. Marketing Director" style="width:100%;padding:7px;border:1px solid #fecaca;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">PHONE</label>
+        <input data-field="phone" value="${escHtml(c.phone||'')}" placeholder="08X-XXX-XXXX" style="width:100%;padding:7px;border:1px solid #fecaca;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;">
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">EMAIL</label>
+        <input data-field="email" value="${escHtml(c.email||'')}" placeholder="name@company.com" style="width:100%;padding:7px;border:1px solid #fecaca;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;">NOTES</label>
+        <input data-field="notes" value="${escHtml(c.notes||'')}" placeholder="e.g. Call only on urgent issues" style="width:100%;padding:7px;border:1px solid #fecaca;border-radius:7px;font-size:12px;box-sizing:border-box;"></div>
+    </div>
+  </div>`;
+}
+
+function ciAddApprovalStep(clientId) {
+  const ci = getCI(clientId);
+  ci.approvalProcess.steps.push({ role:'', days:'', mandatory:true, notes:'' });
+  const container = document.getElementById('ci-appr-steps');
+  if (container) {
+    const idx = ci.approvalProcess.steps.length - 1;
+    container.insertAdjacentHTML('beforeend', ciApprovalStepHTML(idx, ci.approvalProcess.steps[idx]));
+  }
+}
+
+function ciRemoveApprovalStep(i) {
+  document.getElementById('ci-appr-step-'+i)?.remove();
+  document.querySelectorAll('[id^="ci-appr-step-"]').forEach((el,idx)=>{
+    const badge = el.querySelector('span');
+    if (badge) badge.textContent = 'Step '+(idx+1);
+  });
+}
+
+function ciAddLearning(clientId) {
+  const ci = getCI(clientId);
+  const idx = ci.historicalLearnings.length;
+  ci.historicalLearnings.push({ date:'', project:'', category:'', learning:'', recommendation:'' });
+  const container = document.getElementById('ci-hist-records');
+  if (container) container.insertAdjacentHTML('beforeend', ciLearningRowHTML(idx, ci.historicalLearnings[idx]));
+}
+
+function ciRemoveLearning(i) {
+  document.getElementById('ci-hist-row-'+i)?.remove();
+}
+
+function ciAddEscContact(clientId) {
+  const ci = getCI(clientId);
+  const idx = ci.escalation.contacts.length;
+  ci.escalation.contacts.push({ type:'', role:'', phone:'', email:'', notes:'' });
+  const container = document.getElementById('ci-esc-contacts');
+  if (container) container.insertAdjacentHTML('beforeend', ciEscContactHTML(idx, ci.escalation.contacts[idx]));
+}
+
+function ciRemoveEscContact(i) {
+  document.getElementById('ci-esc-row-'+i)?.remove();
+}
+
+function saveClientIntelligence(clientId) {
+  const ci = getCI(clientId);
+  const now = new Date().toISOString().slice(0,16).replace('T',' ');
+  const user = myNick() || 'Unknown';
+
+  const industry = document.getElementById('ci-org-industry')?.value||'';
+  const orgStruct = document.getElementById('ci-org-structure');
+  const regional  = document.getElementById('ci-org-regional')?.value||'';
+  const complexity= document.getElementById('ci-org-complexity')?.value||'';
+  if (industry||orgStruct||regional||complexity) {
+    ci.orgProfile = { industry, orgStructure: orgStruct?.innerHTML||'', regionalInvolvement:regional, decisionComplexity:complexity, updatedBy:user, updatedAt:now };
+  }
+
+  const wNotes = document.getElementById('ci-work-notes');
+  ci.workingProcess = {
+    preferredComm: ciGetMS('ci-work-comm-ms'),
+    reviewSpeed:   document.getElementById('ci-work-speed')?.value||'',
+    feedbackDays:  document.getElementById('ci-work-feedback')?.value||'',
+    meetingPref:   ciGetMS('ci-work-meeting-ms'),
+    workingStyleNotes: wNotes?.innerHTML||'',
+    updatedBy:user, updatedAt:now
+  };
+
+  const stepEls = document.querySelectorAll('[id^="ci-appr-step-"]');
+  ci.approvalProcess.steps = Array.from(stepEls).map(el => ({
+    role:      el.querySelector('[data-field="role"]')?.value||'',
+    days:      el.querySelector('[data-field="days"]')?.value||'',
+    mandatory: el.querySelector('[data-field="mandatory"]')?.value !== 'false',
+    notes:     el.querySelector('[data-field="notes"]')?.value||'',
+  }));
+  ci.approvalProcess.updatedBy = user; ci.approvalProcess.updatedAt = now;
+
+  ci.procurement = {
+    vendorRegRequired: document.getElementById('ci-proc-vendor')?.checked||false,
+    poRequired:        document.getElementById('ci-proc-po')?.checked||false,
+    quotationReq:      document.getElementById('ci-proc-quotes')?.value||'',
+    paymentTerms:      document.getElementById('ci-proc-payment')?.value||'',
+    billingRules:      document.getElementById('ci-proc-billing')?.innerHTML||'',
+    updatedBy:user, updatedAt:now
+  };
+
+  ci.legal = {
+    legalReviewRequired: document.getElementById('ci-legal-review')?.checked||false,
+    restrictedClaims:    document.getElementById('ci-legal-claims')?.innerHTML||'',
+    requiredDisclaimer:  document.getElementById('ci-legal-disclaimer')?.innerHTML||'',
+    complianceNotes:     document.getElementById('ci-legal-notes')?.innerHTML||'',
+    updatedBy:user, updatedAt:now
+  };
+
+  ci.presentation = {
+    likes:             ciGetMS('ci-pres-likes-ms'),
+    dislikes:          ciGetMS('ci-pres-dislikes-ms'),
+    presentationNotes: document.getElementById('ci-pres-notes')?.innerHTML||'',
+    updatedBy:user, updatedAt:now
+  };
+
+  ci.playbook = {
+    whatWorks:  document.getElementById('ci-play-works')?.innerHTML||'',
+    whatToAvoid:document.getElementById('ci-play-avoid')?.innerHTML||'',
+    tips:       document.getElementById('ci-play-tips')?.innerHTML||'',
+    updatedBy:user, updatedAt:now
+  };
+
+  const lrEls = document.querySelectorAll('[id^="ci-hist-row-"]');
+  ci.historicalLearnings = Array.from(lrEls).map(el => ({
+    date:           el.querySelector('[data-field="date"]')?.value||'',
+    project:        el.querySelector('[data-field="project"]')?.value||'',
+    category:       el.querySelector('[data-field="category"]')?.value||'',
+    learning:       el.querySelector('[data-field="learning"]')?.value||'',
+    recommendation: el.querySelector('[data-field="recommendation"]')?.value||'',
+  }));
+
+  const escEls = document.querySelectorAll('[id^="ci-esc-row-"]');
+  ci.escalation.contacts = Array.from(escEls).map(el => ({
+    type:  el.querySelector('[data-field="type"]')?.value||'',
+    role:  el.querySelector('[data-field="role"]')?.value||'',
+    phone: el.querySelector('[data-field="phone"]')?.value||'',
+    email: el.querySelector('[data-field="email"]')?.value||'',
+    notes: el.querySelector('[data-field="notes"]')?.value||'',
+  }));
+  ci.escalation.updatedBy = user; ci.escalation.updatedAt = now;
+
+  saveDB();
+  const btn = document.querySelector('button[onclick^="saveClientIntelligence"]');
+  if (btn) { const orig=btn.textContent; btn.textContent='✅ Saved!'; btn.style.background='#16a34a'; setTimeout(()=>{btn.textContent=orig;btn.style.background='#6366f1';},2000); }
+}
+
+function renderCIPanel() {
+  const container = document.getElementById('ci-panel-content');
+  if (!container) return;
+
+  const q       = (document.getElementById('ci-panel-search')?.value||'').toLowerCase();
+  const filter  = document.getElementById('ci-panel-filter')?.value||'';
+
+  // Deduplicate clients same as renderClients
+  const companyMap = {};
+  (DB.clients||[]).forEach(c => {
+    const key = (c.company||'').toLowerCase().trim();
+    if (!key) return;
+    if (!companyMap[key]) companyMap[key] = c;
+  });
+  let clients = Object.values(companyMap).filter(c => (c.active||'active') === 'active');
+
+  if (q) clients = clients.filter(c => (c.company||'').toLowerCase().includes(q));
+
+  // Compute scores
+  const scored = clients.map(c => {
+    const ci    = getCI(c.id || c.company);
+    const score = ciSectionScore(ci);
+    return { c, ci, score };
+  }).filter(({ score }) => {
+    if (filter === 'red')    return score <= 60;
+    if (filter === 'yellow') return score >= 61 && score <= 80;
+    if (filter === 'green')  return score >= 81;
+    return true;
+  }).sort((a, b) => a.score - b.score); // lowest first — needs most attention
+
+  if (!scored.length) {
+    container.innerHTML = `<div style="text-align:center;padding:60px;color:#94a3b8;font-size:13px;">ไม่พบ Client ที่ตรงกับเงื่อนไข</div>`;
+    return;
+  }
+
+  // Summary bar
+  const total   = scored.length;
+  const red     = scored.filter(x => x.score <= 60).length;
+  const yellow  = scored.filter(x => x.score >= 61 && x.score <= 80).length;
+  const green   = scored.filter(x => x.score >= 81).length;
+  const avgScore= Math.round(scored.reduce((s,x)=>s+x.score,0)/total);
+
+  container.innerHTML = `
+    <!-- Summary -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+      ${[
+        ['Avg Score', avgScore+'%', '#6366f1','#f0f4ff'],
+        ['🟢 Ready',    green+'',   '#16a34a','#f0fdf4'],
+        ['🟡 Improving',yellow+'',  '#d97706','#fffbeb'],
+        ['🔴 At Risk',  red+'',     '#dc2626','#fef2f2'],
+      ].map(([l,v,c,bg])=>`<div style="background:${bg};border:1px solid ${c}20;border-radius:10px;padding:12px 16px;text-align:center;">
+        <div style="font-size:22px;font-weight:900;color:${c};">${v}</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px;">${l}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Client Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;">
+      ${scored.map(({ c, score }) => {
+        const scoreColor = score >= 81 ? '#16a34a' : score >= 61 ? '#d97706' : '#dc2626';
+        const scoreBg    = score >= 81 ? '#f0fdf4' : score >= 61 ? '#fffbeb' : '#fef2f2';
+        const scoreLabel = score >= 81 ? 'Ready' : score >= 61 ? 'Improving' : 'At Risk';
+        const initials   = (c.company||'?').slice(0,2).toUpperCase();
+        const hue        = Math.abs([...(c.company||'')].reduce((a,ch)=>a+ch.charCodeAt(0),0)) % 360;
+        const projs      = (DB.projects||[]).filter(p=>(p.company||'').toLowerCase()===(c.company||'').toLowerCase());
+        const openProjs  = projs.filter(p=>p.status==='Working').length;
+        const ci         = getCI(c.id||c.company);
+        const sections   = [
+          ['Org',   ci.orgProfile?.industry],
+          ['Process', ci.workingProcess?.reviewSpeed],
+          ['Approval', ci.approvalProcess?.steps?.length > 0],
+          ['Procure', ci.procurement?.paymentTerms],
+          ['Legal',  ci.legal?.complianceNotes],
+          ['Playbook',ci.playbook?.whatWorks],
+        ];
+        const filled = sections.filter(([,v])=>Array.isArray(v)?v.length>0:!!v).length;
+
+        return `<div onclick="navigateTo('client','${c.id||c.company}','intelligence')"
+          style="background:#fff;border:1.5px solid ${scoreColor}30;border-radius:12px;padding:16px;cursor:pointer;transition:box-shadow .15s,transform .15s;"
+          onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.boxShadow='';this.style.transform=''">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+            <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,hsl(${hue},60%,55%),hsl(${hue+30},60%,45%));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;">${initials}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(c.company||'–')}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:1px;">${openProjs} active project${openProjs!==1?'s':''}</div>
+            </div>
+            <div style="text-align:center;background:${scoreBg};border-radius:8px;padding:6px 10px;flex-shrink:0;">
+              <div style="font-size:20px;font-weight:900;color:${scoreColor};line-height:1;">${score}</div>
+              <div style="font-size:9px;font-weight:700;color:${scoreColor};margin-top:1px;">${scoreLabel}</div>
+            </div>
+          </div>
+          <!-- Progress bar -->
+          <div style="height:5px;background:#f1f5f9;border-radius:3px;margin-bottom:8px;overflow:hidden;">
+            <div style="width:${score}%;height:100%;background:${scoreColor};border-radius:3px;"></div>
+          </div>
+          <!-- Section dots -->
+          <div style="display:flex;gap:4px;align-items:center;">
+            ${sections.map(([lbl, v]) => {
+              const done = Array.isArray(v) ? v.length > 0 : !!v;
+              return `<div title="${lbl}" style="flex:1;height:4px;border-radius:2px;background:${done?scoreColor:'#e2e8f0'};"></div>`;
+            }).join('')}
+            <span style="font-size:10px;color:#94a3b8;margin-left:4px;">${filled}/6</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 </script>
 

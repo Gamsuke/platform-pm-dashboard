@@ -1273,6 +1273,7 @@ details ul { padding-left: 18px; }
       <button class="tab" data-panel="leads">🎯 Leads</button>
       <button class="tab" data-panel="clients">🏢 Clients</button>
       <button class="tab" data-panel="clients" data-panel-alias="contacts">👤 Contacts</button>
+      <button class="tab" data-panel="client-intel">⭐ Intelligence</button>
       <button class="tab" data-panel="opportunities">💼 Opportunities</button>
 
       <!-- MANAGEMENT -->
@@ -1646,6 +1647,26 @@ details ul { padding-left: 18px; }
 </div>
 
   <!-- CLIENTS -->
+  <!-- CLIENT INTELLIGENCE PANEL -->
+  <div class="panel" id="client-intel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="margin:0;font-size:20px;font-weight:800;color:#1e293b;">⭐ Client Intelligence</h2>
+        <div style="font-size:12px;color:#94a3b8;margin-top:3px;">Account Transfer Readiness — คลิก client เพื่อเปิด Intelligence</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="ci-panel-search" placeholder="Search clients…" oninput="renderCIPanel()" style="padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;min-width:180px;">
+        <select id="ci-panel-filter" onchange="renderCIPanel()" style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;">
+          <option value="">All Scores</option>
+          <option value="red">🔴 High Risk (0–60)</option>
+          <option value="yellow">🟡 Needs Improvement (61–80)</option>
+          <option value="green">🟢 Ready (81–100)</option>
+        </select>
+      </div>
+    </div>
+    <div id="ci-panel-content"></div>
+  </div>
+
   <div class="panel" id="clients">
     <!-- Breadcrumb -->
     <div id="clients-breadcrumb" style="font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;"></div>
@@ -5528,6 +5549,7 @@ document.querySelectorAll('.tab').forEach(t => {
     t.classList.add('active');
     document.getElementById(t.dataset.panel).classList.add('active');
     if (t.dataset.panel === 'clients' && !_tabInited.has('clients')) { _tabInited.add('clients'); initClientPage(); }
+    if (t.dataset.panel === 'client-intel') renderCIPanel();
     if (t.dataset.panel === 'team' && !_tabInited.has('team')) { _tabInited.add('team'); initTeamPage(); }
     if (t.dataset.panel === 'roles' && !_tabInited.has('roles')) { _tabInited.add('roles'); initRoleDemand(); }
     if (t.dataset.panel === 'calendar' && !_tabInited.has('calendar')) { _tabInited.add('calendar'); initCalendar(); }
@@ -21055,6 +21077,115 @@ function saveClientIntelligence(clientId) {
   saveDB();
   const btn = document.querySelector('button[onclick^="saveClientIntelligence"]');
   if (btn) { const orig=btn.textContent; btn.textContent='✅ Saved!'; btn.style.background='#16a34a'; setTimeout(()=>{btn.textContent=orig;btn.style.background='#6366f1';},2000); }
+}
+
+function renderCIPanel() {
+  const container = document.getElementById('ci-panel-content');
+  if (!container) return;
+
+  const q       = (document.getElementById('ci-panel-search')?.value||'').toLowerCase();
+  const filter  = document.getElementById('ci-panel-filter')?.value||'';
+
+  // Deduplicate clients same as renderClients
+  const companyMap = {};
+  (DB.clients||[]).forEach(c => {
+    const key = (c.company||'').toLowerCase().trim();
+    if (!key) return;
+    if (!companyMap[key]) companyMap[key] = c;
+  });
+  let clients = Object.values(companyMap).filter(c => (c.active||'active') === 'active');
+
+  if (q) clients = clients.filter(c => (c.company||'').toLowerCase().includes(q));
+
+  // Compute scores
+  const scored = clients.map(c => {
+    const ci    = getCI(c.id || c.company);
+    const score = ciSectionScore(ci);
+    return { c, ci, score };
+  }).filter(({ score }) => {
+    if (filter === 'red')    return score <= 60;
+    if (filter === 'yellow') return score >= 61 && score <= 80;
+    if (filter === 'green')  return score >= 81;
+    return true;
+  }).sort((a, b) => a.score - b.score); // lowest first — needs most attention
+
+  if (!scored.length) {
+    container.innerHTML = `<div style="text-align:center;padding:60px;color:#94a3b8;font-size:13px;">ไม่พบ Client ที่ตรงกับเงื่อนไข</div>`;
+    return;
+  }
+
+  // Summary bar
+  const total   = scored.length;
+  const red     = scored.filter(x => x.score <= 60).length;
+  const yellow  = scored.filter(x => x.score >= 61 && x.score <= 80).length;
+  const green   = scored.filter(x => x.score >= 81).length;
+  const avgScore= Math.round(scored.reduce((s,x)=>s+x.score,0)/total);
+
+  container.innerHTML = `
+    <!-- Summary -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+      ${[
+        ['Avg Score', avgScore+'%', '#6366f1','#f0f4ff'],
+        ['🟢 Ready',    green+'',   '#16a34a','#f0fdf4'],
+        ['🟡 Improving',yellow+'',  '#d97706','#fffbeb'],
+        ['🔴 At Risk',  red+'',     '#dc2626','#fef2f2'],
+      ].map(([l,v,c,bg])=>`<div style="background:${bg};border:1px solid ${c}20;border-radius:10px;padding:12px 16px;text-align:center;">
+        <div style="font-size:22px;font-weight:900;color:${c};">${v}</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px;">${l}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Client Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;">
+      ${scored.map(({ c, score }) => {
+        const scoreColor = score >= 81 ? '#16a34a' : score >= 61 ? '#d97706' : '#dc2626';
+        const scoreBg    = score >= 81 ? '#f0fdf4' : score >= 61 ? '#fffbeb' : '#fef2f2';
+        const scoreLabel = score >= 81 ? 'Ready' : score >= 61 ? 'Improving' : 'At Risk';
+        const initials   = (c.company||'?').slice(0,2).toUpperCase();
+        const hue        = Math.abs([...(c.company||'')].reduce((a,ch)=>a+ch.charCodeAt(0),0)) % 360;
+        const projs      = (DB.projects||[]).filter(p=>(p.company||'').toLowerCase()===(c.company||'').toLowerCase());
+        const openProjs  = projs.filter(p=>p.status==='Working').length;
+        const ci         = getCI(c.id||c.company);
+        const sections   = [
+          ['Org',   ci.orgProfile?.industry],
+          ['Process', ci.workingProcess?.reviewSpeed],
+          ['Approval', ci.approvalProcess?.steps?.length > 0],
+          ['Procure', ci.procurement?.paymentTerms],
+          ['Legal',  ci.legal?.complianceNotes],
+          ['Playbook',ci.playbook?.whatWorks],
+        ];
+        const filled = sections.filter(([,v])=>Array.isArray(v)?v.length>0:!!v).length;
+
+        return `<div onclick="navigateTo('client','${c.id||c.company}','intelligence')"
+          style="background:#fff;border:1.5px solid ${scoreColor}30;border-radius:12px;padding:16px;cursor:pointer;transition:box-shadow .15s,transform .15s;"
+          onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.boxShadow='';this.style.transform=''">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+            <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,hsl(${hue},60%,55%),hsl(${hue+30},60%,45%));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;">${initials}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(c.company||'–')}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:1px;">${openProjs} active project${openProjs!==1?'s':''}</div>
+            </div>
+            <div style="text-align:center;background:${scoreBg};border-radius:8px;padding:6px 10px;flex-shrink:0;">
+              <div style="font-size:20px;font-weight:900;color:${scoreColor};line-height:1;">${score}</div>
+              <div style="font-size:9px;font-weight:700;color:${scoreColor};margin-top:1px;">${scoreLabel}</div>
+            </div>
+          </div>
+          <!-- Progress bar -->
+          <div style="height:5px;background:#f1f5f9;border-radius:3px;margin-bottom:8px;overflow:hidden;">
+            <div style="width:${score}%;height:100%;background:${scoreColor};border-radius:3px;"></div>
+          </div>
+          <!-- Section dots -->
+          <div style="display:flex;gap:4px;align-items:center;">
+            ${sections.map(([lbl, v]) => {
+              const done = Array.isArray(v) ? v.length > 0 : !!v;
+              return `<div title="${lbl}" style="flex:1;height:4px;border-radius:2px;background:${done?scoreColor:'#e2e8f0'};"></div>`;
+            }).join('')}
+            <span style="font-size:10px;color:#94a3b8;margin-left:4px;">${filled}/6</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 </script>
 
