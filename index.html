@@ -18128,6 +18128,60 @@ function buildProjectDetailPage(projId, tab) {
         ].map(([l,v])=>`<div style="text-align:center;background:#f8fafc;border-radius:8px;padding:10px;"><div style="font-size:16px;font-weight:800;color:#1e293b;">${v}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px;">${l}</div></div>`).join('')}
       </div>` : ''}
     </div>`;
+  } else if (tab === 'files') {
+    const fileLinks = p.fileLinks || [];
+    const FILE_CATS = [
+      { key:'drive',     icon:'📁', label:'Drive Folder',      color:'#4285f4' },
+      { key:'brief',     icon:'📄', label:'Brief / Proposal',  color:'#f59e0b' },
+      { key:'artwork',   icon:'🎨', label:'Artwork / Design',   color:'#ec4899' },
+      { key:'report',    icon:'📊', label:'Report / Dashboard', color:'#6366f1' },
+      { key:'reference', icon:'🔗', label:'Reference',          color:'#0ea5e9' },
+      { key:'other',     icon:'📋', label:'Other',              color:'#64748b' },
+    ];
+    const grouped = FILE_CATS.map(cat => ({
+      ...cat,
+      items: fileLinks.filter(f => (f.category||'other') === cat.key)
+    })).filter(g => g.items.length > 0);
+    body = `
+    <div class="dv-section">
+      <div class="dv-section-head">
+        <span>📎 Project Files & Links</span>
+        <button class="btn btn-sm btn-primary" onclick="openFileLinkEditor('${projId}')">+ Add File / Link</button>
+      </div>
+      <div style="padding:4px 16px 8px;background:#f0f4ff;border-radius:0;font-size:11px;color:#4b5563;line-height:1.7;">
+        <b>แนบได้:</b> 📁 Google Drive &nbsp;·&nbsp; 📄 Brief PDF &nbsp;·&nbsp; 🎨 Artwork Folder &nbsp;·&nbsp; 📊 Looker Studio / Report &nbsp;·&nbsp; 🔗 Reference Links &nbsp;·&nbsp; หรือลิงก์อื่นๆ
+      </div>
+      ${fileLinks.length === 0
+        ? `<div style="text-align:center;padding:50px 20px;color:#94a3b8;">
+            <div style="font-size:40px;margin-bottom:12px;">📎</div>
+            <p style="font-size:13px;margin-bottom:16px;">ยังไม่มีไฟล์หรือลิงก์ — เพิ่ม Google Drive, Brief, Artwork, Report ฯลฯ</p>
+            <button class="btn btn-primary" onclick="openFileLinkEditor('${projId}')">+ Add File / Link</button>
+           </div>`
+        : `<div style="padding:16px;display:flex;flex-direction:column;gap:16px;">
+            ${grouped.map(g => `
+              <div>
+                <div style="font-size:11px;font-weight:700;color:${g.color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                  <span>${g.icon}</span> ${g.label} <span style="background:${g.color}18;color:${g.color};border-radius:10px;padding:1px 7px;font-size:10px;">${g.items.length}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  ${g.items.map((f, rawIdx) => {
+                    const idx = fileLinks.indexOf(f);
+                    const icon = detectLinkIcon(f.url);
+                    return `<div style="display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+                      <span style="font-size:20px;flex-shrink:0;">${icon}</span>
+                      <div style="flex:1;min-width:0;">
+                        <div style="font-size:13px;font-weight:600;color:#1e293b;">${escHtml(f.label||'Untitled')}</div>
+                        <a href="${escHtml(f.url)}" target="_blank" style="font-size:11px;color:#6366f1;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(f.url)}">${escHtml(f.url)}</a>
+                      </div>
+                      <a href="${escHtml(f.url)}" target="_blank" style="font-size:11px;padding:4px 10px;background:#eff6ff;color:#2563eb;border-radius:6px;text-decoration:none;font-weight:600;flex-shrink:0;">Open ↗</a>
+                      <button onclick="deleteFileLink('${projId}',${idx})" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:0 4px;flex-shrink:0;" title="Remove">×</button>
+                    </div>`;
+                  }).join('')}
+                </div>
+              </div>`).join('')}
+          </div>`
+      }
+    </div>`;
   } else if (tab === 'activity') {
     const pActs = (DB.activity || []).filter(a => a.project === p.code || a.projectId === (p.id || p.code)).slice(0, 30);
     body = `<div class="dv-section"><div class="dv-section-head"><span>Activity Log</span></div><div style="padding:16px;display:flex;flex-direction:column;gap:12px;">${pActs.length ? pActs.map(a => `<div style="display:flex;gap:12px;"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">${(a.user||'?').charAt(0)}</div><div><div style="font-size:13px;">${escHtml(a.text||a.action||'')}</div><div style="font-size:11px;color:#94a3b8;margin-top:3px;">${a.timeAgo||fmtDate(a.date)||''}</div></div></div>`).join('') : `<div style="text-align:center;padding:40px;color:#94a3b8;">No activity recorded</div>`}</div></div>`;
@@ -18628,6 +18682,84 @@ function deleteCampaignLink(projId, idx) {
   const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
   if (!p||!p.campaignLinks) return;
   p.campaignLinks.splice(idx,1);
+  saveDB();
+  renderDetailView(parseHash());
+}
+
+function openFileLinkEditor(projId) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  document.querySelector('.file-link-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'file-link-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:14px;padding:24px;width:min(520px,100%);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 style="margin:0;font-size:15px;">📎 Add File / Link</h3>
+      <button onclick="this.closest('.file-link-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">×</button>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Category</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;" id="fl-cat-btns">
+        ${[['drive','📁','Drive Folder'],['brief','📄','Brief / Proposal'],['artwork','🎨','Artwork / Design'],['report','📊','Report / Dashboard'],['reference','🔗','Reference'],['other','📋','Other']].map(([k,ic,lb],i)=>`
+          <button type="button" data-cat="${k}" onclick="flSelectCat(this)" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1.5px solid ${i===0?'#4285f4':'#e2e8f0'};background:${i===0?'#eff6ff':'#fff'};color:${i===0?'#4285f4':'#64748b'};cursor:pointer;font-family:inherit;font-weight:600;">${ic} ${lb}</button>`).join('')}
+      </div>
+      <input type="hidden" id="fl-category" value="drive">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">Label (ชื่อไฟล์/ลิงก์) *</label>
+      <input id="fl-label" placeholder="เช่น Brief TVC Summer, Artwork Final, Drive Folder" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;">URL *</label>
+      <input id="fl-url" placeholder="https://drive.google.com/..." type="url" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="updateFlPreview(this.value)">
+      <div id="fl-preview" style="margin-top:6px;font-size:11px;color:#6366f1;"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn" onclick="this.closest('.file-link-modal').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFileLink('${projId}',this)">💾 Add</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function flSelectCat(btn) {
+  const btns = document.querySelectorAll('#fl-cat-btns button');
+  const catColors = {drive:'#4285f4',brief:'#f59e0b',artwork:'#ec4899',report:'#6366f1',reference:'#0ea5e9',other:'#64748b'};
+  btns.forEach(b => { const c=catColors[b.dataset.cat]||'#64748b'; b.style.borderColor='#e2e8f0'; b.style.background='#fff'; b.style.color='#64748b'; });
+  const c = catColors[btn.dataset.cat]||'#64748b';
+  btn.style.borderColor=c; btn.style.background=c+'18'; btn.style.color=c;
+  const inp = document.getElementById('fl-category');
+  if (inp) inp.value = btn.dataset.cat;
+}
+
+function updateFlPreview(url) {
+  const el = document.getElementById('fl-preview');
+  if (!el) return;
+  if (!url) { el.innerHTML=''; return; }
+  const icon = detectLinkIcon(url);
+  const name = detectPlatformName(url);
+  el.innerHTML = `${icon} Detected: <b>${name}</b>`;
+}
+
+function saveFileLink(projId, btn) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p) return;
+  const label    = document.getElementById('fl-label')?.value.trim();
+  const url      = document.getElementById('fl-url')?.value.trim();
+  const category = document.getElementById('fl-category')?.value || 'other';
+  if (!url) { alert('กรุณาใส่ URL'); return; }
+  if (!p.fileLinks) p.fileLinks = [];
+  p.fileLinks.push({ label: label || detectPlatformName(url), url, category });
+  saveDB();
+  btn?.closest('.file-link-modal')?.remove();
+  renderDetailView(parseHash());
+}
+
+function deleteFileLink(projId, idx) {
+  const p = (DB.projects||[]).find(x=>(x.id||x.code)===projId||x.code===projId);
+  if (!p || !p.fileLinks) return;
+  p.fileLinks.splice(idx, 1);
   saveDB();
   renderDetailView(parseHash());
 }
