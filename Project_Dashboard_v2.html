@@ -12697,12 +12697,13 @@ function syncClientsFromProjects() {
   // Build blocklist of manually-deleted companies
   const deletedKeys = new Set((DB.deletedClientCompanies||[]).map(s=>s.toLowerCase()));
 
-  let added = 0, updatedBrands = 0, blocked = 0;
+  let added = 0, updatedBrands = 0;
   const skipped = [];
+  const blockedNames = [];
 
   coMap.forEach((brands, company) => {
     // Skip companies that were explicitly deleted
-    if (deletedKeys.has(company.trim().toLowerCase())) { blocked++; return; }
+    if (deletedKeys.has(company.trim().toLowerCase())) { blockedNames.push(company); return; }
 
     // หา existing client ที่ company ตรงกัน (case-insensitive)
     const existing = DB.clients.find(c => (c.company||'').trim().toLowerCase() === company.toLowerCase());
@@ -12745,10 +12746,62 @@ function syncClientsFromProjects() {
   const msgs = [];
   if (added) msgs.push(`✅ เพิ่ม ${added} บริษัทใหม่`);
   if (updatedBrands) msgs.push(`🔄 อัปเดต Brand ใน ${updatedBrands} บริษัท`);
-  if (blocked) msgs.push(`🚫 ข้าม ${blocked} บริษัทที่ถูกลบไปแล้ว`);
+  if (blockedNames.length) msgs.push(`🚫 ข้าม ${blockedNames.length} บริษัทที่ถูกลบไปแล้ว:\n   • ${blockedNames.join('\n   • ')}`);
   if (skipped.length - updatedBrands > 0) msgs.push(`⏭ ข้าม ${skipped.length - updatedBrands} บริษัทที่มีอยู่แล้ว`);
   if (!msgs.length) msgs.push('ข้อมูล Clients ครบถ้วนแล้ว ไม่มีอะไรต้องเพิ่ม');
-  alert(msgs.join('\n'));
+
+  if (blockedNames.length) {
+    const wantReview = confirm(msgs.join('\n') + '\n\n─────────────────\nต้องการ Review บริษัทที่ถูกลบ เพื่อ Restore กลับมาไหม?');
+    if (wantReview) openDeletedClientsReview();
+  } else {
+    alert(msgs.join('\n'));
+  }
+}
+
+function openDeletedClientsReview() {
+  const deleted = DB.deletedClientCompanies || [];
+  if (!deleted.length) { alert('ไม่มีบริษัทในรายการลบ'); return; }
+  document.querySelector('.deleted-clients-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'deleted-clients-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:14px;padding:24px;width:min(520px,100%);max-height:80vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <h3 style="margin:0;font-size:15px;">🗑 บริษัทที่ถูกลบออกจาก Sync</h3>
+      <button onclick="this.closest('.deleted-clients-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">×</button>
+    </div>
+    <p style="font-size:12px;color:#64748b;margin:0 0 16px;">กด Restore เพื่อให้บริษัทนั้นกลับมาใน Sync ครั้งถัดไป หรือ Delete Permanently เพื่อลบออกถาวร</p>
+    <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;">
+      ${deleted.map((name, i) => `
+        <div id="dcr-row-${i}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;">
+          <span style="font-size:20px;">🏢</span>
+          <span style="flex:1;font-size:13px;font-weight:600;color:#1e293b;">${escHtml(name)}</span>
+          <button onclick="restoreDeletedClient(${i},'${escHtml(name)}')" style="font-size:11px;padding:5px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:8px;cursor:pointer;font-weight:700;">↩ Restore</button>
+          <button onclick="permanentDeleteClient(${i},'${escHtml(name)}')" style="font-size:11px;padding:5px 12px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;cursor:pointer;font-weight:700;">🗑 ลบถาวร</button>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;">
+      <button class="btn" onclick="this.closest('.deleted-clients-modal').remove()">Close</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function restoreDeletedClient(idx, name) {
+  const key = name.toLowerCase().trim();
+  DB.deletedClientCompanies = (DB.deletedClientCompanies||[]).filter(k => k.toLowerCase() !== key);
+  saveDB();
+  document.getElementById(`dcr-row-${idx}`)?.remove();
+  const remaining = document.querySelectorAll('[id^="dcr-row-"]').length;
+  if (!remaining) { document.querySelector('.deleted-clients-modal')?.remove(); }
+  alert(`✅ Restored "${name}" — จะ sync กลับมาครั้งถัดไปที่กด Sync`);
+}
+
+function permanentDeleteClient(idx, name) {
+  if (!confirm(`ลบ "${name}" ออกถาวรไหม?\nบริษัทนี้จะไม่กลับมาใน Sync อีกเลย`)) return;
+  document.getElementById(`dcr-row-${idx}`)?.remove();
+  const remaining = document.querySelectorAll('[id^="dcr-row-"]').length;
+  if (!remaining) { document.querySelector('.deleted-clients-modal')?.remove(); }
 }
 
 function renderClientSyncBanner(coMap) {
