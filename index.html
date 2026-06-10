@@ -1679,6 +1679,7 @@ details ul { padding-left: 18px; }
         <option value="">All Status</option>
         <option value="active">🟢 Active</option>
         <option value="inactive">⚫ Inactive</option>
+        <option value="pitch-lost">🔴 Pitch Lost</option>
       </select>
       <select id="clients-filter-industry" onchange="renderClients()">
         <option value="">All Industries</option>
@@ -1740,6 +1741,7 @@ details ul { padding-left: 18px; }
         <option value="">All Status</option>
         <option value="active">🟢 Active</option>
         <option value="inactive">⚫ Inactive</option>
+        <option value="pitch-lost">🔴 Pitch Lost</option>
       </select>
       <select id="brands-sort" onchange="renderBrands()">
         <option value="revenue">Sort: Revenue</option>
@@ -2019,7 +2021,12 @@ details ul { padding-left: 18px; }
       <input id="pu-search" placeholder="Search projects…" oninput="renderProjectsUnified()" style="min-width:180px;">
       <select id="pu-status" onchange="renderProjectsUnified()">
         <option value="">All Status</option>
-        <option>In Progress</option><option>Planning</option><option>Completed</option><option>On Hold</option><option>At Risk</option>
+        <option value="Pitching">🟡 Pitching</option>
+        <option value="Proposing">🔵 Proposing</option>
+        <option value="Working">🟢 Working</option>
+        <option value="Hold">⚪ Hold</option>
+        <option value="Close">✅ Close</option>
+        <option value="Pitch Lost">🔴 Pitch Lost</option>
       </select>
       <select id="pu-brand" onchange="renderProjectsUnified()">
         <option value="">All Brands</option>
@@ -12588,7 +12595,10 @@ function renderClients() {
   // Apply filters
   clients = clients.filter(c => {
     if (q && !`${c.company} ${c.industry||''} ${c.position||''}`.toLowerCase().includes(q)) return false;
-    if (statusF && (c.active||'active') !== statusF) return false;
+    if (statusF === 'pitch-lost') {
+      const hasPitchLost = (DB.projects||[]).some(p => (p.company||'').toLowerCase() === (c.company||'').toLowerCase() && p.status === 'Pitch Lost');
+      if (!hasPitchLost) return false;
+    } else if (statusF && (c.active||'active') !== statusF) return false;
     if (indF && (c.industry||c.position||'') !== indF) return false;
     return true;
   });
@@ -16510,7 +16520,10 @@ function renderBrands() {
   let brands = (DB.brands||[]).filter(b => {
     if (q && !`${b.name} ${b.clientName}`.toLowerCase().includes(q)) return false;
     if (clientF && (b.clientName||'').toLowerCase()!==clientF) return false;
-    if (statusF && (b.status||'active')!==statusF) return false;
+    if (statusF === 'pitch-lost') {
+      const hasPitchLost = (DB.projects||[]).some(p => (p.brand||'').toLowerCase() === (b.name||'').toLowerCase() && p.status === 'Pitch Lost');
+      if (!hasPitchLost) return false;
+    } else if (statusF && (b.status||'active')!==statusF) return false;
     return true;
   });
 
