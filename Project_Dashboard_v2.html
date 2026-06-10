@@ -2017,8 +2017,14 @@ details ul { padding-left: 18px; }
         <button class="btn btn-primary" onclick="openModal(null)">+ New Project</button>
       </div>
     </div>
-    <div class="filter-bar" style="margin-bottom:16px;">
-      <input id="pu-search" placeholder="Search projects…" oninput="renderProjectsUnified()" style="min-width:180px;">
+    <div class="filter-bar" style="margin-bottom:16px;flex-wrap:wrap;">
+      <input id="pu-search" placeholder="Search projects…" oninput="renderProjectsUnified()" style="min-width:160px;">
+      <select id="pu-client" onchange="renderProjectsUnified()">
+        <option value="">All Clients</option>
+      </select>
+      <select id="pu-brand" onchange="renderProjectsUnified()">
+        <option value="">All Brands</option>
+      </select>
       <select id="pu-status" onchange="renderProjectsUnified()">
         <option value="">All Status</option>
         <option value="Pitching">🟡 Pitching</option>
@@ -2028,11 +2034,25 @@ details ul { padding-left: 18px; }
         <option value="Close">✅ Close</option>
         <option value="Pitch Lost">🔴 Pitch Lost</option>
       </select>
-      <select id="pu-brand" onchange="renderProjectsUnified()">
-        <option value="">All Brands</option>
+      <select id="pu-progress" onchange="renderProjectsUnified()">
+        <option value="">All Progress</option>
+        <option value="0">0% (Not Started)</option>
+        <option value="1">1–25%</option>
+        <option value="26">26–50%</option>
+        <option value="51">51–75%</option>
+        <option value="76">76–99%</option>
+        <option value="100">100% (Done)</option>
       </select>
       <select id="pu-pm" onchange="renderProjectsUnified()">
         <option value="">All PMs</option>
+      </select>
+      <select id="pu-sort" onchange="renderProjectsUnified()">
+        <option value="code">Sort: Code</option>
+        <option value="name">Sort: Name</option>
+        <option value="start">Sort: Start Date</option>
+        <option value="due">Sort: Due Date</option>
+        <option value="budget">Sort: Budget</option>
+        <option value="progress">Sort: Progress</option>
       </select>
     </div>
   </div>
@@ -18432,14 +18452,22 @@ function setPuView(view) {
 function renderProjectsUnified() {
   const container = document.getElementById('pu-content');
   if (!container) return;
-  const search = (document.getElementById('pu-search')?.value||'').toLowerCase();
-  const statusF = document.getElementById('pu-status')?.value||'';
-  const brandF = document.getElementById('pu-brand')?.value||'';
-  const pmF = document.getElementById('pu-pm')?.value||'';
+  const search    = (document.getElementById('pu-search')?.value||'').toLowerCase();
+  const statusF   = document.getElementById('pu-status')?.value||'';
+  const brandF    = document.getElementById('pu-brand')?.value||'';
+  const clientF   = document.getElementById('pu-client')?.value||'';
+  const pmF       = document.getElementById('pu-pm')?.value||'';
+  const progressF = document.getElementById('pu-progress')?.value||'';
+  const sortBy    = document.getElementById('pu-sort')?.value||'code';
 
-  // Populate brand/pm filters
-  const brandSel = document.getElementById('pu-brand');
-  const pmSel = document.getElementById('pu-pm');
+  // Populate dynamic filters (only once unless reset)
+  const clientSel = document.getElementById('pu-client');
+  const brandSel  = document.getElementById('pu-brand');
+  const pmSel     = document.getElementById('pu-pm');
+  if (clientSel && clientSel.options.length<=1) {
+    const clients = [...new Set((DB.projects||[]).map(p=>p.company).filter(Boolean))].sort();
+    clients.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; clientSel.appendChild(o); });
+  }
   if (brandSel && brandSel.options.length<=1) {
     const brands = [...new Set((DB.projects||[]).map(p=>p.brand).filter(Boolean))].sort();
     brands.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; brandSel.appendChild(o); });
@@ -18450,11 +18478,32 @@ function renderProjectsUnified() {
   }
 
   let projs = (DB.projects||[]).filter(p => {
-    if (search && !((p.name||'')+(p.code||'')+(p.brand||'')).toLowerCase().includes(search)) return false;
+    if (search && !((p.name||'')+(p.code||'')+(p.brand||'')+(p.company||'')).toLowerCase().includes(search)) return false;
     if (statusF && (p.status||'') !== statusF) return false;
-    if (brandF && (p.brand||'') !== brandF) return false;
-    if (pmF && (p.owner||'') !== pmF) return false;
+    if (brandF  && (p.brand||'')  !== brandF)  return false;
+    if (clientF && (p.company||'') !== clientF) return false;
+    if (pmF     && (p.owner||'')  !== pmF)      return false;
+    if (progressF !== '') {
+      const pct = +p.progress||0;
+      if (progressF==='0'   && pct !== 0)              return false;
+      if (progressF==='1'   && !(pct>=1  && pct<=25))  return false;
+      if (progressF==='26'  && !(pct>=26 && pct<=50))  return false;
+      if (progressF==='51'  && !(pct>=51 && pct<=75))  return false;
+      if (progressF==='76'  && !(pct>=76 && pct<=99))  return false;
+      if (progressF==='100' && pct !== 100)             return false;
+    }
     return true;
+  });
+
+  // Sort
+  projs = projs.slice().sort((a,b) => {
+    if (sortBy==='name')     return (a.name||a.code||'').localeCompare(b.name||b.code||'');
+    if (sortBy==='start')    return (parseDate(a.start||a.launch)||new Date(0))-(parseDate(b.start||b.launch)||new Date(0));
+    if (sortBy==='due')      return (parseDate(a.end)||new Date(9e15))-(parseDate(b.end)||new Date(9e15));
+    if (sortBy==='budget')   return (+b.budget||0)-(+a.budget||0);
+    if (sortBy==='progress') return (+b.progress||0)-(+a.progress||0);
+    // default: code
+    return (a.code||a.name||'').localeCompare(b.code||b.name||'');
   });
 
   const today = new Date(); today.setHours(0,0,0,0);
