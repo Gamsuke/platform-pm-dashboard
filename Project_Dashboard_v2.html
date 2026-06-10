@@ -2931,6 +2931,13 @@ details ul { padding-left: 18px; }
             <option value="Creative Freelance">🎨 Creative Freelance</option>
             <option value="AE Freelance">💼 AE Freelance</option>
             <option value="Designer Freelance">✏️ Designer Freelance</option>
+            <option value="Photo / Video Production">📷 Photo / Video Production</option>
+            <option value="Web / App Development">💻 Web / App Development</option>
+            <option value="Event Organizer">🎪 Event Organizer</option>
+            <option value="Research / Survey Vendor">🔍 Research / Survey Vendor</option>
+            <option value="Media Vendor">📺 Media Vendor</option>
+            <option value="KOL / Influencer">⭐ KOL / Influencer</option>
+            <option value="Data / Tech Specialist">📊 Data / Tech Specialist</option>
           </select>
         </div>
         <div class="form-field full" id="tm-company-row" style="display:none;">
@@ -12943,7 +12950,19 @@ function closeClientProfile() { document.getElementById('client-profile-modal').
 
 // ========== TEAM ==========
 const ALL_DEPTS = ['Management','Account Management','Business Development','Strategy','Creative','Content','Design & Production','Media','KOL','Human Resources','Accounting'];
-const EXTERNAL_TYPES = ['Production House','Creative Freelance','AE Freelance','Designer Freelance'];
+const EXTERNAL_TYPES = [
+  'Production House',
+  'Creative Freelance',
+  'AE Freelance',
+  'Designer Freelance',
+  'Photo / Video Production',
+  'Web / App Development',
+  'Event Organizer',
+  'Research / Survey Vendor',
+  'Media Vendor',
+  'KOL / Influencer',
+  'Data / Tech Specialist'
+];
 function openMemberProfile(memberId) {
   const m = (DB.team||[]).find(x => x.id === memberId);
   if (!m) return;
@@ -13474,7 +13493,7 @@ function renderTeam() {
 
   // External Partners section
   const externalMembers = (DB.team||[]).filter(m => m.employmentType === 'external' && (m.status||'active') !== 'inactive');
-  const typeIcons = {'Production House':'🎬','Creative Freelance':'🎨','AE Freelance':'💼','Designer Freelance':'✏️'};
+  const typeIcons = {'Production House':'🎬','Creative Freelance':'🎨','AE Freelance':'💼','Designer Freelance':'✏️','Photo / Video Production':'📷','Web / App Development':'💻','Event Organizer':'🎪','Research / Survey Vendor':'🔍','Media Vendor':'📺','KOL / Influencer':'⭐','Data / Tech Specialist':'📊'};
   html += `<div style="margin-top:24px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <h3 style="font-size:15px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
