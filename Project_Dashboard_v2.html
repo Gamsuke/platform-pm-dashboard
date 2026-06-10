@@ -2916,6 +2916,27 @@ details ul { padding-left: 18px; }
             <option value="inactive">⚫ Inactive (ลาออก)</option>
           </select>
         </div>
+        <div class="form-field full" id="tm-employment-row">
+          <label>Employment Type</label>
+          <select id="tm-employment-type" onchange="toggleExternalFields()" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;">
+            <option value="internal">Internal Staff</option>
+            <option value="external">External / Freelance</option>
+          </select>
+        </div>
+        <div class="form-field full" id="tm-external-row" style="display:none;">
+          <label>External Type</label>
+          <select id="tm-external-type" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;">
+            <option value="">-- Select --</option>
+            <option value="Production House">🎬 Production House</option>
+            <option value="Creative Freelance">🎨 Creative Freelance</option>
+            <option value="AE Freelance">💼 AE Freelance</option>
+            <option value="Designer Freelance">✏️ Designer Freelance</option>
+          </select>
+        </div>
+        <div class="form-field full" id="tm-company-row" style="display:none;">
+          <label>Company / Brand Name</label>
+          <input type="text" id="tm-company" placeholder="e.g. Mango Films, John Creative" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;">
+        </div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" id="tf-delete">Delete</button>
@@ -8542,7 +8563,7 @@ function wCeoExecutiveDashboard() {
   // ── 6. DEPARTMENT HEALTH ─────────────────────────────────────
   const curM = now.getMonth();
   const deptHealth = ALL_DEPTS.map(dept=>{
-    const members = (DB.team||[]).filter(m=>(m.status||'active')==='active'&&m.dept===dept);
+    const members = (DB.team||[]).filter(m=>(m.status||'active')==='active'&&m.dept===dept&&(m.employmentType||'internal')==='internal');
     if (!members.length) return null;
     const loads = members.map(m=>{ const nick=m.nickname||m.name; return (getPersonLoadArray(nick,dept)||[])[curM]||0; });
     const avgLoad = loads.reduce((s,v)=>s+v,0)/loads.length;
@@ -12922,6 +12943,7 @@ function closeClientProfile() { document.getElementById('client-profile-modal').
 
 // ========== TEAM ==========
 const ALL_DEPTS = ['Management','Account Management','Business Development','Strategy','Creative','Content','Design & Production','Media','KOL','Human Resources','Accounting'];
+const EXTERNAL_TYPES = ['Production House','Creative Freelance','AE Freelance','Designer Freelance'];
 function openMemberProfile(memberId) {
   const m = (DB.team||[]).find(x => x.id === memberId);
   if (!m) return;
@@ -13061,6 +13083,9 @@ function initTeamPage() {
     m.employeeId = document.getElementById('tf-empid').value.trim();
     m.birthday = document.getElementById('tf-birthday').value;
     m.status = document.getElementById('tf-status').value || 'active';
+    m.employmentType = document.getElementById('tm-employment-type')?.value || 'internal';
+    m.externalType   = document.getElementById('tm-external-type')?.value   || '';
+    m.company        = document.getElementById('tm-company')?.value?.trim() || '';
     const newNick = m.nickname || m.name;
     // Cascade rename if nickname changed
     if (oldNick && oldNick !== newNick) {
@@ -13100,6 +13125,24 @@ function initTeamPage() {
   });
   renderTeam();
 }
+function toggleExternalFields() {
+  const isExt = (document.getElementById('tm-employment-type')?.value === 'external');
+  const deptRow = document.getElementById('tf-dept')?.closest('.form-field');
+  const empIdRow = document.getElementById('tf-empid')?.closest('.form-field');
+  if (deptRow) deptRow.style.display = isExt ? 'none' : '';
+  if (empIdRow) empIdRow.style.display = isExt ? 'none' : '';
+  const extRow = document.getElementById('tm-external-row');
+  const compRow = document.getElementById('tm-company-row');
+  if (extRow) extRow.style.display = isExt ? '' : 'none';
+  if (compRow) compRow.style.display = isExt ? '' : 'none';
+}
+function openTeamEditorExternal() {
+  openTeamModal(null);
+  setTimeout(() => {
+    const sel = document.getElementById('tm-employment-type');
+    if (sel) { sel.value = 'external'; toggleExternalFields(); }
+  }, 50);
+}
 function openTeamModal(id) {
   const modal = document.getElementById('team-modal');
   if (id) {
@@ -13116,6 +13159,12 @@ function openTeamModal(id) {
     document.getElementById('tf-empid').value = m.employeeId||'';
     document.getElementById('tf-birthday').value = m.birthday||'';
     document.getElementById('tf-status').value = m.status||'active';
+    const etSel = document.getElementById('tm-employment-type');
+    if (etSel) { etSel.value = m.employmentType||'internal'; toggleExternalFields(); }
+    const extSel = document.getElementById('tm-external-type');
+    if (extSel) extSel.value = m.externalType||'';
+    const compEl = document.getElementById('tm-company');
+    if (compEl) compEl.value = m.company||'';
     document.getElementById('tf-delete').style.display = '';
   } else {
     document.getElementById('team-modal-title').textContent = 'Add Member';
@@ -13129,6 +13178,12 @@ function openTeamModal(id) {
     document.getElementById('tf-empid').value = '';
     document.getElementById('tf-birthday').value = '';
     document.getElementById('tf-status').value = 'active';
+    const etSelN = document.getElementById('tm-employment-type');
+    if (etSelN) { etSelN.value = 'internal'; toggleExternalFields(); }
+    const extSelN = document.getElementById('tm-external-type');
+    if (extSelN) extSelN.value = '';
+    const compElN = document.getElementById('tm-company');
+    if (compElN) compElN.value = '';
     document.getElementById('tf-delete').style.display = 'none';
   }
   modal.classList.add('show');
@@ -13416,6 +13471,42 @@ function renderTeam() {
   html += `</tbody></table>`;
 
   if (!anyRow) html = `<p style="color:var(--text-muted);text-align:center;padding:24px;">ยังไม่มีสมาชิก — กด "+ Add Member"</p>`;
+
+  // External Partners section
+  const externalMembers = (DB.team||[]).filter(m => m.employmentType === 'external' && (m.status||'active') !== 'inactive');
+  const typeIcons = {'Production House':'🎬','Creative Freelance':'🎨','AE Freelance':'💼','Designer Freelance':'✏️'};
+  html += `<div style="margin-top:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h3 style="font-size:15px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
+        🤝 External Partners &amp; Freelance
+        <span style="font-size:11px;font-weight:600;padding:3px 10px;background:#fef3c7;color:#92400e;border-radius:20px;">${externalMembers.length} partners</span>
+      </h3>
+      <button onclick="openTeamEditorExternal()" style="font-size:12px;padding:6px 14px;background:#f59e0b;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;">+ Add External</button>
+    </div>
+    ${externalMembers.length === 0
+      ? `<div style="text-align:center;padding:30px;background:#fffbeb;border:2px dashed #fcd34d;border-radius:12px;color:#92400e;font-size:13px;">ยังไม่มี External Partner — กด "+ Add External" เพื่อเพิ่ม</div>`
+      : `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+          ${externalMembers.map(m => {
+            const icon = typeIcons[m.externalType]||'🤝';
+            const initials = (m.nickname||m.name||'?').slice(0,2).toUpperCase();
+            const activeProjCount = (DB.projects||[]).filter(p => (p.owner===m.nickname||p.owner===m.name||(p.support||[]).includes(m.nickname||m.name)) && p.status==='Working').length;
+            return `<div style="background:#fff;border:1px solid #fde68a;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0;">${initials}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:700;color:#1e293b;">${escHtml(m.nickname||m.name)}</div>
+                ${m.company?`<div style="font-size:11px;color:#64748b;margin-top:1px;">${escHtml(m.company)}</div>`:''}
+                <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+                  <span style="font-size:10px;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:20px;font-weight:700;">${icon} ${m.externalType||'External'}</span>
+                  ${activeProjCount>0?`<span style="font-size:10px;padding:2px 8px;background:#eff6ff;color:#2563eb;border-radius:20px;font-weight:700;">📁 ${activeProjCount} project${activeProjCount!==1?'s':''}</span>`:''}
+                </div>
+              </div>
+              <button onclick="openTeamModal('${m.id}')" style="font-size:11px;padding:4px 8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;">Edit</button>
+            </div>`;
+          }).join('')}
+        </div>`
+    }
+  </div>`;
+
   container.innerHTML = html;
 
   container.querySelectorAll('[data-team-profile]').forEach(c => c.addEventListener('click', () => openMemberProfile(c.dataset.teamProfile)));
