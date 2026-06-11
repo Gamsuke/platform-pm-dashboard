@@ -14581,11 +14581,11 @@ async function mongoSaveDB() { return mongoPush(); }
 async function mongoLoadDB() {
   const cfg = getMongoConfig();
   if (!cfg.apiUrl) return false;
-  setSyncStatus('syncing', '☁️ Loading…');
+  setSyncStatus('syncing', '☁️ กำลัง wakeup server… (อาจใช้เวลา ~60s)');
   try {
-    // Timeout 6s — Render free tier อาจนอนหลับ อย่ารอนาน
+    // Timeout 70s — Render free tier ต้องปลุกก่อน อาจช้า 50s+
     const controller = new AbortController();
-    const tid = setTimeout(() => controller.abort(), 6000);
+    const tid = setTimeout(() => controller.abort(), 70000);
     let res, data;
     try {
       res = await fetch(cfg.apiUrl.replace(/\/$/, '') + '/db', {
