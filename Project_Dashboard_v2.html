@@ -17507,8 +17507,8 @@ function buildClientDetailPage(clientId, tab) {
   const activeProjs = linked.filter(p => p.status && p.status.toLowerCase().includes('progress'));
   const files = cl.files || [];
 
-  const TABS = ['overview','brands','projects','revenue','activity','contacts','leads','opportunities'];
-  const tabLabels = { overview:'📊 Overview', brands:'📦 Brands', projects:'📁 Projects', revenue:'💰 Revenue', activity:'📋 Activity', contacts:'👤 Contacts', leads:'🎯 Leads', opportunities:'💼 Opportunities' };
+  const TABS = ['overview','brands','projects','intelligence','revenue','activity','contacts','leads','opportunities'];
+  const tabLabels = { overview:'📊 Overview', brands:'📦 Brands', projects:'📁 Projects', intelligence:'⭐ Intelligence', revenue:'💰 Revenue', activity:'📋 Activity', contacts:'👤 Contacts', leads:'🎯 Leads', opportunities:'💼 Opportunities' };
   const tabsHtml = TABS.map(t => `<div class="dv-tab${t === tab ? ' active' : ''}" onclick="navigateTo('client','${clientId}','${t}')">${tabLabels[t]}</div>`).join('');
 
   // Revenue sparkline data
@@ -17586,6 +17586,8 @@ function buildClientDetailPage(clientId, tab) {
     </div>
     ${files.length ? `<div class="dv-section"><div class="dv-section-head"><span>Recent Files</span><button class="btn btn-sm" onclick="navigateTo('client','${clientId}','files')" style="font-size:11px;">View all</button></div><div style="display:flex;gap:10px;padding:14px;overflow-x:auto;">${files.slice(0, 4).map(f => `<div style="flex-shrink:0;width:150px;border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;" onclick="window.open('${f.url||'#'}','_blank')"><div style="font-size:24px;margin-bottom:8px;">${(f.name||'').endsWith('.pdf')?'📕':(f.name||'').endsWith('.pptx')?'📊':'📄'}</div><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name||'File')}</div><div style="font-size:10px;color:#94a3b8;margin-top:3px;">${f.size||''}</div></div>`).join('')}</div></div>` : ''}
     `;
+  } else if (tab === 'intelligence') {
+    body = renderClientIntelligence(clientId, cl);
   } else if (tab === 'brands') {
     body = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
       ${brandObjs.length ? brandObjs.map(b => `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;" onclick="navigateTo('brand','${b.id}')">
