@@ -5267,11 +5267,15 @@ function loadDB() {
 }
 
 function migrateDB() {
-  // rename tab key 'contacts' → 'contacts-crm' in all user tab arrays
   (DB.users||[]).forEach(u => {
     if (!u.tabs) return;
+    // rename 'contacts' → 'contacts-crm'
     const idx = u.tabs.indexOf('contacts');
     if (idx !== -1) { u.tabs[idx] = 'contacts-crm'; }
+    // inject any new ALL_TABS keys that are missing from user's tabs
+    const newKeys = ['contacts-crm','client-intel','opportunities','internal-home',
+      'internal-projects','internal-tasks','internal-meetings','internal-training','internal-sop'];
+    newKeys.forEach(k => { if (!u.tabs.includes(k)) u.tabs.push(k); });
   });
 }
 
