@@ -297,6 +297,16 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .proj-type-opt:has(input:checked) { border-color:#7c3aed;background:#f5f3ff;color:#7c3aed; }
 .proj-type-opt[data-type="client"]:has(input:checked) { border-color:#2563eb;background:#eff6ff;color:#2563eb; }
 .proj-type-opt input[type=radio] { display:none; }
+.comm-chip { display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;user-select:none;transition:all .15s; }
+.comm-chip:has(input:checked) { border-color:#2563eb;background:#eff6ff;color:#2563eb; }
+.comm-chip input[type=checkbox] { display:none; }
+.rel-badge { display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700; }
+.rel-badge.champion  { background:#fef9c3;color:#92400e; }
+.rel-badge.ambassador { background:#dbeafe;color:#1d4ed8; }
+.rel-badge.active    { background:#d1fae5;color:#065f46; }
+.rel-badge.neutral   { background:#f1f5f9;color:#475569; }
+.rel-badge.skeptic   { background:#fee2e2;color:#991b1b; }
+.level-badge { display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:#f5f3ff;color:#7c3aed; }
 .client-only, .internal-only { transition: opacity .15s; }
 #prj-form.internal-mode .client-only { display:none !important; }
 #prj-form.internal-mode .internal-only { display:block !important; }
@@ -3030,42 +3040,146 @@ details ul { padding-left: 18px; }
 
 <!-- CONTACT CRM MODAL -->
 <div class="modal" id="contact-crm-modal">
-  <div class="modal-box" style="max-width:500px;">
+  <div class="modal-box" style="max-width:680px;">
     <div class="modal-header">
       <h2 id="contact-crm-modal-title">Add Contact</h2>
       <button class="modal-close" onclick="document.getElementById('contact-crm-modal').classList.remove('show')">&times;</button>
     </div>
-    <form id="contact-crm-form">
+    <form id="contact-crm-form" style="overflow-y:auto;max-height:80vh;padding-bottom:4px;">
       <input type="hidden" id="ccf-id">
+
+      <!-- Section: Basic Info -->
+      <div style="font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.5px;padding:2px 0 8px;border-bottom:2px solid #ede9fe;margin-bottom:12px;">👤 Basic Information</div>
       <div class="form-grid">
-        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:2px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">👤 ข้อมูลผู้ติดต่อ</div>
-        <div class="form-field full"><label>ชื่อ-นามสกุล <span style="color:#dc2626;">*</span></label><input id="ccf-name" placeholder="เช่น คุณสมชาย ใจดี" required></div>
-        <div class="form-field"><label>ชื่อเล่น</label><input id="ccf-nickname" placeholder="เช่น คุณชาย"></div>
-        <div class="form-field"><label>ตำแหน่ง / Title</label><input id="ccf-title" placeholder="เช่น Marketing Manager"></div>
-        <div class="form-field"><label>เบอร์โทร</label><input id="ccf-phone" type="tel" placeholder="0xx-xxx-xxxx"></div>
-        <div class="form-field full"><label>Email</label><input id="ccf-email" type="email" placeholder="email@company.com"></div>
-        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">🏢 เชื่อมกับ Client / Brand</div>
+        <div class="form-field full"><label>ชื่อ-นามสกุล <span style="color:#dc2626;">*</span></label><input id="ccf-name" placeholder="เช่น Nuch Jeerapornbundit" required></div>
+        <div class="form-field"><label>ชื่อเล่น</label><input id="ccf-nickname" placeholder="เช่น Nuch"></div>
+        <div class="form-field"><label>ตำแหน่ง / Title <span style="color:#dc2626;">*</span></label><input id="ccf-title" placeholder="เช่น Marketing Manager" required></div>
+        <div class="form-field"><label>Department (แผนก)</label>
+          <select id="ccf-department">
+            <option value="">— เลือก Department —</option>
+            <option>Marketing</option><option>Marketing Procurement</option><option>Brand Management</option>
+            <option>Creative</option><option>Digital</option><option>PR</option>
+            <option>Sales</option><option>Finance</option><option>HR</option>
+            <option>Operations</option><option>Management</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Photo URL <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(optional)</span></label><input id="ccf-photo" placeholder="https://..."></div>
+      </div>
+
+      <!-- Section: Contact At -->
+      <div style="font-size:11px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:.5px;padding:14px 0 8px;border-bottom:2px solid #dbeafe;margin-bottom:12px;">🏢 Contact At</div>
+      <div class="form-grid">
         <div class="form-field full">
           <label>บริษัท / Client <span style="color:#dc2626;">*</span></label>
-          <select id="ccf-company" onchange="populateContactBrandDropdown()" style="width:100%;padding:8px;border:1px solid var(--border-strong);border-radius:8px;" required>
-            <option value="">-- เลือก Client --</option>
+          <select id="ccf-company" onchange="populateContactBrandDropdown()" required>
+            <option value="">— เลือก Client —</option>
           </select>
         </div>
         <div class="form-field full">
-          <label>Brand <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(ถ้าเชื่อมกับ Brand ใด Brand หนึ่งเป็นพิเศษ)</span></label>
-          <select id="ccf-brand" style="width:100%;padding:8px;border:1px solid var(--border-strong);border-radius:8px;">
-            <option value="">-- ทุก Brand ของ Client --</option>
+          <label>Brand <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(เชื่อมกับ Brand ที่ดูแลเป็นหลัก)</span></label>
+          <select id="ccf-brand">
+            <option value="">— ทุก Brand —</option>
           </select>
         </div>
-        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">🎁 ข้อมูลเพิ่มเติม</div>
-        <div class="form-field"><label>วันเกิด</label><input id="ccf-birthday" type="date"></div>
-        <div class="form-field full"><label>ที่อยู่ <span style="font-weight:400;color:var(--text-muted);">(สำหรับส่งของขวัญ)</span></label><textarea id="ccf-address" style="height:56px;" placeholder="บ้านเลขที่ ถนน แขวง เขต จังหวัด รหัสไปรษณีย์"></textarea></div>
-        <div class="form-field full"><label>Note</label><input id="ccf-note" placeholder="หมายเหตุ"></div>
+        <div class="form-field"><label>Email <span style="color:#dc2626;">*</span></label><input id="ccf-email" type="email" placeholder="email@company.com" required></div>
+        <div class="form-field"><label>เบอร์โทร</label><input id="ccf-phone" type="tel" placeholder="08x-xxx-xxxx"></div>
+        <div class="form-field"><label>LINE ID</label><input id="ccf-line" placeholder="@lineid"></div>
+        <div class="form-field"><label>วันเกิด <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(สำหรับแจ้งเตือน 🎂)</span></label><input id="ccf-birthday" type="date"></div>
       </div>
+
+      <!-- Section: Relationship Intelligence -->
+      <div style="font-size:11px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:.5px;padding:14px 0 8px;border-bottom:2px solid #d1fae5;margin-bottom:12px;">🤝 Relationship Intelligence</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Relationship Status</label>
+          <select id="ccf-rel-status">
+            <option value="">— เลือก Status —</option>
+            <option value="Champion">🏆 Champion</option>
+            <option value="Ambassador">🌟 Ambassador</option>
+            <option value="Active">✅ Active</option>
+            <option value="Neutral">😐 Neutral</option>
+            <option value="Skeptic">⚠️ Skeptic</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Contact Level</label>
+          <select id="ccf-contact-level">
+            <option value="">— เลือกระดับ —</option>
+            <option value="Decision Maker">🎯 Decision Maker</option>
+            <option value="Influencer">💡 Influencer</option>
+            <option value="Gatekeeper">🔑 Gatekeeper</option>
+            <option value="User">👤 User</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Referral Potential</label>
+          <select id="ccf-referral">
+            <option value="">— เลือก —</option>
+            <option value="High">🔥 High</option>
+            <option value="Medium">📈 Medium</option>
+            <option value="Low">📉 Low</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>รู้จักกันมาตั้งแต่ปี</label>
+          <input id="ccf-year-known" type="number" min="2000" max="2030" placeholder="เช่น 2022">
+        </div>
+        <div class="form-field">
+          <label>Engagement Level <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(0–100)</span></label>
+          <input id="ccf-engagement" type="number" min="0" max="100" placeholder="80">
+        </div>
+        <div class="form-field">
+          <label>Influence Level <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(0–100)</span></label>
+          <input id="ccf-influence" type="number" min="0" max="100" placeholder="75">
+        </div>
+        <div class="form-field full">
+          <label>Preferred Communication <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(เลือกได้หลายช่องทาง)</span></label>
+          <div id="ccf-pref-comm-wrap" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+            <label class="comm-chip" data-val="LINE"><input type="checkbox" value="LINE"> LINE</label>
+            <label class="comm-chip" data-val="Email"><input type="checkbox" value="Email"> Email</label>
+            <label class="comm-chip" data-val="Phone"><input type="checkbox" value="Phone"> Phone</label>
+            <label class="comm-chip" data-val="WhatsApp"><input type="checkbox" value="WhatsApp"> WhatsApp</label>
+            <label class="comm-chip" data-val="Teams"><input type="checkbox" value="Teams"> Teams</label>
+            <label class="comm-chip" data-val="Meeting"><input type="checkbox" value="Meeting"> Meeting</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Working Style -->
+      <details style="margin-bottom:12px;">
+        <summary style="font-size:11px;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:.5px;padding:10px 0;border-bottom:2px solid #fef3c7;cursor:pointer;list-style:none;">⚡ Working Style <span style="font-weight:400;font-size:10px;">(คลิกเพื่อกรอก)</span></summary>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="form-field"><label>Communication Style</label><input id="ccf-ws-comm" placeholder="เช่น LINE Fast Response"></div>
+          <div class="form-field">
+            <label>Meeting Preference</label>
+            <select id="ccf-ws-meeting">
+              <option value="">—</option><option>Online</option><option>In-Person</option><option>Either</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Preferred Time</label><input id="ccf-ws-time" placeholder="เช่น After 10:00 AM"></div>
+          <div class="form-field"><label>Presentation Style</label><input id="ccf-ws-pres" placeholder="เช่น Likes Dashboard & Data"></div>
+          <div class="form-field full"><label>Dislikes</label><input id="ccf-ws-dislikes" placeholder="เช่น Long slides, too much text"></div>
+        </div>
+      </details>
+
+      <!-- Section: Career History -->
+      <details style="margin-bottom:12px;">
+        <summary style="font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.5px;padding:10px 0;border-bottom:2px solid #ede9fe;cursor:pointer;list-style:none;">💼 Career History <span style="font-weight:400;font-size:10px;">(คลิกเพื่อกรอก)</span></summary>
+        <div id="ccf-career-rows" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;"></div>
+        <button type="button" class="btn btn-sm" onclick="addCareerRow()" style="margin-top:8px;">+ Add Position</button>
+      </details>
+
+      <!-- Section: Extra -->
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;padding:4px 0 8px;border-bottom:2px solid #f1f5f9;margin-bottom:12px;">🗒️ Notes & Extra</div>
+      <div class="form-grid">
+        <div class="form-field full"><label>ที่อยู่ <span style="font-weight:400;color:var(--text-muted);">(สำหรับส่งของขวัญ)</span></label><textarea id="ccf-address" style="height:52px;" placeholder="บ้านเลขที่ ถนน แขวง เขต จังหวัด รหัสไปรษณีย์"></textarea></div>
+        <div class="form-field full"><label>Relationship Notes</label><textarea id="ccf-note" style="height:60px;" placeholder="บันทึกพิเศษ เช่น เป็นคนแนะนำบริษัทเข้ามา, ชอบ..."></textarea></div>
+      </div>
+
       <div class="modal-actions">
-        <button type="button" class="btn btn-danger" id="ccf-delete" onclick="deleteContactCRM()">Delete</button>
+        <button type="button" class="btn btn-danger" id="ccf-delete" onclick="deleteContactCRM()" style="display:none;">Delete</button>
         <button type="button" class="btn" onclick="document.getElementById('contact-crm-modal').classList.remove('show')">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary">Save Contact</button>
       </div>
     </form>
   </div>
@@ -17592,6 +17706,7 @@ function renderDetailView(route) {
     case 'brand':    dv.innerHTML = buildBrandDetailPage(route.id, route.tab || 'overview'); break;
     case 'project':  dv.innerHTML = buildProjectDetailPage(route.id, route.tab || 'overview'); break;
     case 'task':     dv.innerHTML = buildTaskDetailPage(route.id, route.tab || 'overview'); break;
+    case 'contact':  dv.innerHTML = buildContactDetailPage(route.id, route.tab || 'overview'); break;
     default:
       dv.classList.remove('active');
       ma.style.display = '';
@@ -18627,6 +18742,166 @@ function buildTaskDetailPage(taskId, tab) {
       <div class="dv-tabs">${tabsHtml}</div>
     </div>
     <div class="dv-content">${body}</div>
+  </div>`;
+}
+
+function buildContactDetailPage(contactId, tab) {
+  const c = (DB.contacts||[]).find(x => x.id === contactId);
+  if (!c) return `<div class="dv-body"><div class="dv-content"><p style="color:#94a3b8;">Contact not found</p></div></div>`;
+
+  const linkedProjs = (DB.projects||[]).filter(p => p.company === c.company && (p.status==='Working'||p.status==='Close'));
+  const totalRev = linkedProjs.reduce((s,p)=>s+(+p.budget||0),0);
+  const hue = Math.abs([...(c.name||'')].reduce((a,ch)=>a+ch.charCodeAt(0),0))%360;
+  const initials = (c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const avatar = c.photo
+    ? `<img src="${escHtml(c.photo)}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15);" onerror="this.outerHTML='<div style=\\'width:80px;height:80px;border-radius:50%;background:hsl(${hue},55%,58%);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;\\'>${initials}</div>'">`
+    : `<div style="width:80px;height:80px;border-radius:50%;background:hsl(${hue},55%,58%);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15);">${initials}</div>`;
+  const today = new Date().toISOString().slice(0,10);
+  const yearsKnown = c.yearKnown ? (new Date().getFullYear() - c.yearKnown) : null;
+
+  const relColors = { Champion:'#fef9c3,#92400e', Ambassador:'#dbeafe,#1d4ed8', Active:'#d1fae5,#065f46', Neutral:'#f1f5f9,#475569', Skeptic:'#fee2e2,#991b1b' };
+  const [relBg, relCol] = (relColors[c.relStatus]||'#f1f5f9,#475569').split(',');
+  const commIcons = { LINE:'🟩', Email:'📧', Phone:'📞', WhatsApp:'💬', Teams:'🔵', Meeting:'🤝' };
+
+  const TABS = ['overview','career','projects','notes'];
+  const tabLabels = { overview:'📊 Overview', career:'💼 Career History', projects:'📁 Projects', notes:'🗒️ Notes' };
+  const tabsHtml = TABS.map(t => `<div class="dv-tab${t===tab?' active':''}" onclick="navigateTo('contact','${contactId}','${t}')">${tabLabels[t]}</div>`).join('');
+
+  // ── Header ──────────────────────────────────────────────
+  const header = `
+  <div style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 60%,#4c1d95 100%);padding:28px 32px 0;color:#fff;">
+    <div style="display:flex;align-items:flex-start;gap:18px;margin-bottom:20px;flex-wrap:wrap;">
+      ${avatar}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:24px;font-weight:900;margin-bottom:4px;">${escHtml(c.name||'–')} ${c.nickname?`<span style="font-size:14px;font-weight:400;opacity:.7;">(${escHtml(c.nickname)})</span>`:''}</div>
+        <div style="font-size:14px;opacity:.85;margin-bottom:8px;">${escHtml(c.title||'')}${c.department?` · ${escHtml(c.department)}`:''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+          <span style="background:rgba(255,255,255,.15);padding:3px 10px;border-radius:20px;font-size:12px;">🏢 ${escHtml(c.company||'–')}</span>
+          ${c.email?`<span style="background:rgba(255,255,255,.12);padding:3px 10px;border-radius:20px;font-size:12px;">📧 ${escHtml(c.email)}</span>`:''}
+          ${c.phone?`<span style="background:rgba(255,255,255,.12);padding:3px 10px;border-radius:20px;font-size:12px;">📞 ${escHtml(c.phone)}</span>`:''}
+          ${c.lineId?`<span style="background:#06c75522;border:1px solid #06c755;padding:3px 10px;border-radius:20px;font-size:12px;color:#4ade80;">LINE ${escHtml(c.lineId)}</span>`:''}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+          ${c.relStatus?`<span style="background:${relBg};color:${relCol};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">${c.relStatus}</span>`:''}
+          ${c.contactLevel?`<span style="background:#f5f3ff;color:#7c3aed;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">${c.contactLevel}</span>`:''}
+          ${c.referral?`<span style="background:${c.referral==='High'?'#fef3c7,#92400e':c.referral==='Medium'?'#dbeafe,#1d4ed8':'#f1f5f9,#475569'.split(',')[0]};color:${c.referral==='High'?'#92400e':c.referral==='Medium'?'#1d4ed8':'#475569'};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">${c.referral==='High'?'🔥':'📈'} ${c.referral} Potential</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0;">
+        <button onclick="openContactModal('${c.id}')" class="btn" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:12px;">✏️ Edit Contact</button>
+        <button onclick="location.hash='';document.querySelector('[data-panel=contacts-crm]')?.click()" class="btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:11px;">← Back to Contacts</button>
+      </div>
+    </div>
+    <!-- KPI row -->
+    <div style="display:flex;gap:0;border-top:1px solid rgba(255,255,255,.15);">
+      ${[
+        ['Years Known', yearsKnown!=null?yearsKnown+' yrs':'–'],
+        ['Projects', linkedProjs.length],
+        ['Revenue', '฿'+fmtMoney(totalRev)],
+        ['Engagement', c.engagement!=null?c.engagement+'%':'–'],
+        ['Influence', c.influence!=null?c.influence+'%':'–'],
+      ].map(([l,v])=>`<div style="padding:14px 20px;border-right:1px solid rgba(255,255,255,.1);"><div style="font-size:20px;font-weight:800;">${v}</div><div style="font-size:10px;opacity:.6;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">${l}</div></div>`).join('')}
+    </div>
+    <div class="dv-tabs" style="margin-top:0;border-bottom:none;">${tabsHtml}</div>
+  </div>`;
+
+  // ── Tab bodies ───────────────────────────────────────────
+  let body = '';
+
+  if (tab === 'overview') {
+    body = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <!-- Contact Snapshot -->
+      <div class="dv-section" style="padding:18px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:14px;color:#1e293b;">📋 Contact Snapshot</div>
+        ${[
+          ['Current Company', c.company||'–'],
+          ['Current Brand', c.brand||'–'],
+          ['Department', c.department||'–'],
+          ['Position', c.title||'–'],
+          ['Contact Level', c.contactLevel||'–'],
+          ['Relationship Status', c.relStatus||'–'],
+          ['Referral Potential', c.referral||'–'],
+        ].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f8fafc;"><span style="font-size:12px;color:#64748b;">${k}</span><span style="font-size:12px;font-weight:700;color:#1e293b;text-align:right;max-width:55%;">${escHtml(String(v))}</span></div>`).join('')}
+        ${c.prefComm&&c.prefComm.length?`<div style="margin-top:10px;"><div style="font-size:11px;color:#64748b;margin-bottom:6px;">Preferred Communication</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${c.prefComm.map(ch=>`<span style="padding:3px 10px;border-radius:20px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:600;">${commIcons[ch]||''} ${ch}</span>`).join('')}</div></div>`:''}
+      </div>
+      <!-- Relationship Overview -->
+      <div class="dv-section" style="padding:18px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:14px;color:#1e293b;">💛 Relationship Overview</div>
+        ${c.yearKnown?`<div style="font-size:12px;color:#64748b;margin-bottom:10px;">How We Work Together Since <strong>${c.yearKnown}</strong></div>`:''}
+        ${c.engagement!=null?`<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:4px;"><span>Engagement Level</span><span style="font-weight:700;color:#1e293b;">${c.engagement}%</span></div><div style="height:8px;background:#f1f5f9;border-radius:4px;"><div style="height:100%;width:${c.engagement}%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:4px;"></div></div></div>`:''}
+        ${c.influence!=null?`<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:4px;"><span>Influence Level</span><span style="font-weight:700;color:#1e293b;">${c.influence}%</span></div><div style="height:8px;background:#f1f5f9;border-radius:4px;"><div style="height:100%;width:${c.influence}%;background:linear-gradient(90deg,#f59e0b,#f97316);border-radius:4px;"></div></div></div>`:''}
+        ${c.referral?`<div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #f1f5f9;"><span style="font-size:12px;color:#64748b;">Can Bring Business</span><span style="padding:2px 10px;border-radius:20px;background:${c.referral==='High'?'#fef3c7':'#f1f5f9'};color:${c.referral==='High'?'#92400e':'#475569'};font-size:11px;font-weight:700;">${c.referral==='High'?'🔥 High Potential':c.referral}</span></div>`:''}
+        ${c.relStatus==='Champion'?`<div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #f1f5f9;"><span style="font-size:12px;color:#64748b;">Champion For Us</span><span style="font-size:12px;font-weight:700;color:#059669;">Yes ✓</span></div>`:''}
+      </div>
+    </div>
+    ${c.wsComm||c.wsMeeting||c.wsTime||c.wsPres||c.wsDislikes?`
+    <div class="dv-section" style="padding:18px;margin-bottom:16px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:14px;color:#1e293b;">⚡ Working Style</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+        ${c.wsComm?`<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Communication</div><div style="font-size:13px;font-weight:700;">🟩 ${escHtml(c.wsComm)}</div></div>`:''}
+        ${c.wsMeeting?`<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Meeting Preference</div><div style="font-size:13px;font-weight:700;">💻 ${escHtml(c.wsMeeting)}</div></div>`:''}
+        ${c.wsTime?`<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Preferred Time</div><div style="font-size:13px;font-weight:700;">⏰ ${escHtml(c.wsTime)}</div></div>`:''}
+        ${c.wsPres?`<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Presentation Style</div><div style="font-size:13px;font-weight:700;">📊 ${escHtml(c.wsPres)}</div></div>`:''}
+        ${c.wsDislikes?`<div style="background:#fff0f0;border-radius:10px;padding:12px;border:1px solid #fecaca;"><div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Dislikes</div><div style="font-size:13px;font-weight:700;color:#dc2626;">✗ ${escHtml(c.wsDislikes)}</div></div>`:''}
+      </div>
+    </div>`:''}`;
+  }
+
+  if (tab === 'career') {
+    const hist = c.careerHistory||[];
+    body = `<div class="dv-section" style="padding:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <div style="font-weight:700;font-size:14px;">💼 Career History</div>
+        <button class="btn btn-sm" onclick="openContactModal('${c.id}')">✏️ Edit</button>
+      </div>
+      ${!hist.length?`<div style="text-align:center;padding:40px;color:#94a3b8;">ยังไม่มีข้อมูล Career History — กด Edit เพื่อเพิ่ม</div>`:`
+      <div style="position:relative;padding-left:32px;">
+        <div style="position:absolute;left:10px;top:0;bottom:0;width:2px;background:#e5e7eb;border-radius:2px;"></div>
+        ${hist.map((h,i)=>`
+        <div style="position:relative;margin-bottom:20px;">
+          <div style="position:absolute;left:-26px;width:12px;height:12px;border-radius:50%;background:${i===0?'#6366f1':'#e5e7eb'};border:2px solid #fff;box-shadow:0 0 0 2px ${i===0?'#6366f1':'#d1d5db'};top:4px;"></div>
+          <div style="background:${i===0?'#f5f3ff':'#f8fafc'};border:1px solid ${i===0?'#ddd6fe':'#e5e7eb'};border-radius:10px;padding:12px 14px;">
+            <div style="font-size:13px;font-weight:800;color:#1e293b;">${escHtml(h.company||'–')}</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px;">${escHtml(h.position||'')}</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:4px;">${h.start||'?'} – ${h.end||'Present'}</div>
+          </div>
+        </div>`).join('')}
+      </div>`}
+    </div>`;
+  }
+
+  if (tab === 'projects') {
+    body = `<div class="dv-section" style="padding:18px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:14px;">📁 Projects (${linkedProjs.length})</div>
+      ${!linkedProjs.length?`<div style="text-align:center;padding:40px;color:#94a3b8;">ยังไม่มี Project ที่เชื่อมกับ ${escHtml(c.company||'')}</div>`:`
+      <table class="dv-table"><thead><tr><th>Project</th><th>Brand</th><th>Status</th><th>Budget</th><th>Owner</th></tr></thead><tbody>
+        ${linkedProjs.map(p=>`<tr style="cursor:pointer;" onclick="navigateTo('project','${p.id||p.code}')">
+          <td style="font-weight:700;">${escHtml(p.name||p.code)}</td>
+          <td>${escHtml(p.brand||'–')}</td>
+          <td>${badgeFor(p.status)}</td>
+          <td>฿${fmtMoney(+p.budget||0)}</td>
+          <td>${escHtml(p.owner||'–')}</td>
+        </tr>`).join('')}
+      </tbody></table>`}
+    </div>`;
+  }
+
+  if (tab === 'notes') {
+    body = `<div class="dv-section" style="padding:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-weight:700;font-size:14px;">🗒️ Relationship Notes</div>
+        <button class="btn btn-sm" onclick="openContactModal('${c.id}')">✏️ Edit</button>
+      </div>
+      ${c.note?`<div style="background:#fffbeb;border:1px solid #fef3c7;border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;">${escHtml(c.note)}</div>`:`<div style="text-align:center;padding:40px;color:#94a3b8;">ยังไม่มี Notes</div>`}
+      ${c.address?`<div style="margin-top:14px;"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px;">📦 ที่อยู่สำหรับส่งของขวัญ</div><div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:13px;">${escHtml(c.address)}</div></div>`:''}
+      ${c.birthday?`<div style="margin-top:14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;font-size:13px;">🎂 วันเกิด: <strong>${c.birthday}</strong></div>`:''}
+    </div>`;
+  }
+
+  return `<div class="dv-body">
+    ${header}
+    <div class="dv-content" style="padding:20px;">${body}</div>
   </div>`;
 }
 
@@ -21391,21 +21666,60 @@ function initContactsCRM() {
     if (!DB.contacts) DB.contacts = [];
     let c = DB.contacts.find(x => x.id === id);
     if (!c) { c = { id }; DB.contacts.push(c); }
-    c.name     = document.getElementById('ccf-name').value.trim();
-    c.nickname = document.getElementById('ccf-nickname').value.trim();
-    c.title    = document.getElementById('ccf-title').value.trim();
-    c.phone    = document.getElementById('ccf-phone').value.trim();
-    c.email    = document.getElementById('ccf-email').value.trim();
-    c.company  = document.getElementById('ccf-company').value;
-    c.brand    = document.getElementById('ccf-brand').value;
-    c.birthday = document.getElementById('ccf-birthday').value;
-    c.address  = document.getElementById('ccf-address').value.trim();
-    c.note     = document.getElementById('ccf-note').value.trim();
+    c.name        = document.getElementById('ccf-name').value.trim();
+    c.nickname    = document.getElementById('ccf-nickname').value.trim();
+    c.title       = document.getElementById('ccf-title').value.trim();
+    c.department  = document.getElementById('ccf-department').value;
+    c.photo       = document.getElementById('ccf-photo').value.trim();
+    c.company     = document.getElementById('ccf-company').value;
+    c.brand       = document.getElementById('ccf-brand').value;
+    c.email       = document.getElementById('ccf-email').value.trim();
+    c.phone       = document.getElementById('ccf-phone').value.trim();
+    c.lineId      = document.getElementById('ccf-line').value.trim();
+    c.birthday    = document.getElementById('ccf-birthday').value;
+    c.relStatus   = document.getElementById('ccf-rel-status').value;
+    c.contactLevel= document.getElementById('ccf-contact-level').value;
+    c.referral    = document.getElementById('ccf-referral').value;
+    c.yearKnown   = +document.getElementById('ccf-year-known').value || null;
+    c.engagement  = +document.getElementById('ccf-engagement').value || null;
+    c.influence   = +document.getElementById('ccf-influence').value || null;
+    c.prefComm    = [...document.querySelectorAll('#ccf-pref-comm-wrap input:checked')].map(x=>x.value);
+    c.wsComm      = document.getElementById('ccf-ws-comm').value.trim();
+    c.wsMeeting   = document.getElementById('ccf-ws-meeting').value;
+    c.wsTime      = document.getElementById('ccf-ws-time').value.trim();
+    c.wsPres      = document.getElementById('ccf-ws-pres').value.trim();
+    c.wsDislikes  = document.getElementById('ccf-ws-dislikes').value.trim();
+    c.careerHistory = readCareerRows();
+    c.address     = document.getElementById('ccf-address').value.trim();
+    c.note        = document.getElementById('ccf-note').value.trim();
     saveDB();
     document.getElementById('contact-crm-modal').classList.remove('show');
     renderContactsCRM();
   });
   renderContactsCRM();
+}
+
+function addCareerRow(entry) {
+  const wrap = document.getElementById('ccf-career-rows');
+  if (!wrap) return;
+  const e = entry || {};
+  const div = document.createElement('div');
+  div.style.cssText = 'display:grid;grid-template-columns:2fr 2fr 1fr 1fr auto;gap:6px;align-items:center;';
+  div.innerHTML = `
+    <input placeholder="Company / ชื่อบริษัท" value="${escHtml(e.company||'')}" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+    <input placeholder="ตำแหน่ง / Position" value="${escHtml(e.position||'')}" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+    <input placeholder="ปีเริ่ม" type="number" min="1990" max="2030" value="${e.start||''}" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+    <input placeholder="ปีจบ" type="number" min="1990" max="2030" value="${e.end||''}" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+    <button type="button" onclick="this.closest('div').remove()" style="padding:4px 8px;border:1px solid #fca5a5;background:#fff;border-radius:6px;cursor:pointer;color:#dc2626;font-size:13px;">✕</button>`;
+  wrap.appendChild(div);
+}
+
+function readCareerRows() {
+  const rows = document.querySelectorAll('#ccf-career-rows > div');
+  return [...rows].map(r => {
+    const ins = r.querySelectorAll('input');
+    return { company: ins[0]?.value.trim(), position: ins[1]?.value.trim(), start: +ins[2]?.value||null, end: +ins[3]?.value||null };
+  }).filter(r => r.company || r.position);
 }
 
 function renderContactsCRM() {
@@ -21484,24 +21798,38 @@ function renderContactCRMCard(c) {
     const next = new Date(today.getFullYear(), +m-1, +d);
     if (next < today) next.setFullYear(next.getFullYear()+1);
     const diff = Math.ceil((next - today)/86400000);
-    if (diff <= 30) bdayBadge = `<span style="font-size:10px;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:20px;font-weight:700;">🎂 ${diff}d</span>`;
+    if (diff <= 30) bdayBadge = `<span style="font-size:10px;padding:2px 7px;background:#fef3c7;color:#92400e;border-radius:20px;font-weight:700;">🎂 ${diff}d</span>`;
   }
-  return `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.04);">
-    <div style="width:44px;height:44px;border-radius:50%;background:hsl(${hue},55%,58%);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;">${initials}</div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:14px;font-weight:700;color:#1e293b;">${escHtml(c.name||'–')} ${c.nickname?`<span style="font-size:11px;color:#64748b;font-weight:500;">(${escHtml(c.nickname)})</span>`:''}</div>
-      ${c.title?`<div style="font-size:12px;color:#64748b;margin-top:1px;">${escHtml(c.title)}</div>`:''}
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;">
-        ${c.company?`<span style="font-size:10px;padding:2px 8px;background:#eff6ff;color:#1d4ed8;border-radius:20px;font-weight:700;">🏢 ${escHtml(c.company)}</span>`:''}
-        ${c.brand?`<span style="font-size:10px;padding:2px 8px;background:#f5f3ff;color:#7c3aed;border-radius:20px;font-weight:700;">📦 ${escHtml(c.brand)}</span>`:''}
-        ${bdayBadge}
+  const relColors = { Champion:'#fef9c3,#92400e', Ambassador:'#dbeafe,#1d4ed8', Active:'#d1fae5,#065f46', Neutral:'#f1f5f9,#475569', Skeptic:'#fee2e2,#991b1b' };
+  const [relBg, relCol] = (relColors[c.relStatus]||'').split(',');
+  const linkedProjs = (DB.projects||[]).filter(p => p.company === c.company && (p.status==='Working'||p.status==='Close'));
+  const avatar = c.photo
+    ? `<img src="${escHtml(c.photo)}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div style="display:none;width:48px;height:48px;border-radius:50%;background:hsl(${hue},55%,58%);align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;">${initials}</div>`
+    : `<div style="width:48px;height:48px;border-radius:50%;background:hsl(${hue},55%,58%);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;">${initials}</div>`;
+
+  return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:0;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.05);cursor:pointer;transition:box-shadow .15s,border-color .15s;" onmouseenter="this.style.boxShadow='0 4px 16px rgba(0,0,0,.10)';this.style.borderColor='#a5b4fc'" onmouseleave="this.style.boxShadow='0 1px 4px rgba(0,0,0,.05)';this.style.borderColor='var(--border)'" onclick="navigateTo('contact','${c.id}','overview')">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
+      ${avatar}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:800;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(c.name||'–')} ${c.nickname?`<span style="font-size:11px;color:#94a3b8;font-weight:500;">(${escHtml(c.nickname)})</span>`:''}</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;">${escHtml(c.title||'')}</div>
+        ${c.department?`<div style="font-size:11px;color:#94a3b8;">${escHtml(c.department)}</div>`:''}
       </div>
-      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
-        ${c.phone?`<div style="font-size:12px;color:#475569;display:flex;align-items:center;gap:5px;">📞 <a href="tel:${c.phone.replace(/[^0-9+]/g,'')}" style="color:inherit;text-decoration:none;">${escHtml(c.phone)}</a></div>`:''}
-        ${c.email?`<div style="font-size:12px;color:#475569;display:flex;align-items:center;gap:5px;">📧 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(c.email)}</span></div>`:''}
-      </div>
+      <button onclick="event.stopPropagation();openContactModal('${c.id}')" style="font-size:11px;padding:4px 9px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;color:#475569;flex-shrink:0;">Edit</button>
     </div>
-    <button onclick="openContactModal('${c.id}')" style="position:absolute;top:12px;right:12px;font-size:11px;padding:4px 9px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;color:#475569;">Edit</button>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
+      ${c.company?`<span style="font-size:10px;padding:2px 8px;background:#eff6ff;color:#1d4ed8;border-radius:20px;font-weight:700;">🏢 ${escHtml(c.company)}</span>`:''}
+      ${c.brand?`<span style="font-size:10px;padding:2px 8px;background:#f5f3ff;color:#7c3aed;border-radius:20px;font-weight:700;">📦 ${escHtml(c.brand)}</span>`:''}
+      ${c.relStatus&&relBg?`<span style="font-size:10px;padding:2px 8px;background:${relBg};color:${relCol};border-radius:20px;font-weight:700;">${c.relStatus}</span>`:''}
+      ${c.contactLevel?`<span style="font-size:10px;padding:2px 8px;background:#f5f3ff;color:#7c3aed;border-radius:20px;font-weight:700;">${c.contactLevel}</span>`:''}
+      ${bdayBadge}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;border-top:1px solid #f1f5f9;padding-top:9px;">
+      ${c.phone?`<a href="tel:${c.phone.replace(/[^0-9+]/g,'')}" onclick="event.stopPropagation()" style="font-size:11px;color:#475569;display:flex;align-items:center;gap:4px;text-decoration:none;">📞 ${escHtml(c.phone)}</a>`:''}
+      ${c.email?`<span style="font-size:11px;color:#475569;display:flex;align-items:center;gap:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📧 ${escHtml(c.email)}</span>`:''}
+      ${c.lineId?`<span style="font-size:11px;color:#06c755;font-weight:600;">LINE ${escHtml(c.lineId)}</span>`:''}
+      ${linkedProjs.length?`<span style="font-size:11px;color:#64748b;margin-left:auto;">📁 ${linkedProjs.length} projects</span>`:''}
+    </div>
   </div>`;
 }
 
@@ -21510,27 +21838,50 @@ function openContactModal(id) {
   const form  = document.getElementById('contact-crm-form');
   form.reset();
 
-  // Populate company dropdown from DB.clients
+  // Reset comm chips
+  document.querySelectorAll('#ccf-pref-comm-wrap input').forEach(x => x.checked = false);
+  document.getElementById('ccf-career-rows').innerHTML = '';
+
+  // Populate company dropdown
   const coSel = document.getElementById('ccf-company');
   const companies = [...new Set((DB.clients||[]).map(c=>c.company).filter(Boolean))].sort();
-  coSel.innerHTML = `<option value="">-- เลือก Client --</option>`
+  coSel.innerHTML = `<option value="">— เลือก Client —</option>`
     + companies.map(co=>`<option value="${escHtml(co)}">${escHtml(co)}</option>`).join('');
-  document.getElementById('ccf-brand').innerHTML = `<option value="">-- ทุก Brand ของ Client --</option>`;
+  document.getElementById('ccf-brand').innerHTML = `<option value="">— ทุก Brand —</option>`;
 
   const c = id ? (DB.contacts||[]).find(x=>x.id===id) : null;
   document.getElementById('contact-crm-modal-title').textContent = c ? 'Edit Contact' : 'Add Contact';
-  document.getElementById('ccf-id').value       = c?.id||'';
+  document.getElementById('ccf-id').value = c?.id||'';
   document.getElementById('ccf-delete').style.display = c ? '' : 'none';
 
   if (c) {
-    document.getElementById('ccf-name').value     = c.name||'';
-    document.getElementById('ccf-nickname').value = c.nickname||'';
-    document.getElementById('ccf-title').value    = c.title||'';
-    document.getElementById('ccf-phone').value    = c.phone||'';
-    document.getElementById('ccf-email').value    = c.email||'';
-    document.getElementById('ccf-birthday').value = c.birthday||'';
-    document.getElementById('ccf-address').value  = c.address||'';
-    document.getElementById('ccf-note').value     = c.note||'';
+    document.getElementById('ccf-name').value       = c.name||'';
+    document.getElementById('ccf-nickname').value   = c.nickname||'';
+    document.getElementById('ccf-title').value      = c.title||'';
+    document.getElementById('ccf-department').value = c.department||'';
+    document.getElementById('ccf-photo').value      = c.photo||'';
+    document.getElementById('ccf-email').value      = c.email||'';
+    document.getElementById('ccf-phone').value      = c.phone||'';
+    document.getElementById('ccf-line').value       = c.lineId||'';
+    document.getElementById('ccf-birthday').value   = c.birthday||'';
+    document.getElementById('ccf-rel-status').value   = c.relStatus||'';
+    document.getElementById('ccf-contact-level').value= c.contactLevel||'';
+    document.getElementById('ccf-referral').value     = c.referral||'';
+    document.getElementById('ccf-year-known').value   = c.yearKnown||'';
+    document.getElementById('ccf-engagement').value   = c.engagement||'';
+    document.getElementById('ccf-influence').value    = c.influence||'';
+    (c.prefComm||[]).forEach(v => {
+      const cb = document.querySelector(`#ccf-pref-comm-wrap input[value="${v}"]`);
+      if (cb) cb.checked = true;
+    });
+    document.getElementById('ccf-ws-comm').value    = c.wsComm||'';
+    document.getElementById('ccf-ws-meeting').value = c.wsMeeting||'';
+    document.getElementById('ccf-ws-time').value    = c.wsTime||'';
+    document.getElementById('ccf-ws-pres').value    = c.wsPres||'';
+    document.getElementById('ccf-ws-dislikes').value= c.wsDislikes||'';
+    (c.careerHistory||[]).forEach(e => addCareerRow(e));
+    document.getElementById('ccf-address').value = c.address||'';
+    document.getElementById('ccf-note').value    = c.note||'';
     if (c.company) {
       coSel.value = c.company;
       populateContactBrandDropdown();
