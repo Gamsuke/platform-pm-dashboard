@@ -286,6 +286,60 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .filter-bar select, .filter-bar input { padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); font-family: inherit; font-size: 13px; background: var(--surface); color: var(--text); }
 .filter-bar label { font-size: 12px; color: var(--text-muted); }
 
+/* ── Internal / Project Type Badges ───────────────────── */
+.pt-badge { display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px; }
+.pt-badge.client   { background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe; }
+.pt-badge.internal { background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe; }
+.int-cat-chip { display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:600;background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe; }
+/* proj-type radio toggle */
+.proj-type-toggle { display:flex;gap:8px;flex-wrap:wrap; }
+.proj-type-opt { display:flex;align-items:center;gap:6px;padding:8px 16px;border:1.5px solid #E5E7EB;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:#374151;transition:all .15s;user-select:none; }
+.proj-type-opt:has(input:checked) { border-color:#7c3aed;background:#f5f3ff;color:#7c3aed; }
+.proj-type-opt[data-type="client"]:has(input:checked) { border-color:#2563eb;background:#eff6ff;color:#2563eb; }
+.proj-type-opt input[type=radio] { display:none; }
+.client-only, .internal-only { transition: opacity .15s; }
+#prj-form.internal-mode .client-only { display:none !important; }
+#prj-form.internal-mode .internal-only { display:block !important; }
+#prj-form:not(.internal-mode) .internal-only { display:none !important; }
+/* internal proj card */
+.int-proj-card { background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;position:relative;cursor:pointer;transition:box-shadow .15s,border-color .15s; }
+.int-proj-card:hover { box-shadow:0 4px 16px rgba(124,58,237,.10);border-color:#c4b5fd; }
+.int-proj-card .ipc-dept { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#7c3aed;margin-bottom:6px; }
+.int-proj-card .ipc-name { font-size:14px;font-weight:700;color:#1e293b;margin-bottom:10px; }
+.int-proj-card .ipc-bar-bg { height:6px;border-radius:3px;background:#e9d5ff;overflow:hidden; }
+.int-proj-card .ipc-bar-fill { height:100%;border-radius:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa); }
+.int-proj-card .ipc-meta { display:flex;gap:12px;margin-top:10px;flex-wrap:wrap; }
+.int-proj-card .ipc-m { font-size:11px;color:#64748b; }
+.int-proj-card .ipc-m b { color:#1e293b;font-weight:700; }
+
+/* ── Unified Filter Bar (SaaS style) ───────────────────── */
+.fb-wrap { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.fb-search-wrap { position:relative; flex:1 1 280px; min-width:200px; max-width:60%; }
+.fb-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9CA3AF; font-size:14px; pointer-events:none; line-height:1; }
+.fb-input { width:100%; height:40px; padding:0 14px 0 38px; border:1px solid #E5E7EB; border-radius:12px; background:#fff; font-size:13px; color:var(--text); font-family:inherit; transition:border-color .15s,box-shadow .15s; box-sizing:border-box; outline:none; }
+.fb-input::placeholder { color:#9CA3AF; }
+.fb-input:hover { border-color:#a5b4fc; box-shadow:0 0 0 3px rgba(99,102,241,.06); }
+.fb-input:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.10); }
+.fb-select-wrap { position:relative; flex-shrink:0; }
+.fb-sel-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:12px; pointer-events:none; z-index:1; line-height:1; }
+.fb-chevron { position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#9CA3AF; font-size:10px; z-index:1; line-height:1; }
+.fb-select { height:40px; padding:0 28px 0 30px; border:1px solid #E5E7EB; border-radius:12px; background:#fff; font-size:12px; font-weight:500; color:var(--text); font-family:inherit; cursor:pointer; appearance:none; -webkit-appearance:none; min-width:130px; transition:border-color .15s,box-shadow .15s; outline:none; }
+.fb-select:hover { border-color:#a5b4fc; box-shadow:0 0 0 3px rgba(99,102,241,.06); }
+.fb-select:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.10); }
+.fb-select-wrap.no-icon .fb-select { padding-left:12px; }
+.fb-toggle-group { display:flex; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden; flex-shrink:0; background:#f9fafb; height:40px; }
+.fb-toggle-btn { padding:0 14px; height:40px; border:none; border-right:1px solid #E5E7EB; background:transparent; font-size:12px; font-weight:600; cursor:pointer; color:#6B7280; font-family:inherit; transition:all .15s; display:flex; align-items:center; gap:5px; white-space:nowrap; }
+.fb-toggle-btn:last-child { border-right:none; }
+.fb-toggle-btn.active { background:#6366f1; color:#fff; }
+@media (max-width:680px) {
+  .fb-wrap { flex-direction:column; }
+  .fb-search-wrap { max-width:100%; width:100%; }
+  .fb-select-wrap { width:100%; }
+  .fb-select { width:100%; }
+  .fb-toggle-group { width:100%; }
+  .fb-toggle-btn { flex:1; justify-content:center; }
+}
+
 .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
 .badge-Working    { background: var(--success-bg); color: var(--success); }
 .badge-Proposing  { background: var(--warning-bg); color: var(--warning); }
@@ -1272,7 +1326,7 @@ details ul { padding-left: 18px; }
       <div class="nav-section-label">CRM</div>
       <button class="tab" data-panel="leads">🎯 Leads</button>
       <button class="tab" data-panel="clients">🏢 Clients</button>
-      <button class="tab" data-panel="clients" data-panel-alias="contacts">👤 Contacts</button>
+      <button class="tab" data-panel="contacts-crm">👤 Contacts</button>
       <button class="tab" data-panel="client-intel">⭐ Intelligence</button>
       <button class="tab" data-panel="opportunities">💼 Opportunities</button>
 
@@ -1285,6 +1339,15 @@ details ul { padding-left: 18px; }
       <button class="tab" data-panel="tasks-hub" data-panel-alias="tasks-mgmt">✅ Tasks</button>
       <button class="tab" data-panel="workload">⚡ Resources</button>
       <button class="tab" data-panel="reports">📊 Reports</button>
+
+      <!-- INTERNAL -->
+      <div class="nav-section-label">INTERNAL</div>
+      <button class="tab" data-panel="internal-home">📊 Org Dashboard</button>
+      <button class="tab" data-panel="internal-projects">🏗️ Internal Projects</button>
+      <button class="tab" data-panel="internal-tasks">✅ Internal Tasks</button>
+      <button class="tab" data-panel="internal-meetings">📅 Meetings</button>
+      <button class="tab" data-panel="internal-training">🎓 Training</button>
+      <button class="tab" data-panel="internal-sop">📚 SOP & Knowledge</button>
 
       <!-- TEAM -->
       <div class="nav-section-label">TEAM</div>
@@ -1534,18 +1597,14 @@ details ul { padding-left: 18px; }
     <!-- LEFT: Filters + Table -->
     <div>
       <!-- Filter bar -->
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-        <div style="position:relative;flex:1;min-width:180px;">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px;">🔍</span>
-          <input id="prj-search" placeholder="Search projects..." oninput="renderTable()" style="padding-left:30px;width:100%;box-sizing:border-box;font-size:12px;">
+      <div class="fb-wrap">
+        <div class="fb-search-wrap">
+          <span class="fb-search-icon">🔍</span>
+          <input id="prj-search" class="fb-input" placeholder="Search projects, clients, brands..." oninput="renderTable()">
         </div>
-        <select id="prj-client-filter" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
-          <option value="">All Clients</option>
-        </select>
-        <select id="prj-brand-filter" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
-          <option value="">All Brands</option>
-        </select>
-        <select id="prj-status" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
+        <div class="fb-select-wrap"><span class="fb-sel-icon">🏢</span><select id="prj-client-filter" class="fb-select" onchange="renderTable()"><option value="">All Clients</option></select><span class="fb-chevron">▾</span></div>
+        <div class="fb-select-wrap"><span class="fb-sel-icon">📦</span><select id="prj-brand-filter" class="fb-select" onchange="renderTable()"><option value="">All Brands</option></select><span class="fb-chevron">▾</span></div>
+        <div class="fb-select-wrap"><span class="fb-sel-icon">⚡</span><select id="prj-status" class="fb-select" onchange="renderTable()">
           <option value="">All Status</option>
           <option value="Working">In Progress</option>
           <option value="Proposing">Planning (Proposing)</option>
@@ -1553,16 +1612,12 @@ details ul { padding-left: 18px; }
           <option value="Hold">On Hold</option>
           <option value="Close">Completed</option>
           <option value="Pitch Lost">At Risk / Lost</option>
-        </select>
-        <select id="prj-owner" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
-          <option value="">All Project Managers</option>
-        </select>
-        <select id="prj-type-filter" onchange="renderTable()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;">
-          <option value="">All Types</option>
-        </select>
-        <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-left:auto;">
-          <button id="btn-prj-table-view" onclick="setPrjView('table')" style="padding:6px 12px;border:none;background:#6366f1;color:#fff;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;">⊞ Table View</button>
-          <button id="btn-prj-board-view" onclick="setPrjView('board')" style="padding:6px 12px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;">⊟ Board View</button>
+        </select><span class="fb-chevron">▾</span></div>
+        <div class="fb-select-wrap"><span class="fb-sel-icon">👤</span><select id="prj-owner" class="fb-select" onchange="renderTable()"><option value="">All PMs</option></select><span class="fb-chevron">▾</span></div>
+        <div class="fb-select-wrap"><span class="fb-sel-icon">🏷️</span><select id="prj-type-filter" class="fb-select" onchange="renderTable()"><option value="">All Types</option></select><span class="fb-chevron">▾</span></div>
+        <div class="fb-toggle-group" style="margin-left:auto;">
+          <button id="btn-prj-table-view" class="fb-toggle-btn active" onclick="setPrjView('table')">⊞ Table</button>
+          <button id="btn-prj-board-view" class="fb-toggle-btn" onclick="setPrjView('board')">⊟ Board</button>
         </div>
       </div>
 
@@ -1691,29 +1746,17 @@ details ul { padding-left: 18px; }
     <div id="client-sync-banner" style="display:none;margin-bottom:12px;"></div>
 
     <!-- Filter Bar -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-      <div style="position:relative;flex:1;min-width:200px;">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;">🔍</span>
-        <input id="client-search" placeholder="Search clients..." style="padding-left:30px;width:100%;box-sizing:border-box;">
+    <div class="fb-wrap">
+      <div class="fb-search-wrap">
+        <span class="fb-search-icon">🔍</span>
+        <input id="client-search" class="fb-input" placeholder="Search clients, industries..." oninput="renderClients()">
       </div>
-      <select id="clients-filter-status" onchange="renderClients()">
-        <option value="">All Status</option>
-        <option value="active">🟢 Active</option>
-        <option value="inactive">⚫ Inactive</option>
-        <option value="pitch-lost">🔴 Pitch Lost</option>
-      </select>
-      <select id="clients-filter-industry" onchange="renderClients()">
-        <option value="">All Industries</option>
-      </select>
-      <select id="clients-sort" onchange="renderClients()">
-        <option value="revenue">Sort: Revenue</option>
-        <option value="projects">Sort: Projects</option>
-        <option value="health">Sort: Health</option>
-        <option value="name">Sort: Name</option>
-      </select>
-      <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
-        <button id="clients-view-card" onclick="setClientsView('card')" style="padding:6px 12px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:12px;font-family:inherit;">⊞ Card</button>
-        <button id="clients-view-table" onclick="setClientsView('table')" style="padding:6px 12px;border:none;background:#fff;color:var(--text-muted);cursor:pointer;font-size:12px;font-family:inherit;">☰ Table</button>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">⚡</span><select id="clients-filter-status" class="fb-select" onchange="renderClients()"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="pitch-lost">Pitch Lost</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">🏭</span><select id="clients-filter-industry" class="fb-select" onchange="renderClients()"><option value="">All Industries</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">↕</span><select id="clients-sort" class="fb-select" onchange="renderClients()"><option value="revenue">Sort: Revenue</option><option value="projects">Sort: Projects</option><option value="health">Sort: Health</option><option value="name">Sort: Name</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-toggle-group">
+        <button id="clients-view-card" class="fb-toggle-btn active" onclick="setClientsView('card')">⊞ Card</button>
+        <button id="clients-view-table" class="fb-toggle-btn" onclick="setClientsView('table')">☰ Table</button>
       </div>
     </div>
 
@@ -1722,6 +1765,32 @@ details ul { padding-left: 18px; }
 
     <!-- Pagination -->
     <div id="clients-pagination" style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--text-muted);"></div>
+  </div>
+
+  <!-- CONTACTS CRM -->
+  <div class="panel" id="contacts-crm">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">Contacts</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">รายชื่อผู้ติดต่อทั้งหมด เชื่อมกับ Client / Brand</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="openContactModal(null)">+ Add Contact</button>
+      </div>
+    </div>
+    <!-- KPI row -->
+    <div id="contacts-crm-kpi" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;"></div>
+    <!-- Filter bar -->
+    <div class="fb-wrap">
+      <div class="fb-search-wrap">
+        <span class="fb-search-icon">🔍</span>
+        <input id="contacts-crm-search" class="fb-input" placeholder="Search name, title, company..." oninput="renderContactsCRM()">
+      </div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">🏢</span><select id="contacts-crm-filter-company" class="fb-select" onchange="renderContactsCRM()" style="min-width:150px;"><option value="">All Clients</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">📦</span><select id="contacts-crm-filter-brand" class="fb-select" onchange="renderContactsCRM()" style="min-width:140px;"><option value="">All Brands</option></select><span class="fb-chevron">▾</span></div>
+    </div>
+    <!-- Grid -->
+    <div id="contacts-crm-grid"></div>
   </div>
 
   <!-- BRANDS -->
@@ -1750,29 +1819,17 @@ details ul { padding-left: 18px; }
     <div id="brands-kpi-row" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;"></div>
 
     <!-- Filter Bar -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-      <div style="position:relative;flex:1;min-width:180px;">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;">🔍</span>
-        <input id="brands-search" placeholder="Search brand or client…" style="padding-left:30px;width:100%;box-sizing:border-box;" oninput="renderBrands()">
+    <div class="fb-wrap">
+      <div class="fb-search-wrap">
+        <span class="fb-search-icon">🔍</span>
+        <input id="brands-search" class="fb-input" placeholder="Search brands, clients..." oninput="renderBrands()">
       </div>
-      <select id="brands-filter-client" onchange="renderBrands()">
-        <option value="">All Clients</option>
-      </select>
-      <select id="brands-filter-status" onchange="renderBrands()">
-        <option value="">All Status</option>
-        <option value="active">🟢 Active</option>
-        <option value="inactive">⚫ Inactive</option>
-        <option value="pitch-lost">🔴 Pitch Lost</option>
-      </select>
-      <select id="brands-sort" onchange="renderBrands()">
-        <option value="revenue">Sort: Revenue</option>
-        <option value="projects">Sort: Projects</option>
-        <option value="health">Sort: Health</option>
-        <option value="name">Sort: Name A–Z</option>
-      </select>
-      <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
-        <button id="brands-view-card" onclick="setBrandsView('card')" style="padding:6px 12px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:12px;font-family:inherit;">⊞ Card</button>
-        <button id="brands-view-table" onclick="setBrandsView('table')" style="padding:6px 12px;border:none;background:#fff;color:var(--text-muted);cursor:pointer;font-size:12px;font-family:inherit;">☰ Table</button>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">🏢</span><select id="brands-filter-client" class="fb-select" onchange="renderBrands()"><option value="">All Clients</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">⚡</span><select id="brands-filter-status" class="fb-select" onchange="renderBrands()"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="pitch-lost">Pitch Lost</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">↕</span><select id="brands-sort" class="fb-select" onchange="renderBrands()"><option value="revenue">Sort: Revenue</option><option value="projects">Sort: Projects</option><option value="health">Sort: Health</option><option value="name">Sort: Name A–Z</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-toggle-group">
+        <button id="brands-view-card" class="fb-toggle-btn active" onclick="setBrandsView('card')">⊞ Card</button>
+        <button id="brands-view-table" class="fb-toggle-btn" onclick="setBrandsView('table')">☰ Table</button>
       </div>
     </div>
 
@@ -1794,14 +1851,13 @@ details ul { padding-left: 18px; }
           <button class="btn btn-primary" id="btn-add-member">+ Add Member</button>
         </div>
       </div>
-      <div class="filter-bar">
-        <input id="team-search" placeholder="Search name or role…" style="min-width:220px;">
-        <select id="team-dept-filter"><option value="">All departments</option></select>
-        <select id="team-status-filter">
-          <option value="">All Status</option>
-          <option value="active">🟢 Active</option>
-          <option value="inactive">⚫ Inactive</option>
-        </select>
+      <div class="fb-wrap">
+        <div class="fb-search-wrap">
+          <span class="fb-search-icon">🔍</span>
+          <input id="team-search" class="fb-input" placeholder="Search name, role, department...">
+        </div>
+        <div class="fb-select-wrap"><span class="fb-sel-icon">🏢</span><select id="team-dept-filter" class="fb-select"><option value="">All Departments</option></select><span class="fb-chevron">▾</span></div>
+        <div class="fb-select-wrap"><span class="fb-sel-icon">⚡</span><select id="team-status-filter" class="fb-select"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select><span class="fb-chevron">▾</span></div>
       </div>
       <div id="team-by-dept"></div>
     </div>
@@ -1928,23 +1984,14 @@ details ul { padding-left: 18px; }
       <button class="btn btn-primary" onclick="openRiskModal(null)">+ Add Risk</button>
     </div>
     <!-- Filter bar -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
-      <select id="rr-sev-filter" onchange="renderRiskRegister()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;color:#1a2a3a;">
-        <option value="">ทุก Severity</option>
-        <option value="High">🔴 High</option>
-        <option value="Med">🟡 Med</option>
-        <option value="Low">🔵 Low</option>
-      </select>
-      <select id="rr-status-filter" onchange="renderRiskRegister()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;color:#1a2a3a;">
-        <option value="">ทุก Status</option>
-        <option value="Open">🔴 Open</option>
-        <option value="Mitigated">✅ Mitigated</option>
-        <option value="Closed">⬜ Closed</option>
-      </select>
-      <select id="rr-proj-filter" onchange="renderRiskRegister()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;color:#1a2a3a;min-width:160px;">
-        <option value="">ทุก Project</option>
-      </select>
-      <input id="rr-search" placeholder="🔍 ค้นหา..." oninput="renderRiskRegister()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text);min-width:200px;">
+    <div class="fb-wrap">
+      <div class="fb-search-wrap">
+        <span class="fb-search-icon">🔍</span>
+        <input id="rr-search" class="fb-input" placeholder="Search risks, projects..." oninput="renderRiskRegister()">
+      </div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">🔴</span><select id="rr-sev-filter" class="fb-select" onchange="renderRiskRegister()"><option value="">All Severity</option><option value="High">High</option><option value="Med">Med</option><option value="Low">Low</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">⚡</span><select id="rr-status-filter" class="fb-select" onchange="renderRiskRegister()"><option value="">All Status</option><option value="Open">Open</option><option value="Mitigated">Mitigated</option><option value="Closed">Closed</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">📁</span><select id="rr-proj-filter" class="fb-select" onchange="renderRiskRegister()" style="min-width:150px;"><option value="">All Projects</option></select><span class="fb-chevron">▾</span></div>
     </div>
     <!-- KPI strip -->
     <div id="rr-kpi" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:16px;"></div>
@@ -2137,55 +2184,20 @@ details ul { padding-left: 18px; }
     </div>
     <!-- Toolbar -->
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
-      <!-- Row 1: View toggle + Search -->
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <div style="display:flex;gap:0;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0;" id="th-view-btns">
-          <button data-thview="project" onclick="switchTasksHubView('project')" style="padding:6px 14px;border:none;background:none;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-right:1px solid var(--border);transition:all .15s;" class="th-vbtn active">📁 Project</button>
-          <button data-thview="org"     onclick="switchTasksHubView('org')"     style="padding:6px 14px;border:none;background:none;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-right:1px solid var(--border);transition:all .15s;" class="th-vbtn">👤 คน</button>
-          <button data-thview="dept"    onclick="switchTasksHubView('dept')"    style="padding:6px 14px;border:none;background:none;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-right:1px solid var(--border);transition:all .15s;" class="th-vbtn">🏢 แผนก</button>
-          <button data-thview="person"  onclick="switchTasksHubView('person')"  style="padding:6px 14px;border:none;background:none;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);transition:all .15s;" class="th-vbtn">📋 รายคน</button>
+      <div class="fb-wrap" style="margin-bottom:0;">
+        <div class="fb-toggle-group" id="th-view-btns">
+          <button data-thview="project" onclick="switchTasksHubView('project')" class="fb-toggle-btn th-vbtn active">📁 Project</button>
+          <button data-thview="org"     onclick="switchTasksHubView('org')"     class="fb-toggle-btn th-vbtn">👤 คน</button>
+          <button data-thview="dept"    onclick="switchTasksHubView('dept')"    class="fb-toggle-btn th-vbtn">🏢 แผนก</button>
+          <button data-thview="person"  onclick="switchTasksHubView('person')"  class="fb-toggle-btn th-vbtn">📋 รายคน</button>
         </div>
-        <div style="flex:1;min-width:220px;position:relative;">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;">🔍</span>
-          <input id="th-search" placeholder="ค้นหา task / คน / project..." oninput="renderTasksHub()"
-            style="width:100%;padding:7px 12px 7px 32px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface-2);color:var(--text);box-sizing:border-box;">
+        <div class="fb-search-wrap" style="max-width:none;">
+          <span class="fb-search-icon">🔍</span>
+          <input id="th-search" class="fb-input" placeholder="ค้นหา task / คน / project..." oninput="renderTasksHub()">
         </div>
-      </div>
-      <!-- Row 2: Status + Dept dropdowns -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-        <div style="position:relative;">
-          <select id="th-status-filter" onchange="renderTasksHub()" style="appearance:none;-webkit-appearance:none;padding:6px 30px 6px 32px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:500;background:var(--surface-2);color:var(--text);cursor:pointer;min-width:140px;font-family:inherit;">
-            <option value="">ทุก Status</option>
-            <option value="todo">📋 To Do</option>
-            <option value="in-progress">⚡ กำลังทำ</option>
-            <option value="done">✅ เสร็จแล้ว</option>
-            <option value="overdue">⚠ เกินกำหนด</option>
-          </select>
-          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:13px;">🏷</span>
-          <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:10px;color:var(--text-muted);">▾</span>
-        </div>
-        <div style="position:relative;">
-          <select id="th-dept-filter" onchange="renderTasksHub()" style="appearance:none;-webkit-appearance:none;padding:6px 30px 6px 32px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:500;background:var(--surface-2);color:var(--text);cursor:pointer;min-width:160px;font-family:inherit;">
-            <option value="">ทุก Department</option>
-          </select>
-          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:13px;">🏢</span>
-          <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:10px;color:var(--text-muted);">▾</span>
-        </div>
-        <!-- Sort -->
-        <div style="position:relative;">
-          <select id="th-sort" onchange="renderTasksHub()" style="appearance:none;-webkit-appearance:none;padding:6px 30px 6px 32px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:500;background:var(--surface-2);color:var(--text);cursor:pointer;min-width:150px;font-family:inherit;">
-            <option value="due-asc">📅 Due Date ใกล้สุด</option>
-            <option value="due-desc">📅 Due Date ไกลสุด</option>
-            <option value="priority">🔴 Priority</option>
-            <option value="status">📋 Status</option>
-            <option value="title">🔤 ชื่อ A-Z</option>
-            <option value="project">📁 Project</option>
-            <option value="assignee">👤 Assignee</option>
-          </select>
-          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:13px;">↕</span>
-          <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:10px;color:var(--text-muted);">▾</span>
-        </div>
-        <!-- hidden pill containers (kept empty, not used) -->
+        <div class="fb-select-wrap"><span class="fb-sel-icon">🏷</span><select id="th-status-filter" class="fb-select" onchange="renderTasksHub()"><option value="">ทุก Status</option><option value="todo">To Do</option><option value="in-progress">กำลังทำ</option><option value="done">เสร็จแล้ว</option><option value="overdue">เกินกำหนด</option></select><span class="fb-chevron">▾</span></div>
+        <div class="fb-select-wrap"><span class="fb-sel-icon">🏢</span><select id="th-dept-filter" class="fb-select" onchange="renderTasksHub()"><option value="">ทุก Department</option></select><span class="fb-chevron">▾</span></div>
+        <div class="fb-select-wrap"><span class="fb-sel-icon">↕</span><select id="th-sort" class="fb-select" onchange="renderTasksHub()"><option value="due-asc">Due ใกล้สุด</option><option value="due-desc">Due ไกลสุด</option><option value="priority">Priority</option><option value="status">Status</option><option value="title">ชื่อ A-Z</option><option value="project">Project</option><option value="assignee">Assignee</option></select><span class="fb-chevron">▾</span></div>
         <div id="th-status-pills" style="display:none;"></div>
         <div id="th-dept-pills"   style="display:none;"></div>
       </div>
@@ -2217,17 +2229,13 @@ details ul { padding-left: 18px; }
     <!-- KPI row -->
     <div id="cr-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;"></div>
     <!-- Filter bar -->
-    <div class="filter-bar" style="margin-bottom:14px;gap:8px;flex-wrap:wrap;">
-      <select id="cr-filter-project" style="min-width:180px;"><option value="">— ทุก Project —</option></select>
-      <select id="cr-filter-status">
-        <option value="">— ทุก Status —</option>
-        <option value="Draft">Draft</option>
-        <option value="Approved">Approved</option>
-        <option value="Invoiced">Invoiced</option>
-        <option value="Paid">Paid</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
-      <input id="cr-search" placeholder="🔍 ค้นหา vendor / QT / PO…" style="min-width:200px;">
+    <div class="fb-wrap" style="margin-bottom:14px;">
+      <div class="fb-search-wrap">
+        <span class="fb-search-icon">🔍</span>
+        <input id="cr-search" class="fb-input" placeholder="Search vendor, QT No., PO No...">
+      </div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">📁</span><select id="cr-filter-project" class="fb-select" style="min-width:160px;"><option value="">All Projects</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">⚡</span><select id="cr-filter-status" class="fb-select"><option value="">All Status</option><option value="Draft">Draft</option><option value="Approved">Approved</option><option value="Invoiced">Invoiced</option><option value="Paid">Paid</option><option value="Cancelled">Cancelled</option></select><span class="fb-chevron">▾</span></div>
     </div>
     <!-- Table -->
     <div class="card" style="padding:0;overflow:hidden;margin-bottom:18px;">
@@ -2482,15 +2490,13 @@ details ul { padding-left: 18px; }
         <button class="btn btn-primary" onclick="openLeadModal(null)">+ Add Lead</button>
       </div>
     </div>
-    <div class="filter-bar" style="margin-bottom:10px;">
-      <input id="leads-search" placeholder="Search company, contact, owner…" style="min-width:240px;" oninput="renderLeads()">
-      <select id="leads-filter-status" onchange="renderLeads()">
-        <option value="">All Status</option>
-        <option>New</option><option>Contacted</option><option>Qualified</option><option>Converted</option><option>Lost</option>
-      </select>
-      <select id="leads-filter-owner" onchange="renderLeads()">
-        <option value="">All Owners</option>
-      </select>
+    <div class="fb-wrap" style="margin-bottom:10px;">
+      <div class="fb-search-wrap">
+        <span class="fb-search-icon">🔍</span>
+        <input id="leads-search" class="fb-input" placeholder="Search company, contact, owner..." oninput="renderLeads()">
+      </div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">⚡</span><select id="leads-filter-status" class="fb-select" onchange="renderLeads()"><option value="">All Status</option><option>New</option><option>Contacted</option><option>Qualified</option><option>Converted</option><option>Lost</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">👤</span><select id="leads-filter-owner" class="fb-select" onchange="renderLeads()"><option value="">All Owners</option></select><span class="fb-chevron">▾</span></div>
     </div>
     <div id="leads-content"></div>
   </div>
@@ -2507,19 +2513,96 @@ details ul { padding-left: 18px; }
         <button class="btn btn-primary" onclick="openOppModal(null)">+ Add Opportunity</button>
       </div>
     </div>
-    <div class="filter-bar" style="margin-bottom:10px;">
-      <input id="opp-search" placeholder="Search opportunity, company…" style="min-width:240px;" oninput="renderOpportunities()">
-      <select id="opp-filter-stage" onchange="renderOpportunities()">
-        <option value="">All Stages</option>
-        <option>Lead</option><option>Qualified</option><option>Proposal</option><option>Negotiation</option><option>Won</option><option>Lost</option>
-      </select>
-      <select id="opp-filter-owner" onchange="renderOpportunities()">
-        <option value="">All Owners</option>
-      </select>
+    <div class="fb-wrap" style="margin-bottom:10px;">
+      <div class="fb-search-wrap">
+        <span class="fb-search-icon">🔍</span>
+        <input id="opp-search" class="fb-input" placeholder="Search opportunities, companies..." oninput="renderOpportunities()">
+      </div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">🎯</span><select id="opp-filter-stage" class="fb-select" onchange="renderOpportunities()"><option value="">All Stages</option><option>Lead</option><option>Qualified</option><option>Proposal</option><option>Negotiation</option><option>Won</option><option>Lost</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">👤</span><select id="opp-filter-owner" class="fb-select" onchange="renderOpportunities()"><option value="">All Owners</option></select><span class="fb-chevron">▾</span></div>
     </div>
     <div id="opp-content"></div>
   </div>
 </div>
+
+  <!-- INTERNAL HOME -->
+  <div class="panel" id="internal-home">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">📊 Organization Dashboard</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">ภาพรวม Internal Work ทั้งองค์กร</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal(null,'internal')">+ New Internal Project</button>
+    </div>
+    <div id="internal-home-content"></div>
+  </div>
+
+  <!-- INTERNAL PROJECTS -->
+  <div class="panel" id="internal-projects">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">🏗️ Internal Projects</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">โปรเจกต์ภายในองค์กรทั้งหมด</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal(null,'internal')">+ New Internal Project</button>
+    </div>
+    <div class="fb-wrap" id="int-proj-filterbar">
+      <div class="fb-search-wrap">
+        <span class="fb-search-icon">🔍</span>
+        <input id="int-proj-search" class="fb-input" placeholder="Search internal projects..." oninput="renderInternalProjects()">
+      </div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">🏢</span><select id="int-proj-dept" class="fb-select" onchange="renderInternalProjects()"><option value="">All Departments</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">🏷️</span><select id="int-proj-cat" class="fb-select" onchange="renderInternalProjects()"><option value="">All Categories</option></select><span class="fb-chevron">▾</span></div>
+      <div class="fb-select-wrap"><span class="fb-sel-icon">⚡</span><select id="int-proj-status" class="fb-select" onchange="renderInternalProjects()"><option value="">All Status</option><option value="Working">In Progress</option><option value="Proposing">Planning</option><option value="Hold">On Hold</option><option value="Close">Completed</option></select><span class="fb-chevron">▾</span></div>
+    </div>
+    <div id="internal-projects-content"></div>
+  </div>
+
+  <!-- INTERNAL TASKS -->
+  <div class="panel" id="internal-tasks">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">✅ Internal Tasks</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">Tasks จาก Internal Projects ทั้งหมด</p>
+      </div>
+    </div>
+    <div id="internal-tasks-content"></div>
+  </div>
+
+  <!-- INTERNAL MEETINGS -->
+  <div class="panel" id="internal-meetings">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">📅 Meetings</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">Meeting Projects — agenda, minutes, follow-up</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal(null,'internal','Meeting')">+ New Meeting</button>
+    </div>
+    <div id="internal-meetings-content"></div>
+  </div>
+
+  <!-- INTERNAL TRAINING -->
+  <div class="panel" id="internal-training">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">🎓 Training</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">Training Programs — materials, attendance, progress</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal(null,'internal','Training')">+ New Training</button>
+    </div>
+    <div id="internal-training-content"></div>
+  </div>
+
+  <!-- INTERNAL SOP -->
+  <div class="panel" id="internal-sop">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;">📚 SOP & Knowledge</h1>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted);">Standard Operating Procedures & Knowledge Base</p>
+      </div>
+    </div>
+    <div id="internal-sop-content"></div>
+  </div>
 
   </div><!-- end .main-area -->
 
@@ -2605,20 +2688,31 @@ details ul { padding-left: 18px; }
     </div>
     <form id="prj-form">
       <input type="hidden" id="f-id">
+      <!-- Project Type Toggle -->
+      <div style="display:flex;gap:10px;margin-bottom:14px;">
+        <label class="proj-type-opt" data-type="client" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;transition:all .15s;">
+          <input type="radio" name="f-project-type" value="client" checked style="accent-color:#2563eb;width:15px;height:15px;">
+          🟢 Client Project
+        </label>
+        <label class="proj-type-opt" data-type="internal" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;transition:all .15s;">
+          <input type="radio" name="f-project-type" value="internal" style="accent-color:#7c3aed;width:15px;height:15px;">
+          🟣 Internal Project
+        </label>
+      </div>
       <div class="form-grid">
-        <div class="form-field"><label>บริษัท</label>
+        <div class="form-field client-only"><label>บริษัท</label>
           <select id="f-pfpg">
             <option value="PF">PF — The Platform</option>
             <option value="PG">PG — PG Affluent</option>
           </select>
         </div>
-        <div class="form-field"><label>Project Code</label><input id="f-code" placeholder="PF26-01" readonly style="background:#f5f4f0;color:#6b6b68;cursor:default"></div>
+        <div class="form-field"><label>Project Code</label><input id="f-code" placeholder="INT26-01" readonly style="background:#f5f4f0;color:#6b6b68;cursor:default"></div>
         <div class="form-field"><label>Status</label>
           <select id="f-status">
             <option>Pitching</option><option>Proposing</option><option>Working</option><option>Hold</option><option>Close</option><option value="Pitch Lost">Pitch Lost/Cancel</option>
           </select>
         </div>
-        <div class="form-field">
+        <div class="form-field client-only">
           <label>Company</label>
           <div style="position:relative;">
             <select id="f-company-sel" onchange="onProjCompanySel(this)" style="width:100%;background:#fff;color:#1a2a3a;padding-right:32px;">
@@ -2628,7 +2722,7 @@ details ul { padding-left: 18px; }
           </div>
           <input id="f-company" placeholder="พิมพ์ชื่อบริษัทใหม่..." list="company-list" autocomplete="off" style="margin-top:6px;display:none;">
         </div>
-        <div class="form-field">
+        <div class="form-field client-only">
           <label>Brand / Campaign</label>
           <div style="position:relative;">
             <select id="f-brand-sel" onchange="onProjBrandSel(this)" style="width:100%;background:#fff;color:#1a2a3a;padding-right:32px;">
@@ -2639,6 +2733,22 @@ details ul { padding-left: 18px; }
           <input id="f-brand" placeholder="พิมพ์ชื่อ Brand ใหม่..." list="brand-list" autocomplete="off" style="margin-top:6px;display:none;">
           <div id="f-brand-hint" style="font-size:11px;color:var(--accent);margin-top:3px;min-height:14px;"></div>
         </div>
+        <div class="form-field internal-only" style="display:none;">
+          <label>Category</label>
+          <select id="f-category">
+            <option value="">— เลือก Category —</option>
+            <option value="Operations">🔧 Operations</option>
+            <option value="Meeting">📅 Meeting</option>
+            <option value="Training">🎓 Training</option>
+            <option value="SOP">📚 SOP / Knowledge</option>
+            <option value="HR">👥 HR</option>
+            <option value="Marketing">📣 Marketing</option>
+            <option value="IT">💻 IT / Tech</option>
+            <option value="Finance">💰 Finance</option>
+            <option value="Strategy">🎯 Strategy</option>
+            <option value="Other">🗂️ Other</option>
+          </select>
+        </div>
         <div class="form-field full"><label>Project Name</label><input id="f-name"></div>
         <div class="form-field full">
           <label>📦 Bundle <span style="font-weight:400;color:var(--text-muted);font-size:11px;">ถ้า project นี้เป็นส่วนหนึ่งของ bundle เช่น "Boost" ให้ใส่ชื่อ bundle เดียวกัน — Workload จะนับ bundle นี้เป็น 1 slot</span></label>
@@ -2647,7 +2757,7 @@ details ul { padding-left: 18px; }
         </div>
         <div class="form-field full"><label>Basecamp URL <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(link ไป project ใน Basecamp)</span></label><div style="display:flex;gap:6px;"><input id="f-basecamp" placeholder="https://3.basecamp.com/..."><a id="f-basecamp-link" href="#" target="_blank" style="display:none;padding:7px 10px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;color:var(--accent);white-space:nowrap;text-decoration:none;">🔗 Open</a></div></div>
         <div class="form-field full"><label>Google Drive URL <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(link ไป folder หรือ doc ใน Google Drive)</span></label><div style="display:flex;gap:6px;"><input id="f-drive" placeholder="https://drive.google.com/..."><a id="f-drive-link" href="#" target="_blank" style="display:none;padding:7px 10px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;color:#1a73e8;white-space:nowrap;text-decoration:none;">📁 Open</a></div></div>
-        <div class="form-field full">
+        <div class="form-field full client-only">
           <label>Quotation (QT) <span style="font-weight:400;color:var(--text-muted);font-size:11px;">ออกได้หลายใบต่อ project — กด + เพิ่ม</span></label>
           <div id="f-qt-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
           <button type="button" class="btn btn-sm" onclick="addQtRow()" style="align-self:flex-start;">+ เพิ่ม QT</button>
@@ -2912,6 +3022,49 @@ details ul { padding-left: 18px; }
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" id="cf-delete">Delete</button>
         <button type="button" class="btn" id="client-modal-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CONTACT CRM MODAL -->
+<div class="modal" id="contact-crm-modal">
+  <div class="modal-box" style="max-width:500px;">
+    <div class="modal-header">
+      <h2 id="contact-crm-modal-title">Add Contact</h2>
+      <button class="modal-close" onclick="document.getElementById('contact-crm-modal').classList.remove('show')">&times;</button>
+    </div>
+    <form id="contact-crm-form">
+      <input type="hidden" id="ccf-id">
+      <div class="form-grid">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:2px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">👤 ข้อมูลผู้ติดต่อ</div>
+        <div class="form-field full"><label>ชื่อ-นามสกุล <span style="color:#dc2626;">*</span></label><input id="ccf-name" placeholder="เช่น คุณสมชาย ใจดี" required></div>
+        <div class="form-field"><label>ชื่อเล่น</label><input id="ccf-nickname" placeholder="เช่น คุณชาย"></div>
+        <div class="form-field"><label>ตำแหน่ง / Title</label><input id="ccf-title" placeholder="เช่น Marketing Manager"></div>
+        <div class="form-field"><label>เบอร์โทร</label><input id="ccf-phone" type="tel" placeholder="0xx-xxx-xxxx"></div>
+        <div class="form-field full"><label>Email</label><input id="ccf-email" type="email" placeholder="email@company.com"></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">🏢 เชื่อมกับ Client / Brand</div>
+        <div class="form-field full">
+          <label>บริษัท / Client <span style="color:#dc2626;">*</span></label>
+          <select id="ccf-company" onchange="populateContactBrandDropdown()" style="width:100%;padding:8px;border:1px solid var(--border-strong);border-radius:8px;" required>
+            <option value="">-- เลือก Client --</option>
+          </select>
+        </div>
+        <div class="form-field full">
+          <label>Brand <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(ถ้าเชื่อมกับ Brand ใด Brand หนึ่งเป็นพิเศษ)</span></label>
+          <select id="ccf-brand" style="width:100%;padding:8px;border:1px solid var(--border-strong);border-radius:8px;">
+            <option value="">-- ทุก Brand ของ Client --</option>
+          </select>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">🎁 ข้อมูลเพิ่มเติม</div>
+        <div class="form-field"><label>วันเกิด</label><input id="ccf-birthday" type="date"></div>
+        <div class="form-field full"><label>ที่อยู่ <span style="font-weight:400;color:var(--text-muted);">(สำหรับส่งของขวัญ)</span></label><textarea id="ccf-address" style="height:56px;" placeholder="บ้านเลขที่ ถนน แขวง เขต จังหวัด รหัสไปรษณีย์"></textarea></div>
+        <div class="form-field full"><label>Note</label><input id="ccf-note" placeholder="หมายเหตุ"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="ccf-delete" onclick="deleteContactCRM()">Delete</button>
+        <button type="button" class="btn" onclick="document.getElementById('contact-crm-modal').classList.remove('show')">Cancel</button>
         <button type="submit" class="btn btn-primary">Save</button>
       </div>
     </form>
@@ -4993,10 +5146,19 @@ let charts = {};
 function loadDB() {
   const ls = localStorage.getItem(STORE_KEY);
   if (ls) {
-    try { DB = JSON.parse(ls); return; } catch (e) {}
+    try { DB = JSON.parse(ls); migrateDB(); return; } catch (e) {}
   }
   const seed = JSON.parse(document.getElementById('seed-data').textContent);
   DB = seed;
+}
+
+function migrateDB() {
+  // rename tab key 'contacts' → 'contacts-crm' in all user tab arrays
+  (DB.users||[]).forEach(u => {
+    if (!u.tabs) return;
+    const idx = u.tabs.indexOf('contacts');
+    if (idx !== -1) { u.tabs[idx] = 'contacts-crm'; }
+  });
 }
 
 function saveDB(silent) {
@@ -5564,11 +5726,18 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.panel === 'training') initTrainingHub();
     if (t.dataset.panel === 'capacity') renderCapacity();
     if (t.dataset.panel === 'admin') { renderUsers(); renderDataHealth(); }
+    if (t.dataset.panel === 'contacts-crm') { if (!_tabInited.has('contacts-crm')) { _tabInited.add('contacts-crm'); initContactsCRM(); } else renderContactsCRM(); }
     if (t.dataset.panel === 'leads') renderLeads();
     if (t.dataset.panel === 'overview') renderOverview();
     if (t.dataset.panel === 'brands') renderBrands();
     if (t.dataset.panel === 'opportunities') renderOpportunities();
     if (t.dataset.panel === 'projects-unified') renderProjectsUnified();
+    if (t.dataset.panel === 'internal-home') renderInternalHome();
+    if (t.dataset.panel === 'internal-projects') renderInternalProjects();
+    if (t.dataset.panel === 'internal-tasks') renderInternalTasks();
+    if (t.dataset.panel === 'internal-meetings') renderInternalCategory('meetings','Meeting');
+    if (t.dataset.panel === 'internal-training') renderInternalCategory('training','Training');
+    if (t.dataset.panel === 'internal-sop') renderInternalCategory('sop','SOP');
     if (t.dataset.panel === 'pipeline') renderPipeline();
     if (t.dataset.panel === 'reports') renderReportsList();
   });
@@ -11302,7 +11471,7 @@ function renderPrjRecentActivity() {
 function renderPrjYearPicker() {}
 
 // ========== MODAL ==========
-function openModal(id) {
+function openModal(id, forceType, forceCategory) {
   const modal = document.getElementById('modal');
   let p;
   if (id) {
@@ -11310,8 +11479,9 @@ function openModal(id) {
     document.getElementById('modal-title').textContent = 'Edit project — ' + p.code;
   } else {
     const defPfpg = 'PF';
-    p = { id: genId(), pfpg: defPfpg, code: nextCode(defPfpg), status: 'Pitching', roles: [], types: [], comments: [], budget: 0 };
-    document.getElementById('modal-title').textContent = 'New project';
+    const initPrefix = forceType==='internal' ? 'INT' : defPfpg;
+    p = { id: genId(), pfpg: defPfpg, code: nextCode(initPrefix), status: forceType==='internal' ? 'Working' : 'Pitching', roles: [], types: [], comments: [], budget: 0, projectType: forceType||'client' };
+    document.getElementById('modal-title').textContent = forceType==='internal' ? 'New Internal Project' : 'New project';
   }
   document.getElementById('f-id').value = p.id || p.code;
   document.getElementById('f-pfpg').value = p.pfpg || 'PF';
@@ -11351,6 +11521,11 @@ function openModal(id) {
   const bundleList = document.getElementById('bundle-list');
   bundleList.innerHTML = [...new Set((DB.projects||[]).map(x=>x.bundle).filter(Boolean))].map(b=>`<option value="${b}">`).join('');
   document.getElementById('f-types').value = (p.types||[]).join('\n');
+  // Project type toggle
+  const pType = (p.projectType || forceType || 'client');
+  document.querySelectorAll('[name="f-project-type"]').forEach(r => { r.checked = r.value === pType; });
+  document.getElementById('f-category').value = p.category || forceCategory || '';
+  toggleProjTypeFields(pType);
   // Loss analysis fields
   document.getElementById('f-loss-reason').value = p.lossReason || '';
   document.getElementById('f-loss-notes').value = p.lossNotes || '';
@@ -11397,6 +11572,7 @@ document.getElementById('f-status')?.addEventListener('change', function() {
 
 // Auto-regenerate code when pfpg changes (works for both new AND existing projects)
 function refreshCodeOnPfpgChange() {
+  if (_isInternalForm()) return; // INT prefix not affected by pfpg
   const pfpg = document.getElementById('f-pfpg').value;
   const launch = document.getElementById('f-launch').value;
   // Preserve year from existing code, fallback to launch year, then YEAR
@@ -11409,10 +11585,17 @@ function refreshCodeOnPfpgChange() {
 // Auto-regenerate for NEW projects when launch date changes
 function refreshCodeIfNew() {
   if (document.getElementById('modal').dataset.isNew !== '1') return;
-  const pfpg = document.getElementById('f-pfpg').value;
   const launch = document.getElementById('f-launch').value;
   const year = launch ? parseInt(launch.slice(0, 4)) : null;
-  document.getElementById('f-code').value = nextCode(pfpg, year);
+  if (_isInternalForm()) {
+    document.getElementById('f-code').value = nextCode('INT', year);
+  } else {
+    const pfpg = document.getElementById('f-pfpg').value;
+    document.getElementById('f-code').value = nextCode(pfpg, year);
+  }
+}
+function _isInternalForm() {
+  return document.querySelector('[name="f-project-type"]:checked')?.value === 'internal';
 }
 // ── Project Form Company/Brand Combobox ──────────────────
 function populateProjCompanySel(currentCompany, currentBrand) {
@@ -11896,6 +12079,8 @@ document.getElementById('prj-form')?.addEventListener('submit', (e) => {
   p.owner = document.getElementById('f-owner').value.trim();
   p.support = document.getElementById('f-support').value.trim();
   p.dept = document.getElementById('f-dept').value.trim();
+  p.projectType = document.querySelector('[name="f-project-type"]:checked')?.value || 'client';
+  p.category = document.getElementById('f-category').value || '';
   p.budget = +document.getElementById('f-budget').value || 0;
   p.spent  = +document.getElementById('f-spent').value  || 0;
   p.brief = document.getElementById('f-brief').value;
@@ -15473,7 +15658,7 @@ const ALL_TABS = [
   { key:'client-intel',  label:'Client Intelligence' },
   { key:'brands',        label:'Brands' },
   { key:'leads',         label:'Leads' },
-  { key:'contacts',      label:'Contacts' },
+  { key:'contacts-crm',  label:'Contacts' },
   { key:'opportunities', label:'Opportunities' },
   { key:'team',      label:'Team' },
   { key:'calendar',  label:'Calendar' },
@@ -15488,6 +15673,12 @@ const ALL_TABS = [
   { key:'capacity',  label:'Capacity' },
   { key:'profile',   label:'My Profile' },
   { key:'my-team',   label:'My Team' },
+  { key:'internal-home',     label:'Org Dashboard' },
+  { key:'internal-projects', label:'Internal Projects' },
+  { key:'internal-tasks',    label:'Internal Tasks' },
+  { key:'internal-meetings', label:'Meetings' },
+  { key:'internal-training', label:'Training' },
+  { key:'internal-sop',      label:'SOP & Knowledge' },
 ];
 
 // ── SHA-256 hash ─────────────────────────────────────────
@@ -21189,6 +21380,382 @@ function renderCIPanel() {
         </div>`;
       }).join('')}
     </div>`;
+}
+
+// ========== CONTACTS CRM ==========
+
+function initContactsCRM() {
+  document.getElementById('contact-crm-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const id = document.getElementById('ccf-id').value || ('ct-' + Math.random().toString(36).slice(2,9));
+    if (!DB.contacts) DB.contacts = [];
+    let c = DB.contacts.find(x => x.id === id);
+    if (!c) { c = { id }; DB.contacts.push(c); }
+    c.name     = document.getElementById('ccf-name').value.trim();
+    c.nickname = document.getElementById('ccf-nickname').value.trim();
+    c.title    = document.getElementById('ccf-title').value.trim();
+    c.phone    = document.getElementById('ccf-phone').value.trim();
+    c.email    = document.getElementById('ccf-email').value.trim();
+    c.company  = document.getElementById('ccf-company').value;
+    c.brand    = document.getElementById('ccf-brand').value;
+    c.birthday = document.getElementById('ccf-birthday').value;
+    c.address  = document.getElementById('ccf-address').value.trim();
+    c.note     = document.getElementById('ccf-note').value.trim();
+    saveDB();
+    document.getElementById('contact-crm-modal').classList.remove('show');
+    renderContactsCRM();
+  });
+  renderContactsCRM();
+}
+
+function renderContactsCRM() {
+  const q       = (document.getElementById('contacts-crm-search')?.value||'').toLowerCase();
+  const coF     = document.getElementById('contacts-crm-filter-company')?.value||'';
+  const brF     = document.getElementById('contacts-crm-filter-brand')?.value||'';
+
+  // Populate company dropdown
+  const coSel = document.getElementById('contacts-crm-filter-company');
+  if (coSel) {
+    const cur = coSel.value;
+    const companies = [...new Set((DB.contacts||[]).map(c=>c.company).filter(Boolean))].sort();
+    coSel.innerHTML = `<option value="">All Clients</option>`
+      + companies.map(co=>`<option value="${escHtml(co)}" ${co===cur?'selected':''}>${escHtml(co)}</option>`).join('');
+  }
+
+  // Populate brand dropdown based on selected company
+  const brSel = document.getElementById('contacts-crm-filter-brand');
+  if (brSel) {
+    const cur = brSel.value;
+    const pool = coF ? (DB.contacts||[]).filter(c=>c.company===coF) : (DB.contacts||[]);
+    const brands = [...new Set(pool.map(c=>c.brand).filter(Boolean))].sort();
+    brSel.innerHTML = `<option value="">All Brands</option>`
+      + brands.map(b=>`<option value="${escHtml(b)}" ${b===cur?'selected':''}>${escHtml(b)}</option>`).join('');
+  }
+
+  let contacts = (DB.contacts||[]).filter(c => {
+    if (q && !`${c.name||''} ${c.title||''} ${c.company||''} ${c.brand||''} ${c.nickname||''}`.toLowerCase().includes(q)) return false;
+    if (coF && c.company !== coF) return false;
+    if (brF && c.brand !== brF) return false;
+    return true;
+  });
+
+  // KPI
+  const kpiEl = document.getElementById('contacts-crm-kpi');
+  if (kpiEl) {
+    const total   = (DB.contacts||[]).length;
+    const companies = new Set((DB.contacts||[]).map(c=>c.company).filter(Boolean)).size;
+    const brands    = new Set((DB.contacts||[]).map(c=>c.brand).filter(Boolean)).size;
+    const withBday  = (DB.contacts||[]).filter(c=>c.birthday).length;
+    kpiEl.innerHTML = [
+      ['👤 Total Contacts', total, '#eff6ff','#bfdbfe','#1d4ed8'],
+      ['🏢 Companies', companies, '#f0fdf4','#bbf7d0','#15803d'],
+      ['📦 Brands Linked', brands, '#faf5ff','#e9d5ff','#7e22ce'],
+      ['🎂 With Birthday', withBday, '#fff7ed','#fed7aa','#c2410c'],
+    ].map(([label,val,bg,border,color])=>`
+      <div style="background:${bg};border:1px solid ${border};border-radius:10px;padding:10px 16px;min-width:130px;">
+        <div style="font-size:11px;color:${color};font-weight:700;">${label}</div>
+        <div style="font-size:22px;font-weight:800;color:${color};margin-top:2px;">${val}</div>
+      </div>`).join('');
+  }
+
+  const grid = document.getElementById('contacts-crm-grid');
+  if (!grid) return;
+
+  if (!contacts.length) {
+    grid.innerHTML = `<div style="text-align:center;padding:60px 20px;background:#f8fafc;border:2px dashed #e2e8f0;border-radius:12px;color:#64748b;">
+      <div style="font-size:32px;margin-bottom:10px;">👤</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px;">ยังไม่มี Contact</div>
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:16px;">กด "+ Add Contact" เพื่อเพิ่มผู้ติดต่อ เชื่อมกับ Client / Brand ได้เลย</div>
+      <button class="btn btn-primary" onclick="openContactModal(null)">+ Add Contact</button>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;">${contacts.map(renderContactCRMCard).join('')}</div>`;
+}
+
+function renderContactCRMCard(c) {
+  const initials = (c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const hue = Math.abs([...(c.name||'')].reduce((a,ch)=>a+ch.charCodeAt(0),0))%360;
+  const today = new Date();
+  let bdayBadge = '';
+  if (c.birthday) {
+    const [y,m,d] = c.birthday.split('-');
+    const next = new Date(today.getFullYear(), +m-1, +d);
+    if (next < today) next.setFullYear(next.getFullYear()+1);
+    const diff = Math.ceil((next - today)/86400000);
+    if (diff <= 30) bdayBadge = `<span style="font-size:10px;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:20px;font-weight:700;">🎂 ${diff}d</span>`;
+  }
+  return `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.04);">
+    <div style="width:44px;height:44px;border-radius:50%;background:hsl(${hue},55%,58%);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;">${initials}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;font-weight:700;color:#1e293b;">${escHtml(c.name||'–')} ${c.nickname?`<span style="font-size:11px;color:#64748b;font-weight:500;">(${escHtml(c.nickname)})</span>`:''}</div>
+      ${c.title?`<div style="font-size:12px;color:#64748b;margin-top:1px;">${escHtml(c.title)}</div>`:''}
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;">
+        ${c.company?`<span style="font-size:10px;padding:2px 8px;background:#eff6ff;color:#1d4ed8;border-radius:20px;font-weight:700;">🏢 ${escHtml(c.company)}</span>`:''}
+        ${c.brand?`<span style="font-size:10px;padding:2px 8px;background:#f5f3ff;color:#7c3aed;border-radius:20px;font-weight:700;">📦 ${escHtml(c.brand)}</span>`:''}
+        ${bdayBadge}
+      </div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+        ${c.phone?`<div style="font-size:12px;color:#475569;display:flex;align-items:center;gap:5px;">📞 <a href="tel:${c.phone.replace(/[^0-9+]/g,'')}" style="color:inherit;text-decoration:none;">${escHtml(c.phone)}</a></div>`:''}
+        ${c.email?`<div style="font-size:12px;color:#475569;display:flex;align-items:center;gap:5px;">📧 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(c.email)}</span></div>`:''}
+      </div>
+    </div>
+    <button onclick="openContactModal('${c.id}')" style="position:absolute;top:12px;right:12px;font-size:11px;padding:4px 9px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;color:#475569;">Edit</button>
+  </div>`;
+}
+
+function openContactModal(id) {
+  const modal = document.getElementById('contact-crm-modal');
+  const form  = document.getElementById('contact-crm-form');
+  form.reset();
+
+  // Populate company dropdown from DB.clients
+  const coSel = document.getElementById('ccf-company');
+  const companies = [...new Set((DB.clients||[]).map(c=>c.company).filter(Boolean))].sort();
+  coSel.innerHTML = `<option value="">-- เลือก Client --</option>`
+    + companies.map(co=>`<option value="${escHtml(co)}">${escHtml(co)}</option>`).join('');
+  document.getElementById('ccf-brand').innerHTML = `<option value="">-- ทุก Brand ของ Client --</option>`;
+
+  const c = id ? (DB.contacts||[]).find(x=>x.id===id) : null;
+  document.getElementById('contact-crm-modal-title').textContent = c ? 'Edit Contact' : 'Add Contact';
+  document.getElementById('ccf-id').value       = c?.id||'';
+  document.getElementById('ccf-delete').style.display = c ? '' : 'none';
+
+  if (c) {
+    document.getElementById('ccf-name').value     = c.name||'';
+    document.getElementById('ccf-nickname').value = c.nickname||'';
+    document.getElementById('ccf-title').value    = c.title||'';
+    document.getElementById('ccf-phone').value    = c.phone||'';
+    document.getElementById('ccf-email').value    = c.email||'';
+    document.getElementById('ccf-birthday').value = c.birthday||'';
+    document.getElementById('ccf-address').value  = c.address||'';
+    document.getElementById('ccf-note').value     = c.note||'';
+    if (c.company) {
+      coSel.value = c.company;
+      populateContactBrandDropdown();
+      setTimeout(()=>{ document.getElementById('ccf-brand').value = c.brand||''; }, 0);
+    }
+  }
+
+  modal.classList.add('show');
+}
+
+function populateContactBrandDropdown() {
+  const company = document.getElementById('ccf-company').value;
+  const brSel   = document.getElementById('ccf-brand');
+  const cl = (DB.clients||[]).find(c=>(c.company||'')=== company);
+  const brands = cl?.brands?.length ? cl.brands : (cl?.brand ? [cl.brand] : []);
+  brSel.innerHTML = `<option value="">-- ทุก Brand ของ Client --</option>`
+    + brands.map(b=>`<option value="${escHtml(b)}">${escHtml(b)}</option>`).join('');
+}
+
+function deleteContactCRM() {
+  const id = document.getElementById('ccf-id').value;
+  if (!id) return;
+  const c = (DB.contacts||[]).find(x=>x.id===id);
+  if (!confirm(`ลบ "${c?.name||'contact'}" ออกจากระบบ?`)) return;
+  DB.contacts = (DB.contacts||[]).filter(x=>x.id!==id);
+  saveDB();
+  document.getElementById('contact-crm-modal').classList.remove('show');
+  renderContactsCRM();
+}
+
+// ── Project Type Toggle ──────────────────────────────────
+function toggleProjTypeFields(type) {
+  const form = document.getElementById('prj-form');
+  if (!form) return;
+  if (type === 'internal') {
+    form.classList.add('internal-mode');
+  } else {
+    form.classList.remove('internal-mode');
+  }
+  // Regenerate code only for new projects
+  if (document.getElementById('modal')?.dataset.isNew === '1') {
+    const launch = document.getElementById('f-launch')?.value;
+    const year = launch ? parseInt(launch.slice(0,4)) : null;
+    if (type === 'internal') {
+      document.getElementById('f-code').value = nextCode('INT', year);
+    } else {
+      const pfpg = document.getElementById('f-pfpg')?.value || 'PF';
+      document.getElementById('f-code').value = nextCode(pfpg, year);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[name="f-project-type"]').forEach(r => {
+    r.addEventListener('change', () => toggleProjTypeFields(r.value));
+  });
+});
+
+// ── Internal Panels ──────────────────────────────────────
+function intProjects() {
+  return (DB.projects||[]).filter(p => p.projectType === 'internal');
+}
+
+function renderInternalHome() {
+  const el = document.getElementById('internal-home-content');
+  if (!el) return;
+  const all = intProjects();
+  const active = all.filter(p => p.status === 'Working').length;
+  const done   = all.filter(p => p.status === 'Close').length;
+  const hold   = all.filter(p => p.status === 'Hold').length;
+  const tasks  = (DB.tasks||[]).filter(t => { const p = (DB.projects||[]).find(x=>(x.id||x.code)===t.projectId); return p?.projectType==='internal'; });
+  const openTasks = tasks.filter(t => t.status !== 'Done').length;
+  const overdueTasks = tasks.filter(t => t.status !== 'Done' && t.due && t.due < new Date().toISOString().slice(0,10)).length;
+  const depts = [...new Set(all.map(p=>p.dept||p.category||'').filter(Boolean))];
+  const cats  = ['Meeting','Training','SOP','Operations','HR','Marketing','IT','Finance','Strategy','Other'];
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;">
+      ${[
+        ['🏗️','Total Projects', all.length, '#eff6ff','#2563eb'],
+        ['▶️','Active',         active,      '#f0fdf4','#16a34a'],
+        ['✅','Completed',      done,        '#f5f3ff','#7c3aed'],
+        ['⏸️','On Hold',        hold,        '#fff7ed','#d97706'],
+        ['📋','Open Tasks',     openTasks,   '#fef2f2','#dc2626'],
+        ['⚠️','Overdue Tasks',  overdueTasks,'#fef9c3','#ca8a04'],
+      ].map(([icon,label,val,bg,color])=>`
+        <div style="background:${bg};border-radius:14px;padding:18px;border:1px solid ${color}22;">
+          <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
+          <div style="font-size:26px;font-weight:800;color:${color};">${val}</div>
+          <div style="font-size:12px;color:#64748b;font-weight:600;">${label}</div>
+        </div>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:12px;">🏷️ By Category</div>
+        ${cats.map(cat=>{const n=all.filter(p=>(p.category||p.dept)===cat).length;return n?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="width:100px;font-size:12px;color:#374151;">${cat}</div><div style="flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;"><div style="height:100%;background:#7c3aed;border-radius:4px;width:${Math.round(n/all.length*100)||0}%;"></div></div><div style="font-size:12px;font-weight:700;color:#374151;width:20px;text-align:right;">${n}</div></div>`:'';}).join('')||'<div style="color:#94a3b8;font-size:12px;">ยังไม่มีข้อมูล</div>'}
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:12px;">🏢 By Department</div>
+        ${depts.length ? depts.map(d=>{const n=all.filter(p=>(p.dept||p.category)===d).length;return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="width:120px;font-size:12px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d}</div><div style="flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;"><div style="height:100%;background:#2563eb;border-radius:4px;width:${Math.round(n/all.length*100)||0}%;"></div></div><div style="font-size:12px;font-weight:700;color:#374151;width:20px;text-align:right;">${n}</div></div>`;}).join('') : '<div style="color:#94a3b8;font-size:12px;">ยังไม่มีข้อมูล</div>'}
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-top:20px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;">🕐 Recent Internal Projects</div>
+      ${all.slice().sort((a,b)=>(b.launch||b.brief||'').localeCompare(a.launch||a.brief||'')).slice(0,5).map(p=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;" onclick="openModal('${p.id||p.code}')">
+          <span class="pt-badge internal">🟣 Internal</span>
+          <div style="flex:1;font-size:13px;font-weight:600;">${escHtml(p.name||p.code)}</div>
+          <span style="font-size:11px;background:#f3f4f6;padding:2px 8px;border-radius:6px;">${p.category||p.dept||'–'}</span>
+          ${badgeFor(p.status)}
+        </div>`).join('') || '<div style="color:#94a3b8;font-size:12px;">ยังไม่มี Internal Project</div>'}
+    </div>`;
+}
+
+function renderInternalProjects() {
+  const el = document.getElementById('internal-projects-content');
+  if (!el) return;
+  const search = (document.getElementById('int-proj-search')?.value||'').toLowerCase();
+  const deptF  = document.getElementById('int-proj-dept')?.value||'';
+  const catF   = document.getElementById('int-proj-cat')?.value||'';
+  const statF  = document.getElementById('int-proj-status')?.value||'';
+  let all = intProjects();
+
+  // populate filters
+  const depts = [...new Set(all.map(p=>p.dept).filter(Boolean))].sort();
+  const cats  = [...new Set(all.map(p=>p.category).filter(Boolean))].sort();
+  const deptSel = document.getElementById('int-proj-dept');
+  const catSel  = document.getElementById('int-proj-cat');
+  if (deptSel) { const cur=deptSel.value; deptSel.innerHTML='<option value="">All Departments</option>'+depts.map(d=>`<option ${d===cur?'selected':''}>${d}</option>`).join(''); }
+  if (catSel)  { const cur=catSel.value;  catSel.innerHTML ='<option value="">All Categories</option>' +cats.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join(''); }
+
+  if (search) all = all.filter(p => (p.name||'').toLowerCase().includes(search)||(p.dept||'').toLowerCase().includes(search)||(p.category||'').toLowerCase().includes(search));
+  if (deptF) all = all.filter(p => p.dept === deptF);
+  if (catF)  all = all.filter(p => p.category === catF);
+  if (statF) all = all.filter(p => p.status === statF);
+
+  if (!all.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:#94a3b8;"><div style="font-size:40px;margin-bottom:12px;">🏗️</div><div>ยังไม่มี Internal Project</div><button class="btn btn-primary" style="margin-top:16px;" onclick="openModal(null,'internal')">+ สร้างโปรเจกต์แรก</button></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+    ${all.map(p => {
+      const tasks = (DB.tasks||[]).filter(t=>t.projectId===(p.id||p.code));
+      const done  = tasks.filter(t=>t.status==='Done').length;
+      const pct   = tasks.length ? Math.round(done/tasks.length*100) : 0;
+      return `<div class="int-proj-card" onclick="openModal('${p.id||p.code}')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#7c3aed;">${escHtml(p.category||p.dept||'Internal')}</span>
+          ${badgeFor(p.status)}
+        </div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escHtml(p.name||p.code)}</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:10px;">${p.dept||''}</div>
+        ${tasks.length ? `<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:3px;"><span>Tasks</span><span>${done}/${tasks.length}</span></div><div style="height:5px;background:#f1f5f9;border-radius:3px;"><div style="height:100%;width:${pct}%;background:#7c3aed;border-radius:3px;"></div></div></div>` : ''}
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          ${p.owner ? `<span style="font-size:11px;background:#f5f3ff;color:#7c3aed;padding:2px 8px;border-radius:6px;">👤 ${escHtml(p.owner)}</span>` : ''}
+          ${p.end   ? `<span style="font-size:11px;background:#f1f5f9;color:#374151;padding:2px 8px;border-radius:6px;">📅 ${p.end}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderInternalTasks() {
+  const el = document.getElementById('internal-tasks-content');
+  if (!el) return;
+  const intIds = new Set(intProjects().map(p=>p.id||p.code));
+  const tasks = (DB.tasks||[]).filter(t => intIds.has(t.projectId)).sort((a,b)=>(a.due||'').localeCompare(b.due||''));
+  if (!tasks.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:#94a3b8;"><div style="font-size:40px;margin-bottom:12px;">✅</div><div>ยังไม่มี Tasks ใน Internal Projects</div></div>`;
+    return;
+  }
+  const groups = {};
+  tasks.forEach(t => {
+    const p = (DB.projects||[]).find(x=>(x.id||x.code)===t.projectId);
+    const key = p ? (p.name||p.code) : t.projectId;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  el.innerHTML = Object.entries(groups).map(([proj, ts])=>`
+    <div style="margin-bottom:20px;">
+      <div style="font-weight:700;font-size:13px;color:#7c3aed;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+        <span class="pt-badge internal">🟣 Internal</span> ${escHtml(proj)}
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+        ${ts.map(t=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f8fafc;">
+          <span style="font-size:16px;">${t.status==='Done'?'✅':t.status==='In Progress'?'▶️':'⭕'}</span>
+          <div style="flex:1;font-size:13px;${t.status==='Done'?'text-decoration:line-through;color:#94a3b8;':''}">${escHtml(t.title||t.name||'–')}</div>
+          ${t.assignee?`<span style="font-size:11px;color:#7c3aed;">${escHtml(t.assignee)}</span>`:''}
+          ${t.due?`<span style="font-size:11px;color:${t.due<new Date().toISOString().slice(0,10)&&t.status!=='Done'?'#dc2626':'#64748b'};">📅 ${t.due}</span>`:''}
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function renderInternalCategory(panelId, category) {
+  const el = document.getElementById(`internal-${panelId}-content`);
+  if (!el) return;
+  const all = intProjects().filter(p => (p.category||p.dept) === category);
+  if (!all.length) {
+    const icons = {meetings:'📅',training:'🎓',sop:'📚'};
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:#94a3b8;"><div style="font-size:40px;margin-bottom:12px;">${icons[panelId]||'📁'}</div><div>ยังไม่มี ${category} Project</div><button class="btn btn-primary" style="margin-top:16px;" onclick="openModal(null,'internal','${category}')">+ สร้าง ${category} ใหม่</button></div>`;
+    return;
+  }
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+    ${all.map(p => {
+      const tasks = (DB.tasks||[]).filter(t=>t.projectId===(p.id||p.code));
+      const done  = tasks.filter(t=>t.status==='Done').length;
+      const pct   = tasks.length ? Math.round(done/tasks.length*100) : 0;
+      return `<div class="int-proj-card" onclick="openModal('${p.id||p.code}')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <span style="font-size:11px;font-weight:700;color:#7c3aed;">${escHtml(p.category||category)}</span>
+          ${badgeFor(p.status)}
+        </div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${escHtml(p.name||p.code)}</div>
+        ${p.dept ? `<div style="font-size:11px;color:#64748b;margin-bottom:8px;">${escHtml(p.dept)}</div>` : ''}
+        ${tasks.length ? `<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:3px;"><span>Progress</span><span>${pct}%</span></div><div style="height:5px;background:#f1f5f9;border-radius:3px;"><div style="height:100%;width:${pct}%;background:#7c3aed;border-radius:3px;"></div></div></div>` : ''}
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${p.owner ? `<span style="font-size:11px;background:#f5f3ff;color:#7c3aed;padding:2px 8px;border-radius:6px;">👤 ${escHtml(p.owner)}</span>` : ''}
+          ${p.launch ? `<span style="font-size:11px;background:#f1f5f9;color:#374151;padding:2px 8px;border-radius:6px;">▶ ${p.launch}</span>` : ''}
+          ${p.end    ? `<span style="font-size:11px;background:#f1f5f9;color:#374151;padding:2px 8px;border-radius:6px;">⏹ ${p.end}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 </script>
 
